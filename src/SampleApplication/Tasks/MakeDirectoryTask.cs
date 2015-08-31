@@ -10,7 +10,7 @@ namespace XFile.Tasks
     using System;
     using System.Runtime.InteropServices;
     using XFile.Utility;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
     using XTask.Interop;
     using XTask.Logging;
     using XTask.Tasks;

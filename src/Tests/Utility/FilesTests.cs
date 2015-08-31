@@ -10,7 +10,7 @@ namespace XTask.Tests.Core.Utility
     using System.Collections.Generic;
     using System.Linq;
     using FluentAssertions;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
     using Xunit;
 
     public class FilesTests

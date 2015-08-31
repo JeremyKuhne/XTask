@@ -12,7 +12,7 @@ namespace XTask.Tests.Core.Utility
     using System.Reflection;
     using FluentAssertions;
     using NSubstitute;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
     using XTask.Settings;
     using XTask.Utility;
     using Xunit;

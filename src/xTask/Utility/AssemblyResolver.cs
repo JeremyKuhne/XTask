@@ -11,7 +11,8 @@ namespace XTask.Utility
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
+    using XTask.Systems.File.Concrete.Flex;
     using XTask.Settings;
     using XTask.Tasks;
 
@@ -25,7 +26,7 @@ namespace XTask.Utility
 
         protected AssemblyResolver()
         {
-            this.FileService = new FileSystem.Concrete.Flex.FileService();
+            this.FileService = new FileService();
         }
 
         public static AssemblyResolver Create(IArgumentProvider arguments)

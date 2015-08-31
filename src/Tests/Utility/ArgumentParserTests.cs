@@ -8,7 +8,7 @@
 namespace XTask.Tests.Core.Utility
 {
     using FluentAssertions;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
     using XTask.Settings;
     using Xunit;
 

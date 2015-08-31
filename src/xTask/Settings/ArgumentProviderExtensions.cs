@@ -8,7 +8,7 @@
 namespace XTask.Settings
 {
     using System.Collections.Generic;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
     using XTask.Utility;
 
     public static class ArgumentProviderExtensions

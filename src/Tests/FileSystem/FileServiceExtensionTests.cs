@@ -10,7 +10,7 @@ namespace XTask.Tests.Interop
     using FileSystem;
     using FluentAssertions;
     using System.IO;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
     using XTask.Interop;
     using Xunit;
     using NSubstitute;

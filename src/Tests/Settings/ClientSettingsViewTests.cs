@@ -13,7 +13,7 @@ namespace XTask.Tests.Core.Settings
     using FluentAssertions;
     using NSubstitute;
     using XTask.ConfigurationSystem;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
     using XTask.Settings;
     using Xunit;
     using System.IO;

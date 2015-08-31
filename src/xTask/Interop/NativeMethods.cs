@@ -15,7 +15,7 @@ namespace XTask.Interop
     using System.Security;
     using System.Text;
     using Utility;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
 
     [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
     internal static partial class NativeMethods

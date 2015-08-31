@@ -5,7 +5,7 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace XTask.FileSystem.Concrete.DotNet
+namespace XTask.Systems.File.Concrete.DotNet
 {
     using System.Collections.Generic;
     using System.Linq;

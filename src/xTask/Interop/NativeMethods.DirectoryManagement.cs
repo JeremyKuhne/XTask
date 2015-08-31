@@ -8,17 +8,10 @@
 namespace XTask.Interop
 {
     using System;
-    using System.Diagnostics;
-    using System.Globalization;
-    using System.IO;
     using System.Runtime.InteropServices;
     using System.Security;
     using System.Text;
-    using Microsoft.Win32.SafeHandles;
-    using XTask.FileSystem;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using Utility;
+    using XTask.Systems.File;
 
     internal static partial class NativeMethods
     {

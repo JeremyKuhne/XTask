@@ -14,7 +14,7 @@ namespace XTask.Interop
     using System.Security;
     using System.Text;
     using Utility;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
 
     internal static partial class NativeMethods
     {

@@ -7,8 +7,8 @@
 
 namespace XTask.Tests.FileSystem
 {
-    using XTask.FileSystem;
-    using Concrete = XTask.FileSystem.Concrete;
+    using XTask.Systems.File;
+    using Concrete = XTask.Systems.File.Concrete;
 
     public class TestFileCleaner : FileCleaner
     {

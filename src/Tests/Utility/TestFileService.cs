@@ -11,7 +11,7 @@ namespace XTask.Tests.Core.Utility
     using System;
     using System.IO;
     using System.Text;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
 
     public static class TestFileServices
     {

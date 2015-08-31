@@ -9,7 +9,7 @@ namespace XTask.Tests.FileSystem
 {
     using FluentAssertions;
     using System;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
     using Xunit;
 
     public class PathsTests

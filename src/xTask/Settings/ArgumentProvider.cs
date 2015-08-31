@@ -11,7 +11,8 @@ namespace XTask.Settings
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
+    using XTask.Systems.File.Concrete.Flex;
     using XTask.Utility;
 
     /// <summary>
@@ -34,7 +35,7 @@ namespace XTask.Settings
 
         public ArgumentProvider()
         {
-            this.FileService = new FileSystem.Concrete.Flex.FileService();
+            this.FileService = new FileService();
         }
 
         protected void AddTarget(string target)

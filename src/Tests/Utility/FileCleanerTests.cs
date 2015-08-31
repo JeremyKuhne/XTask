@@ -12,7 +12,7 @@ namespace XTask.Tests.Core.Utility
     using FluentAssertions;
     using NSubstitute;
     using XTask;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
     using Xunit;
 
     public class FileCleanerTests

@@ -11,8 +11,8 @@ namespace XTask.Tests.Interop
     using FluentAssertions;
     using System;
     using System.IO;
-    using XTask.FileSystem;
-    using XTask.FileSystem.Concrete.Flex;
+    using XTask.Systems.File;
+    using XTask.Systems.File.Concrete.Flex;
     using XTask.Interop;
     using Xunit;
 

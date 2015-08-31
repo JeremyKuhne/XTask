@@ -14,7 +14,8 @@ namespace XTask.Settings
     using System.Linq;
     using System.Xml;
     using XTask.ConfigurationSystem;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
+    using XTask.Systems.File.Concrete.Flex;
     using XTask.Utility;
 
     /// <summary>
@@ -32,7 +33,7 @@ namespace XTask.Settings
         static ClientSettingsView()
         {
             ClientSettingsView.ConfigurationManager = new ConfigurationSystem.Concrete.ConfigurationManagerWrapper();
-            ClientSettingsView.FileService = new FileSystem.Concrete.Flex.FileService();
+            ClientSettingsView.FileService = new FileService();
         }
 
         protected ClientSettingsView(string settingsSection, SettingsLocation settingsLocation)

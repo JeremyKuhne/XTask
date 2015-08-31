@@ -12,7 +12,7 @@ namespace XFile.Utility
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
     using XTask.Utility;
 
     public class FileContentComparer : IEqualityComparer<IFileInformation>

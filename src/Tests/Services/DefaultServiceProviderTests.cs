@@ -9,7 +9,7 @@ namespace XTask.Tests.Core.Services
 {
     using FluentAssertions;
     using XTask.ConsoleSystem;
-    using XTask.FileSystem;
+    using XTask.Systems.File;
     using XTask.Services;
     using Xunit;
 
