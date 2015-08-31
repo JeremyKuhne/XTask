@@ -12,7 +12,7 @@ namespace XTask.Tests.Core.Settings
     using System.Xml;
     using FluentAssertions;
     using NSubstitute;
-    using XTask.ConfigurationSystem;
+    using XTask.Systems.Configuration;
     using XTask.Systems.File;
     using XTask.Settings;
     using Xunit;
@@ -62,7 +62,7 @@ namespace XTask.Tests.Core.Settings
         public void GetConfigurationTest()
         {
             // We should get the expected configuration objects
-            ConfigurationSystem.IConfigurationManager configurationManager = Substitute.For<ConfigurationSystem.IConfigurationManager>();
+            IConfigurationManager configurationManager = Substitute.For<IConfigurationManager>();
             IConfiguration noneConfiguration = Substitute.For<IConfiguration>();
             IConfiguration allOtherConfigurations = Substitute.For<IConfiguration>();
             allOtherConfigurations.FilePath.Returns("TestFilePath");
@@ -100,7 +100,7 @@ namespace XTask.Tests.Core.Settings
         public void GetConfigurationPathTest()
         {
             // Configuration path should return the given values in the configuration manager
-            ConfigurationSystem.IConfigurationManager configurationManager = Substitute.For<ConfigurationSystem.IConfigurationManager>();
+            IConfigurationManager configurationManager = Substitute.For<IConfigurationManager>();
             IConfiguration configuration = Substitute.For<IConfiguration>();
             configuration.FilePath.Returns("TestFilePath");
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
@@ -113,7 +113,7 @@ namespace XTask.Tests.Core.Settings
         [Fact]
         public void InitializeCreatesSectionGroupTest()
         {
-            ConfigurationSystem.IConfigurationManager configurationManager = Substitute.For<ConfigurationSystem.IConfigurationManager>();
+            IConfigurationManager configurationManager = Substitute.For<IConfigurationManager>();
             IConfiguration configuration = Substitute.For<IConfiguration>();
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
             configuration.GetSectionGroup("userSettings").Returns((IConfigurationSectionGroup) => null);
@@ -130,7 +130,7 @@ namespace XTask.Tests.Core.Settings
             IConfigurationSectionGroup sectionGroup = Substitute.For<IConfigurationSectionGroup>();
             IConfiguration configuration = Substitute.For<IConfiguration>();
             configuration.GetSectionGroup("userSettings").Returns(sectionGroup);
-            ConfigurationSystem.IConfigurationManager configurationManager = Substitute.For<ConfigurationSystem.IConfigurationManager>();
+            IConfigurationManager configurationManager = Substitute.For<IConfigurationManager>();
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
 
             TestClientSettingsView.TestConfigurationManager = configurationManager;
@@ -171,7 +171,7 @@ namespace XTask.Tests.Core.Settings
             IConfigurationSectionGroup sectionGroup = Substitute.For<IConfigurationSectionGroup>();
             IConfiguration configuration = Substitute.For<IConfiguration>();
             configuration.GetSectionGroup("userSettings").Returns(sectionGroup);
-            ConfigurationSystem.IConfigurationManager configurationManager = Substitute.For<ConfigurationSystem.IConfigurationManager>();
+            IConfigurationManager configurationManager = Substitute.For<IConfigurationManager>();
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
 
             TestClientSettingsView.TestConfigurationManager = configurationManager;
