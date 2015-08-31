@@ -230,7 +230,7 @@ namespace XTask.Interop
             }
 
             [Flags]
-            private enum FinalPathFlags : uint
+            internal enum FinalPathFlags : uint
             {
                 /// <summary>
                 /// Return the normalized drive name. This is the default.
@@ -311,8 +311,8 @@ namespace XTask.Interop
             }
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364962.aspx
-            [DllImport("Kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-            private static extern uint GetFinalPathNameByHandle(SafeFileHandle hFile, [MarshalAs(UnmanagedType.LPTStr)] StringBuilder lpszFilePath, uint cchFilePath, FinalPathFlags dwFlags);
+            [DllImport("Kernel32.dll", EntryPoint = "GetFinalPathNameByHandle", CharSet = CharSet.Unicode, SetLastError = true)]
+            private static extern uint GetFinalPathNameByHandlePrivate(SafeFileHandle hFile, [MarshalAs(UnmanagedType.LPTStr)] StringBuilder lpszFilePath, uint cchFilePath, FinalPathFlags dwFlags);
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363858.aspx
             [DllImport("Kernel32.dll", EntryPoint = "CreateFileW", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -345,7 +345,12 @@ namespace XTask.Interop
                 return handle;
             }
 
-            internal static string GetFinalPathName(string path)
+            internal static string GetFinalPathName(SafeFileHandle fileHandle, FinalPathFlags finalPathFlags)
+            {
+                return NativeMethods.ConvertString("GetFinalPathNameByHandle", (value, sb) => FileManagement.GetFinalPathNameByHandlePrivate(fileHandle, sb, (uint)sb.Capacity, finalPathFlags));
+            }
+
+            internal static string GetFinalPathName(string path, FinalPathFlags finalPathFlags)
             {
                 if (path == null) return null;
                 string lookupPath = Paths.AddExtendedPathPrefix(path);
@@ -362,11 +367,11 @@ namespace XTask.Interop
                 {
                     if (file.IsInvalid)
                     {
-                        Debug.WriteLine(NativeErrorHelper.LastErrorToString(Marshal.GetLastWin32Error()));
-                        return null;
+                        int error = Marshal.GetLastWin32Error();
+                        throw GetIoExceptionForError(error, path);
                     }
 
-                    return NativeMethods.ConvertString(path, (value, sb) => FileManagement.GetFinalPathNameByHandle(file, sb, (uint)sb.Capacity, FinalPathFlags.FILE_NAME_NORMALIZED));
+                    return NativeMethods.ConvertString(path, (value, sb) => FileManagement.GetFinalPathNameByHandlePrivate(file, sb, (uint)sb.Capacity, finalPathFlags));
                 }
             }
 
@@ -681,7 +686,6 @@ namespace XTask.Interop
                 COPY_FILE_NO_BUFFERING = 0x00001000
             }
 
-
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363852.aspx
             // CopyFile calls CopyFileEx with COPY_FILE_FAIL_IF_EXISTS if fail if exists is set
             [DllImport("kernel32.dll", EntryPoint="CopyFileExW", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -710,7 +714,27 @@ namespace XTask.Interop
                     overwrite ? 0 : CopyFileFlags.COPY_FILE_FAIL_IF_EXISTS))
                 {
                     int error = Marshal.GetLastWin32Error();
-                    throw GetIoExceptionForError(error);
+                    throw GetIoExceptionForError(error, existingPath);
+                }
+            }
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363866(v=vs.85).aspx
+            [DllImport("kernel32.dll", EntryPoint = "CreateSymbolicLinkW", SetLastError = true, CharSet = CharSet.Unicode)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            private static extern bool CreateSymbolicLinkPrivate(
+                string lpSymlinkFileName,
+                string lpTargetFileName,
+                uint  dwFlags
+            );
+
+            private const uint SYMBOLIC_LINK_FLAG_DIRECTORY = 0x1;
+
+            internal static void CreateSymbolicLink(string symbolicLinkPath, string targetPath, bool targetIsDirectory = false)
+            {
+                if (!CreateSymbolicLinkPrivate(symbolicLinkPath, targetPath, targetIsDirectory ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0))
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    throw GetIoExceptionForError(error, symbolicLinkPath);
                 }
             }
         }

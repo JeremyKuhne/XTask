@@ -23,14 +23,14 @@ namespace XTask.Interop
         {
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365461.aspx
             [DllImport("kernel32.dll", EntryPoint = "QueryDosDeviceW", CharSet = CharSet.Unicode, SetLastError = true)]
-            private static extern uint QueryDosDevicePrivate(string lpDeviceName, IntPtr lpTargetPath, int ucchMax);
+            private static extern uint QueryDosDevicePrivate(string lpDeviceName, IntPtr lpTargetPath, uint ucchMax);
 
             public static IEnumerable<string> QueryDosDevice(string deviceName)
             {
                 if (deviceName != null) deviceName = Paths.RemoveTrailingSeparators(deviceName);
 
                 // Null will return everything defined- this list is quite large so set a higher initial allocation
-                using (NativeBuffer buffer = new NativeBuffer(deviceName == null ? 8192 : 256))
+                using (NativeBuffer buffer = new NativeBuffer(deviceName == null ? (uint)8192 : 256))
                 {
                     uint result = 0;
 
@@ -65,7 +65,7 @@ namespace XTask.Interop
                     // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
                     while ((result = GetLogicalDriveStringsPrivate((uint)buffer.Size / 2, buffer)) > buffer.Size / 2)
                     {
-                        buffer.Resize((int)result * 2);
+                        buffer.Resize(result * 2);
                     }
 
                     if (result == 0)
@@ -128,7 +128,7 @@ namespace XTask.Interop
                         switch (lastError)
                         {
                             case WinError.ERROR_MORE_DATA:
-                                buffer.Resize((int)returnLength * 2);
+                                buffer.Resize(returnLength * 2);
                                 break;
                             default:
                                 throw GetIoExceptionForError(lastError, volumeName);

@@ -10,7 +10,6 @@ namespace XTask.Interop
     using Microsoft.Win32.SafeHandles;
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Security;
@@ -287,7 +286,7 @@ namespace XTask.Interop
                 string name = null;
                 if (streamId.dwStreamNameSize > 0)
                 {
-                    buffer.EnsureCapacity((int)streamId.dwStreamNameSize);
+                    buffer.EnsureCapacity(streamId.dwStreamNameSize);
                     if (!BackupRead(
                         hFile: fileHandle,
                         lpBuffer: buffer,
@@ -377,8 +376,36 @@ namespace XTask.Interop
             return streams;
         }
 
-        [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern bool SetEnvironmentVariable(string lpName, string lpValue);
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/ms686206.aspx
+        [DllImport("kernel32", EntryPoint="SetEnvironmentVariableW", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetEnvironmentVariablePrivate(string lpName, string lpValue);
+
+        internal static void SetEnvironmentVariable(string name, string value) 
+        {
+            if (!SetEnvironmentVariablePrivate(name, value))
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw GetIoExceptionForError(error, name);
+            }
+        }
+
+        [DllImport("kernel32.dll", EntryPoint = "GetCurrentThread", SetLastError = true)]
+        internal static extern IntPtr GetCurrentThread();
+
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211.aspx
+        [DllImport("kernel32.dll", EntryPoint = "CloseHandle", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool CloseHandlePrivate(IntPtr handle);
+
+        internal static void CloseHandle(IntPtr handle)
+        {
+            if (!CloseHandlePrivate(handle))
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw GetIoExceptionForError(error);
+            }
+        }
 
         //[DllImport("ntdll.dll", SetLastError = true)]
         //public static extern uint NtQueryObject(IntPtr handle, ObjectInformationClass objectInformationClass,

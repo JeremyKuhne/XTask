@@ -10,12 +10,13 @@ namespace XTask.FileSystem.Concrete
     using Interop;
     using System;
     using System.Collections.Generic;
+    using System.Security.Principal;
 
     public abstract class ExtendedFileService
     {
         public string GetFinalPath(string path)
         {
-            return NativeMethods.FileManagement.GetFinalPathName(path);
+            return NativeMethods.FileManagement.GetFinalPathName(path, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED);
         }
 
         public string GetLongPath(string path)
@@ -67,6 +68,15 @@ namespace XTask.FileSystem.Concrete
         public IEnumerable<AlternateStreamInformation> GetAlternateStreams(string path)
         {
             return NativeMethods.GetAlternateStreams(path);
+        }
+
+        public bool CanCreateSymbolicLinks()
+        {
+            // Assuming that the current thread can replicate rights from the process
+            using (var processToken = NativeMethods.Authorization.OpenProcessToken(TokenAccessLevels.Query | TokenAccessLevels.Read))
+            {
+                return Interop.NativeMethods.Authorization.HasPrivilege(processToken, Privileges.SeCreateSymbolicLinkPrivilege);
+            }
         }
     }
 }

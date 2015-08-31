@@ -49,6 +49,8 @@ namespace XTask.Tests.FileSystem
             InlineData(@"\\?", false),
             InlineData(@"\\", false),
             InlineData(@"//", false),
+            InlineData(@"\", true),
+            InlineData(@"/", true),
             InlineData(@"C:Path", true),
             InlineData(@"C:\Path", false),
             InlineData(@"\\?\C:\Path", false),

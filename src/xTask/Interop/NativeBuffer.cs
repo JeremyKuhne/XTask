@@ -8,6 +8,7 @@
 namespace XTask.Interop
 {
     using System;
+    using System.IO;
     using System.Runtime.InteropServices;
 
     /// <summary>
@@ -44,6 +45,7 @@ namespace XTask.Interop
 
         private static IntPtr ProcessHeap = GetProcessHeap();
         private HeapHandle handle;
+        private UnmanagedMemoryStream stream;
 
         public IntPtr Handle
         {
@@ -53,9 +55,9 @@ namespace XTask.Interop
             }
         }
 
-        public int Size { get; private set; }
+        public uint Size { get; private set; }
 
-        public NativeBuffer(int initialSize = 0)
+        public NativeBuffer(uint initialSize = 0)
         {
             if (initialSize != 0)
             {
@@ -63,12 +65,26 @@ namespace XTask.Interop
             }
         }
 
+        public Stream GetStream()
+        {
+            return this.CreateStream();
+        }
+
+        private unsafe Stream CreateStream()
+        {
+            if (this.stream == null && this.Size > 0)
+            {
+                this.stream = new UnmanagedMemoryStream((byte*)this.Handle.ToPointer(), this.Size);
+            }
+            return this.stream;
+        }
+
         public static implicit operator IntPtr(NativeBuffer buffer)
         {
             return buffer.Handle;
         }
 
-        public IntPtr EnsureCapacity(int size)
+        public IntPtr EnsureCapacity(uint size)
         {
             if (size < this.Size)
                 return this.Handle;
@@ -76,7 +92,7 @@ namespace XTask.Interop
                 return this.Resize(size);
         }
 
-        public IntPtr Resize(int size)
+        public IntPtr Resize(uint size)
         {
 
             HeapHandle newHandle = this.Handle == IntPtr.Zero

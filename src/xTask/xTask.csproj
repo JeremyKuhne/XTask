@@ -90,9 +90,14 @@
     <Compile Include="FileSystem\IExtendedFileService.cs" />
     <Compile Include="FileSystem\VolumeInformation.cs" />
     <Compile Include="Interop\NativeBuffer.cs" />
+    <Compile Include="Interop\NativeMethods.Authorization.cs" />
     <Compile Include="Interop\NativeMethods.DirectoryManagement.cs" />
     <Compile Include="Interop\NativeMethods.Errors.cs" />
     <Compile Include="Interop\NativeMethods.VolumeManagement.cs" />
+    <Compile Include="Interop\Privileges.cs" />
+    <Compile Include="Interop\PrivilegeSetting.cs" />
+    <Compile Include="Interop\PrivilegeState.cs" />
+    <Compile Include="Interop\SafeCloseHandle.cs" />
     <Compile Include="Settings\ArgumentProvider.cs" />
     <Compile Include="Tasks\TaskInteraction.cs" />
     <Compile Include="Tasks\TaskService.cs" />

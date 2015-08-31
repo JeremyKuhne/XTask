@@ -12,6 +12,7 @@ namespace XTask.Tests.Interop
     using System;
     using System.IO;
     using XTask.FileSystem;
+    using XTask.FileSystem.Concrete.Flex;
     using XTask.Interop;
     using Xunit;
 
@@ -274,8 +275,10 @@ namespace XTask.Tests.Interop
             using (var cleaner = new TestFileCleaner(false))
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
-                string filePath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
-                File.WriteAllText(filePath, "FileExists");
+                string filePath = Paths.Combine(longPath, Path.GetRandomFileName());
+                IFileService system = new FileService();
+                system.CreateDirectory(longPath);
+                system.WriteAllText(filePath, "FileExists");
                 NativeMethods.FileManagement.FileExists(filePath).Should().BeTrue();
                 NativeMethods.FileManagement.PathExists(filePath).Should().BeTrue();
                 NativeMethods.FileManagement.DirectoryExists(filePath).Should().BeFalse();
@@ -330,6 +333,144 @@ namespace XTask.Tests.Interop
                 FileAttributes attributes;
                 NativeMethods.FileManagement.TryGetFileAttributes(longPath, out attributes).Should().BeFalse();
                 attributes.Should().Be((FileAttributes)0);
+            }
+        }
+
+        [Fact]
+        public void FinalPathNameLongPathPrefixRoundTripBehavior()
+        {
+            using (var cleaner = new TestFileCleaner(false))
+            {
+                string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
+                string filePath = Paths.Combine(longPath, Path.GetRandomFileName());
+                IFileService system = new FileService();
+                system.CreateDirectory(longPath);
+                system.WriteAllText(filePath, "FinalPathNameLongPathPrefixRoundTripBehavior");
+
+                // The wrapper for create file will add \\?\, we shouldn't get it back
+                using (var handle = NativeMethods.FileManagement.CreateFile(filePath, FileAccess.Read, FileShare.ReadWrite, FileMode.Open, 0))
+                {
+                    handle.IsInvalid.Should().BeFalse();
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED)
+                        .Should().Be(filePath);
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_OPENED)
+                        .Should().Be(filePath);
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_DOS)
+                        .Should().Be(filePath);
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_GUID)
+                        .Should().StartWith(@"Volume");
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_NT)
+                        .Should().StartWith(@"\Device\");
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_NONE)
+                        .Should().Be(filePath.Substring(2));
+                }
+            }
+        }
+
+        [Fact]
+        public void FinalPathNameBehavior()
+        {
+            using (var cleaner = new TestFileCleaner())
+            {
+                string filePath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
+                IFileService system = new FileService();
+                system.WriteAllText(filePath, "FinalPathNameBehavior");
+
+                using (var handle = NativeMethods.FileManagement.CreateFile(filePath.ToLower(), FileAccess.Read, FileShare.ReadWrite, FileMode.Open, 0))
+                {
+                    handle.IsInvalid.Should().BeFalse();
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED)
+                        .Should().Be(filePath);
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_OPENED)
+                        .Should().Be(filePath);
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_DOS)
+                        .Should().Be(filePath);
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_GUID)
+                        .Should().StartWith(@"Volume");
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_NT)
+                        .Should().StartWith(@"\Device\");
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_NONE)
+                        .Should().Be(filePath.Substring(2));
+                }
+            }
+        }
+
+
+        [Fact]
+        public void FinalPathNameLinkBehavior()
+        {
+            IExtendedFileService fileService = new FileService();
+            if (!fileService.CanCreateSymbolicLinks()) return;
+
+            // GetFinalPathName always points to the linked file
+            using (var cleaner = new TestFileCleaner())
+            {
+                string filePath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
+                fileService.WriteAllText(filePath, "CreateSymbolicLinkToFile");
+
+                string symbolicLink = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
+                NativeMethods.FileManagement.CreateSymbolicLink(symbolicLink, filePath);
+                NativeMethods.FileManagement.FileExists(symbolicLink).Should().BeTrue("symbolic link should exist");
+
+                using (var handle = NativeMethods.FileManagement.CreateFile(symbolicLink, FileAccess.Read, FileShare.ReadWrite, FileMode.Open, 0))
+                {
+                    handle.IsInvalid.Should().BeFalse();
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED)
+                        .Should().Be(filePath);
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_OPENED)
+                        .Should().Be(filePath);
+                }
+            }
+        }
+
+        [Fact]
+        public void CreateSymbolicLinkToFile()
+        {
+            using (var cleaner = new TestFileCleaner())
+            {
+                string filePath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
+                IExtendedFileService fileService = new FileService();
+                fileService.WriteAllText(filePath, "CreateSymbolicLinkToFile");
+
+                string symbolicLink = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
+                Action action = () => NativeMethods.FileManagement.CreateSymbolicLink(symbolicLink, filePath);
+
+                if (fileService.CanCreateSymbolicLinks())
+                {
+                    action();
+                    var attributes = NativeMethods.FileManagement.GetFileAttributes(symbolicLink);
+                    attributes.Should().HaveFlag(FileAttributes.ReparsePoint);
+                }
+                else
+                {
+                    // Can't create links unless you have admin rights SE_CREATE_SYMBOLIC_LINK_NAME SeCreateSymbolicLinkPrivilege
+                    action.ShouldThrow<IOException>().And.HResult.Should().Be(NativeErrorHelper.GetHResultForWindowsError(NativeMethods.WinError.ERROR_PRIVILEGE_NOT_HELD));
+                }
+            }
+        }
+
+        [Fact]
+        public void CreateSymbolicLinkToLongPathFile()
+        {
+            using (var cleaner = new TestFileCleaner())
+            {
+                string filePath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
+                IExtendedFileService fileService = new FileService();
+                fileService.WriteAllText(filePath, "CreateSymbolicLinkToFile");
+
+                string symbolicLink = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
+                Action action = () => NativeMethods.FileManagement.CreateSymbolicLink(symbolicLink, filePath);
+
+                if (fileService.CanCreateSymbolicLinks())
+                {
+                    action();
+                    var attributes = NativeMethods.FileManagement.GetFileAttributes(symbolicLink);
+                    attributes.Should().HaveFlag(FileAttributes.ReparsePoint);
+                }
+                else
+                {
+                    action.ShouldThrow<IOException>().And.HResult.Should().Be(NativeErrorHelper.GetHResultForWindowsError(NativeMethods.WinError.ERROR_PRIVILEGE_NOT_HELD));
+                }
             }
         }
     }
