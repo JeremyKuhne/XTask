@@ -9,8 +9,8 @@ namespace XTask.Services
 {
     using System;
     using System.Collections.Generic;
-    using XTask.ConsoleSystem;
-    using XTask.ConsoleSystem.Concrete;
+    using XTask.Systems.Console;
+    using XTask.Systems.Console.Concrete;
     using XTask.Systems.File;
     using XTask.Systems.File.Concrete.Flex;
 

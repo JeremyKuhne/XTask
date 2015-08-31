@@ -12,7 +12,7 @@ namespace XTask.Tests.Core.Utility
     using FluentAssertions;
     using NSubstitute;
     using XTask;
-    using XTask.ConsoleSystem;
+    using XTask.Systems.Console;
     using Xunit;
 
     public class ConsoleHelperTests

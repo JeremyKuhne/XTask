@@ -7,10 +7,10 @@
 
 namespace XTask.Tasks
 {
-    using ConsoleSystem;
     using Settings;
     using System;
     using System.Linq;
+    using Systems.Console;
     using XTask.Utility;
 
     /// <summary>

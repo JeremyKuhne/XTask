@@ -10,7 +10,7 @@ namespace XTask.Logging
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using XTask.ConsoleSystem;
+    using XTask.Systems.Console;
     using XTask.Utility;
 
     public class ConsoleLogger : TextTableLogger

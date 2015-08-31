@@ -35,7 +35,7 @@ namespace XTask.Utility
             /// <summary>
             /// Current hour from 0..59
             /// </summary>
-            public const int CurrentMinute = 37;
+            public const int CurrentMinute = 39;
         }
 
         public static class Strings
@@ -78,12 +78,12 @@ namespace XTask.Utility
             /// <summary>
             /// Current hour from 0..59
             /// </summary>
-            public const string CurrentMinute = "37";
+            public const string CurrentMinute = "39";
 
             /// <summary>
             /// Current two digit hour from 00..59
             /// </summary>
-            public const string CurrentTwoDigitMinute = "37";
+            public const string CurrentTwoDigitMinute = "39";
         }
     }
 }
