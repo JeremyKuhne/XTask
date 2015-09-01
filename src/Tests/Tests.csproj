@@ -108,6 +108,11 @@
     <Compile Include="Settings\ClientSettingsViewTests.cs" />
     <Compile Include="Settings\IPropertyTests.cs" />
     <Compile Include="Tasks\DefaultsTaskTests.cs" />
+    <Compile Include="Tasks\HelpTaskTests.cs" />
+    <Compile Include="Tasks\TaskExecutionTests.cs" />
+    <Compile Include="Tasks\TaskServiceTests.cs" />
+    <Compile Include="Tasks\TaskTests.cs" />
+    <Compile Include="Tasks\UnknownTaskTests.cs" />
     <Compile Include="Utility\ArgumentParserTests.cs" />
     <Compile Include="Utility\ArraysTests.cs" />
     <Compile Include="Utility\AssemblyResolverTests.cs" />

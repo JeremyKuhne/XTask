@@ -17,31 +17,17 @@ namespace XTask.Tasks
     /// </summary>
     public class HelpTask : ImplementedServiceProvider, ITask, ITaskDocumentation, ITaskExecutor
     {
-        private bool unknownCommand;
         private string generalHelp;
 
-        public HelpTask(bool unknownCommand, string generalHelp)
+        public HelpTask(string generalHelp)
         {
-            this.unknownCommand = unknownCommand;
             this.generalHelp = generalHelp;
         }
 
-        public ExitCode Execute(ITaskInteraction interaction)
+        public virtual ExitCode Execute(ITaskInteraction interaction)
         {
-            if (this.unknownCommand)
-            {
-                if (String.IsNullOrEmpty(interaction.Arguments.Command))
-                {
-                    interaction.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, XTaskStrings.ErrorNoParametersSpecified);
-                }
-                else
-                {
-                    interaction.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, XTaskStrings.UnknownCommand, interaction.Arguments.Command);
-                }
-            }
-
             interaction.Loggers[LoggerType.Result].WriteLine(WriteStyle.Fixed, this.generalHelp);
-            return this.unknownCommand ? ExitCode.InvalidArgument : ExitCode.Success;
+            return ExitCode.Success;
         }
 
         public void GetUsage(ITaskInteraction interaction)

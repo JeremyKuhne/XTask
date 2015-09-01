@@ -11,7 +11,7 @@ namespace XTask.Tasks
     using System.Diagnostics;
     using System.IO;
 
-    public abstract class TaskService : ITaskService
+    public class TaskService : ITaskService
     {
         private string applicationName;
         private string generalHelpString;
@@ -38,8 +38,8 @@ namespace XTask.Tasks
             // These commands are provided as part of the XTask framework
             registry.RegisterTask(() => new DefaultsTask(this.applicationName), "defaults");
             registry.RegisterTask(() => new InteractiveTask($"({this.applicationName}) ", registry), "interactive", "int", "i");
-            registry.RegisterTask(() => new HelpTask(unknownCommand: false, generalHelp: this.generalHelpString), "help", "?");
-            registry.RegisterDefaultTask(() => new HelpTask(unknownCommand: true, generalHelp: this.generalHelpString));
+            registry.RegisterTask(() => new HelpTask(this.generalHelpString), "help", "?");
+            registry.RegisterDefaultTask(() => new UnknownTask(this.generalHelpString));
         }
 
         protected virtual SimpleTaskRegistry GetTaskRegistry()

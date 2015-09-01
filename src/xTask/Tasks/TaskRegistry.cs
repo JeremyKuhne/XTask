@@ -42,7 +42,7 @@ namespace XTask.Tasks
                     }
                     else
                     {
-                        return new HelpTask(unknownCommand: true, generalHelp: XTaskStrings.HelpGeneral);
+                        return new UnknownTask(XTaskStrings.HelpGeneral);
                     }
                 }
                 return task();

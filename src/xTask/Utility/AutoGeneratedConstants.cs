@@ -25,17 +25,29 @@ namespace XTask.Utility
             /// <summary>
             /// Current day of the month 1..31
             /// </summary>
+<<<<<<< HEAD
             public const int CurrentDayOfMonth =  16;
+=======
+            public const int CurrentDayOfMonth =  1;
+>>>>>>> Break out unknown task, add more unit tests.
 
             /// <summary>
             /// Current hour from 0..23
             /// </summary>
+<<<<<<< HEAD
             public const int CurrentHour = 11;
+=======
+            public const int CurrentHour = 10;
+>>>>>>> Break out unknown task, add more unit tests.
 
             /// <summary>
             /// Current hour from 0..59
             /// </summary>
+<<<<<<< HEAD
             public const int CurrentMinute = 29;
+=======
+            public const int CurrentMinute = 32;
+>>>>>>> Break out unknown task, add more unit tests.
         }
 
         public static class Strings
@@ -58,32 +70,56 @@ namespace XTask.Utility
             /// <summary>
             /// Current day of the month 1..31
             /// </summary>
+<<<<<<< HEAD
             public const string CurrentDayOfMonth =  "16";
+=======
+            public const string CurrentDayOfMonth =  "1";
+>>>>>>> Break out unknown task, add more unit tests.
 
             /// <summary>
             /// Current two digit day of the month 01..31
             /// </summary>
+<<<<<<< HEAD
             public const string CurrentTwoDigitDayOfMonth =  "16";
+=======
+            public const string CurrentTwoDigitDayOfMonth =  "01";
+>>>>>>> Break out unknown task, add more unit tests.
 
             /// <summary>
             /// Current hour from 0..23
             /// </summary>
+<<<<<<< HEAD
             public const string CurrentHour = "11";
+=======
+            public const string CurrentHour = "10";
+>>>>>>> Break out unknown task, add more unit tests.
 
             /// <summary>
             /// Current two digit hour from 00..23
             /// </summary>
+<<<<<<< HEAD
             public const string CurrentTwoDigitHour = "11";
+=======
+            public const string CurrentTwoDigitHour = "10";
+>>>>>>> Break out unknown task, add more unit tests.
 
             /// <summary>
             /// Current hour from 0..59
             /// </summary>
+<<<<<<< HEAD
             public const string CurrentMinute = "29";
+=======
+            public const string CurrentMinute = "32";
+>>>>>>> Break out unknown task, add more unit tests.
 
             /// <summary>
             /// Current two digit hour from 00..59
             /// </summary>
+<<<<<<< HEAD
             public const string CurrentTwoDigitMinute = "29";
+=======
+            public const string CurrentTwoDigitMinute = "32";
+>>>>>>> Break out unknown task, add more unit tests.
         }
     }
 }
