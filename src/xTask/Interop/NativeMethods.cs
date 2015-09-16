@@ -42,18 +42,33 @@ namespace XTask.Interop
         //  Set this if the API uses GetLastError and use Marshal.GetLastWin32Error to get the value. If the API sets a condition
         //  that says it has an error, get the error before making other calls to avoid inadvertently having it overwritten.
         //
+        // [DllImport(ExactSpelling=true)]
+        //
+        //  Set this and the framework will avoid looking for an "A"/"W" version. (See NDirectMethodDesc::FindEntryPoint)
+        //
         // Strings:
         // --------
         //
-        // Specifying [DllImport(CharSet = CharSet.Unicode)] or [MarshalAs(UnmanagedType.LPWSTR)] will allow strings to be pinned,
-        // which improves interop performance.
+        // Strings are marshalled as LPTSTR by default, which means it will match the CharSet property in the DllImport attribute.
+        // The CharSet is, by default, ANSI, which isn't appropriate for anything post Windows 9x (which isn't supported by .NET
+        // anymore). As such, the mapping is actually as follows:
         //
-        // The CLR will always use CoTaskMemFree to free strings that are passed as [Out] or SysStringFree for strings that are marked
+        //      CharSet.None    -> Ansi
+        //      CharSet.Ansi    -> Ansi
+        //      CharSet.Unicode -> Unicode
+        //      CharSet.Auto    -> Unicode
+        //
+        // When the CharSet is Unicode or the argument is explicitly marked as [MarshalAs(UnmanagedType.LPWSTR)], and the string is
+        // is passed by value (not ref/out) the string can be pinned and used directly by managed code (rather than copied).
+        //
+        // The CLR will use CoTaskMemFree by default to free strings that are passed as [Out] or SysStringFree for strings that are marked
         // as BSTR.
         //
-        // (StringBuilder)
-        // By default it is passed as [In, Out]. Do NOT use 'out' or 'ref' as this will degrade perf (the CLR cannot pin the internal
-        // buffer). ALWAYS specify the capacity in advance and ensure it is large enough for API in question.
+        // (StringBuilder - ILWSTRBufferMarshaler)
+        // By default it is passed as [In, Out]. ALWAYS specify the capacity in advance and ensure it is large enough for API in question.
+        //
+        // StringBuilder is guaranteed to have a null that is not counted in the capacity. As such the count of characters when using as a
+        // character buffer is Capacity + 1.
 
         // Useful Interop Links
         // ====================
@@ -63,7 +78,11 @@ namespace XTask.Interop
         // "Data Type Ranges"                    http://msdn.microsoft.com/en-us/library/s3f49ktz.aspx
         // "MarshalAs Attribute"                 http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.marshalasattribute.aspx
         // "GetLastError and managed code"       http://blogs.msdn.com/b/adam_nathan/archive/2003/04/25/56643.aspx
+        // "Copying and Pinning"                 https://msdn.microsoft.com/en-us/library/23acw07k.aspx
+        // "Default Marshalling for Strings"     https://msdn.microsoft.com/en-us/library/s9ts558h.aspx
         // "Marshalling between Managed and Unmanaged Code" (MSDN Magazine January 2008)
+        //
+        // PInvoke code is in dllimport, method, and ilmarshalers in coreclr\src\vm.
 
         private static StringBuilderCache stringCache = new StringBuilderCache(256);
 
@@ -377,11 +396,11 @@ namespace XTask.Interop
         }
 
         // https://msdn.microsoft.com/en-us/library/windows/desktop/ms686206.aspx
-        [DllImport("kernel32", EntryPoint="SetEnvironmentVariableW", CharSet = CharSet.Unicode, SetLastError = true)]
+        [DllImport("kernel32", EntryPoint = "SetEnvironmentVariableW", CharSet = CharSet.Unicode, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool SetEnvironmentVariablePrivate(string lpName, string lpValue);
 
-        internal static void SetEnvironmentVariable(string name, string value) 
+        internal static void SetEnvironmentVariable(string name, string value)
         {
             if (!SetEnvironmentVariablePrivate(name, value))
             {
