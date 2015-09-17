@@ -58,7 +58,7 @@ namespace XTask.Tests.FileSystem
             InlineData(@"X", true)]
         public void IsPathRelative(string path, bool expected)
         {
-            Paths.IsPathRelative(path).Should().Be(expected);
+            Paths.IsRelative(path).Should().Be(expected);
         }
 
         [Theory,
@@ -133,6 +133,8 @@ namespace XTask.Tests.FileSystem
             InlineData(@"/\", null),
             InlineData(@"\\Foo\Bar", @"\\Foo\Bar"),
             InlineData(@"\\Foo\Bar\", @"\\Foo\Bar\"),
+            InlineData(@"\\Foo\Bar\Foo", @"\\Foo\Bar\"),
+            InlineData(@"\\Foo\Bar\Foo.txt", @"\\Foo\Bar\"),
             InlineData(@"\\?\\Foo\Bar", null),
             InlineData(@"\\?\Foo\Bar", @"\\?\Foo\"),
             InlineData(@"\\?\Foo\Bar\", @"\\?\Foo\"),
@@ -159,7 +161,7 @@ namespace XTask.Tests.FileSystem
             InlineData(@"\\.\", null)]
         public void GetPathRoot(string path, string expected)
         {
-            Paths.GetPathRoot(path).Should().Be(expected, "Passed path was {0}", path);
+            Paths.GetRoot(path).Should().Be(expected, "Passed path was {0}", path);
         }
 
         [Theory,
@@ -172,9 +174,25 @@ namespace XTask.Tests.FileSystem
             InlineData(@"\\LocalHost\Share\", @"\\LocalHost\Share\"),
             InlineData(@"\\LocalHost\Share\Foo", @"\\LocalHost\Share\"),
             InlineData(@"\\LocalHost\Share\Foo.txt", @"\\LocalHost\Share\")]
-        public void GetDirectoryNameOrRoot(string path, string expected)
+        public void GetDirectory(string path, string expected)
         {
-            Paths.GetDirectoryPathOrRoot(path).Should().Be(expected, "Passed path was {0}", path);
+            Paths.GetDirectory(path).Should().Be(expected, "Passed path was {0}", path);
+        }
+
+        [Theory,
+            InlineData(null, null),
+            InlineData(@"C:\", null),
+            InlineData(@"C:\Foo", @"Foo"),
+            InlineData(@"C:\Foo.txt", @"Foo.txt"),
+            InlineData(@"C:\Foo\", @"Foo"),
+            InlineData(@"C:\Foo\Foo.txt", @"Foo.txt"),
+            InlineData(@"\\LocalHost\Share", null),
+            InlineData(@"\\LocalHost\Share\", null),
+            InlineData(@"\\LocalHost\Share\Foo", @"Foo"),
+            InlineData(@"\\LocalHost\Share\Foo.txt", @"Foo.txt")]
+        public void GetFileOrDirectoryName(string path, string expected)
+        {
+            Paths.GetFileOrDirectoryName(path).Should().Be(expected, "Passed path was {0}", path);
         }
 
         [Theory,
@@ -207,7 +225,7 @@ namespace XTask.Tests.FileSystem
                     ]
         public void FindCommonPathRoots(string[] paths, string[] expected)
         {
-            Paths.FindCommonPathRoots(paths).Should().BeEquivalentTo(expected);
+            Paths.FindCommonRoots(paths).Should().BeEquivalentTo(expected);
         }
     }
 }

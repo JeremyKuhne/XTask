@@ -12,10 +12,8 @@ namespace XFile.Tasks
     using XTask.Logging;
     using XTask.Utility;
 
-    public class EchoTask : FileTask
+    public class EchoTask : FileTaskWithTarget
     {
-        public EchoTask() : base(requiresTarget: true) { }
-
         protected override ExitCode ExecuteFileTask()
         {
             string echo = String.Join(" ", Arguments.Targets);
@@ -23,7 +21,7 @@ namespace XFile.Tasks
             string target = Arguments.GetOption<string>("target", "t");
             if (target != null)
             {
-                target = FileService.GetFullPath(target, CurrentDirectory.GetCurrentDirectory());
+                target = GetFullPath(target);
                 FileService.WriteAllText(target, echo);
             }
             else

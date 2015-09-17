@@ -26,7 +26,7 @@ namespace XFile.Utility
 
         public void SetCurrentDirectory(string directory)
         {
-            if (Paths.IsPathRelative(directory))
+            if (Paths.IsRelative(directory))
             {
                 throw new InvalidOperationException();
             }

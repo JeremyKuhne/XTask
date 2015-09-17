@@ -23,11 +23,9 @@ namespace XFile.Tasks
             }
             target = Paths.AddTrailingSeparator(target);
 
-            var fileService = this.GetService<IFileService>();
-            string basePath = CurrentDirectory.GetCurrentDirectory();
-            string fullPath = fileService.GetFullPath(target, basePath);
+            string fullPath = GetFullPath(target);
 
-            IDirectoryInformation directoryInfo = fileService.GetDirectoryInfo(fullPath);
+            IDirectoryInformation directoryInfo = this.FileService.GetDirectoryInfo(fullPath);
             CurrentDirectory.SetCurrentDirectory(fullPath);
             this.Loggers[LoggerType.Result].WriteLine(fullPath);
 

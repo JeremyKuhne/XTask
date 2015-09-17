@@ -10,13 +10,11 @@ namespace XFile.Tasks
     using XTask.Logging;
     using XTask.Utility;
 
-    public class ShortPathTask : FileTask
+    public class ShortPathTask : FileTaskWithTarget
     {
-        public ShortPathTask() : base(requiresTarget: true) { }
-
         protected override ExitCode ExecuteFileTask()
         {
-            this.Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetShortPath(FileService.GetFullPath(this.Arguments.Target)));
+            this.Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetShortPath(GetFullTargetPath()));
             return ExitCode.Success;
         }
     }

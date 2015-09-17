@@ -78,7 +78,7 @@ namespace XTask.Systems.File
         /// assume that rooted paths (Path.IsPathRooted) are not relative.  This isn't the case.
         /// </remarks>
         /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="path"/> is null.</exception>
-        public static bool IsPathRelative(string path)
+        public static bool IsRelative(string path)
         {
             if (path == null) { throw new ArgumentNullException("path"); }
             if (path.Length < 2)
@@ -166,32 +166,55 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns the directory path for the given path or the root if already at the root (e.g. "C:\", "\\Server\Share", etc.).
+        /// Returns the path up to the last directory separator or the root if already at the root (e.g. "C:\", "\\Server\Share\", etc.).
         /// </summary>
-        /// <returns>The directory or null if the path is unknown.</returns>
-        public static string GetDirectoryPathOrRoot(string path)
+        /// <returns>The directory path / root or null if the path is unknown.</returns>
+        public static string GetDirectory(string path)
+        {
+            int directoryLength = GetDirectoryOrRootLength(path);
+            if (directoryLength < 0) return null;
+
+            path = path.Substring(0, directoryLength);
+            return Paths.AddTrailingSeparator(path);
+        }
+
+        private static int GetDirectoryOrRootLength(string path, bool skipTrailingSlash = false)
         {
             int rootLength;
             PathFormat pathFormat = Paths.GetPathFormat(path, out rootLength);
-            if (pathFormat == PathFormat.UnknownFormat) return null;
+            if (pathFormat == PathFormat.UnknownFormat) return -1;
 
-            // "Normal" path- find the last trailing slash (past any possible \\ for a unc)
-            // (directly copied from the framework code for Path.GetDirectoryName)
             int length = path.Length;
+            if (rootLength == path.Length) return length;
+            if (skipTrailingSlash && EndsInDirectorySeparator(path)) length--;
+
             while (((length > rootLength)
                 && (path[--length] != Path.DirectorySeparatorChar))
                 && (path[length] != Path.AltDirectorySeparatorChar))
             {
             }
 
-            path = path.Substring(0, length);
-            return Paths.AddTrailingSeparator(path);
+            return length;
+        }
+
+        /// <summary>
+        /// Returns the file or directory name for the given path or null if already at the root or the path is unknown.
+        /// </summary>
+        public static string GetFileOrDirectoryName(string path)
+        {
+            int directoryLength = GetDirectoryOrRootLength(path, skipTrailingSlash: true);
+            if (directoryLength < 0) return null;
+
+            // Just a root? Return it.
+            if (directoryLength == path.Length) return null;
+            if (IsDirectorySeparator(path[directoryLength])) directoryLength++;
+            return EndsInDirectorySeparator(path) ? path.Substring(directoryLength, path.Length - directoryLength - 1) : path.Substring(directoryLength);
         }
 
         /// <summary>
         /// Finds the topmost directories for the specified paths that contain the paths passed in.
         /// </summary>
-        public static IEnumerable<string> FindCommonPathRoots(IEnumerable<string> paths)
+        public static IEnumerable<string> FindCommonRoots(IEnumerable<string> paths)
         {
             HashSet<string> roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             if (paths == null) { return roots; }
@@ -200,7 +223,7 @@ namespace XTask.Systems.File
             {
                 if (String.IsNullOrWhiteSpace(path)) continue;
 
-                string directory = Paths.GetDirectoryPathOrRoot(path);
+                string directory = Paths.GetDirectory(path);
                 if (!roots.Contains(directory))
                 {
                     // Remove any directories that start with this directory
@@ -231,7 +254,7 @@ namespace XTask.Systems.File
         /// <summary>
         /// Returns the root for the given path or null if the path format can't be determined.
         /// </summary>
-        public static string GetPathRoot(string path)
+        public static string GetRoot(string path)
         {
             int rootLength;
             GetPathFormat(path, out rootLength);
@@ -242,11 +265,30 @@ namespace XTask.Systems.File
         /// <summary>
         /// Returns the length of the root for the given path or -1 if the path format can't be determined.
         /// </summary>
-        public static int GetPathRootLength(string path)
+        public static int GetRootLength(string path)
         {
             int rootLength;
             GetPathFormat(path, out rootLength);
             return rootLength;
+        }
+
+        /// <summary>
+        /// Puts the root from the source path onto the target path if needed.
+        /// </summary>
+        public static string ReplaceRoot(string sourcePath, string targetPath)
+        {
+            if (sourcePath == null) throw new ArgumentNullException(nameof(sourcePath));
+            if (targetPath == null) throw new ArgumentNullException(nameof(targetPath));
+
+            int sourceRoot = GetRootLength(sourcePath);
+            if (Strings.StartsWithCount(sourcePath, targetPath, sourceRoot, StringComparison.OrdinalIgnoreCase))
+                return targetPath;
+
+            int targetRoot = GetRootLength(targetPath);
+            var sb = stringCache.Acquire();
+            sb.Append(sourcePath, 0, sourceRoot);
+            sb.Append(targetPath, targetRoot, targetPath.Length - targetRoot);
+            return stringCache.ToStringAndRelease(sb);
         }
 
         /// <summary>
@@ -380,7 +422,7 @@ namespace XTask.Systems.File
         /// <summary>
         /// Returns true if the path begins with a directory separator.
         /// </summary>
-        public static bool PathBeginsWithDirectorySeparator(string path)
+        public static bool BeginsWithDirectorySeparator(string path)
         {
             if (String.IsNullOrEmpty(path))
             {
@@ -393,7 +435,7 @@ namespace XTask.Systems.File
         /// <summary>
         /// Returns true if the path ends in a directory separator.
         /// </summary>
-        public static bool PathEndsInDirectorySeparator(string path)
+        public static bool EndsInDirectorySeparator(string path)
         {
             if (String.IsNullOrEmpty(path))
             {
@@ -420,7 +462,7 @@ namespace XTask.Systems.File
         public static string AddTrailingSeparator(string path)
         {
             if (path == null) { throw new ArgumentNullException(nameof(path)); }
-            if (Paths.PathEndsInDirectorySeparator(path))
+            if (Paths.EndsInDirectorySeparator(path))
             {
                 return path;
             }
@@ -438,7 +480,7 @@ namespace XTask.Systems.File
         public static string RemoveTrailingSeparators(string path)
         {
             if (path == null) { throw new ArgumentNullException(nameof(path)); }
-            if (Paths.PathEndsInDirectorySeparator(path))
+            if (Paths.EndsInDirectorySeparator(path))
             {
                 return path.TrimEnd(Paths.directorySeparatorCharacters);
             }
@@ -460,7 +502,7 @@ namespace XTask.Systems.File
         /// Adds the extended path prefix (\\?\) if not already present.
         /// </summary>
         /// <param name="addIfUnderLegacyMaxPath">If false, will not add the extended prefix unless needed.</param>
-        public static string AddExtendedPathPrefix(string path, bool addIfUnderLegacyMaxPath = false)
+        public static string AddExtendedPrefix(string path, bool addIfUnderLegacyMaxPath = false)
         {
             if (IsExtended(path))
                 return path;
@@ -489,7 +531,7 @@ namespace XTask.Systems.File
             if (path2 == null) throw new ArgumentNullException(nameof(path2));
 
             StringBuilder sb = stringCache.Acquire();
-            if (!PathEndsInDirectorySeparator(path1) && !PathBeginsWithDirectorySeparator(path2))
+            if (!EndsInDirectorySeparator(path1) && !BeginsWithDirectorySeparator(path2))
             {
                 sb.Append(path1);
                 sb.Append(DirectorySeparator);

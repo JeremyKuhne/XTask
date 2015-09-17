@@ -24,9 +24,9 @@ namespace XTask.Systems.File.Concrete.DotNet
             this.fileInfo = fileInfo;
         }
 
-        public virtual long Length
+        public virtual ulong Length
         {
-            get { return this.fileInfo.Length; }
+            get { return (ulong)this.fileInfo.Length; }
         }
 
         public virtual IDirectoryInformation Directory

@@ -8,18 +8,14 @@
 namespace XFile.Tasks
 {
     using System;
-    using XTask.Systems.File;
     using XTask.Logging;
     using XTask.Utility;
 
-    public class ListStreamsTask : FileTask
+    public class ListStreamsTask : FileTaskWithTarget
     {
-        public ListStreamsTask() : base(requiresTarget: true) { }
-
         protected override ExitCode ExecuteFileTask()
         {
-            string target = FileService.GetFullPath(Arguments.Target, CurrentDirectory.GetCurrentDirectory());
-            foreach (var stream in ExtendedFileService.GetAlternateStreams(target))
+            foreach (var stream in ExtendedFileService.GetAlternateStreams(GetFullTargetPath()))
             {
                 this.Loggers[LoggerType.Result].WriteLine($"Stream '{stream.Name}', Size {stream.Size}");
             }

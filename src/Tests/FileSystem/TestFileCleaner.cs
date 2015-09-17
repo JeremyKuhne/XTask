@@ -14,7 +14,7 @@ namespace XTask.Tests.FileSystem
     {
         bool useDotNet;
 
-        public TestFileCleaner(bool useDotNet = true)
+        public TestFileCleaner(bool useDotNet = false)
             : base ("XTaskTests", useDotNet ? (IFileService) new Concrete.DotNet.FileService() : new Concrete.Flex.FileService())
         {
             this.useDotNet = useDotNet;

@@ -12,13 +12,11 @@ namespace XFile.Tasks
     using XTask.Logging;
     using XTask.Utility;
 
-    public class GetVolumeInformationTask : FileTask
+    public class GetVolumeInformationTask : FileTaskWithTarget
     {
-        public GetVolumeInformationTask() : base(requiresTarget: true) { }
-
         protected override ExitCode ExecuteFileTask()
         {
-            VolumeInformation info = ExtendedFileService.GetVolumeInformation(this.Arguments.Target);
+            VolumeInformation info = ExtendedFileService.GetVolumeInformation(Arguments.Target);
 
             Table table = Table.Create(new ColumnFormat(1, ContentVisibility.ShowAll, Justification.Right), new ColumnFormat(1));
             table.HasHeader = false;

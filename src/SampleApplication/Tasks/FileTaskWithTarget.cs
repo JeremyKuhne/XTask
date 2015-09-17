@@ -7,16 +7,18 @@
 
 namespace XFile.Tasks
 {
+    using System;
     using XTask.Logging;
     using XTask.Utility;
 
-    public class GetVolumePathNamesTask : FileTaskWithTarget
+    public abstract class FileTaskWithTarget : FileTask
     {
-        protected override ExitCode ExecuteFileTask()
+        protected override ExitCode CheckPrerequisites()
         {
-            foreach (string pathName in ExtendedFileService.GetVolumePathNames(this.Arguments.Target))
+            if (String.IsNullOrWhiteSpace(this.Arguments.Target))
             {
-                this.Loggers[LoggerType.Result].WriteLine(pathName);
+                this.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, XFileStrings.RequiresTargetError);
+                return ExitCode.InvalidArgument;
             }
 
             return ExitCode.Success;

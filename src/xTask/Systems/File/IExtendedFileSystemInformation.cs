@@ -7,24 +7,26 @@
 
 namespace XTask.Systems.File
 {
-    /// <summary>
-    /// Information about a file
-    /// </summary>
-    public interface IFileInformation : IFileSystemInformation
+    using System;
+
+    public interface IExtendedFileSystemInformation
     {
         /// <summary>
-        /// Length of the file, in bytes
+        /// Serial number of the volume that contains the file
         /// </summary>
-        ulong Length { get; }
+        uint VolumeSerialNumber { get; }
 
         /// <summary>
-        /// Directory info for the directory the file resides in
+        /// Number of links to the file
         /// </summary>
-        IDirectoryInformation Directory { get; }
+        uint NumberOfLinks { get; }
 
         /// <summary>
-        /// MD5 hash of the file contents.
+        /// File index
         /// </summary>
-        byte[] MD5Hash { get; }
+        /// <remarks>
+        /// ReFS uses a 16 byte ID (FILE_ID_128)
+        /// </remarks>
+        ulong FileIndex { get; }
     }
 }

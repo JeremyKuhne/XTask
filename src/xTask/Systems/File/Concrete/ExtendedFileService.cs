@@ -14,9 +14,9 @@ namespace XTask.Systems.File.Concrete
 
     public abstract class ExtendedFileService
     {
-        public string GetFinalPath(string path)
+        public string GetFinalPath(string path, bool resolveLinks = false)
         {
-            return NativeMethods.FileManagement.GetFinalPathName(path, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED);
+            return NativeMethods.FileManagement.GetFinalPathName(path, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED, resolveLinks);
         }
 
         public string GetLongPath(string path)

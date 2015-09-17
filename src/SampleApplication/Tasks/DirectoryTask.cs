@@ -31,9 +31,9 @@ namespace XFile.Tasks
 
             int directoryCount = 0;
             int fileCount = 0;
-            long totalSize = 0;
+            ulong totalSize = 0;
 
-            IDirectoryInformation directory = fileService.GetDirectoryInfo(CurrentDirectory.GetCurrentDirectory());
+            IDirectoryInformation directory = fileService.GetDirectoryInfo(GetFullTargetPath());
             foreach (var subdir in directory.EnumerateDirectories().OrderBy(i => i.Name))
             {
                 directoryCount++;

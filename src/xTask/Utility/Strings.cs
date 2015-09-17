@@ -293,5 +293,13 @@ namespace XTask.Utility
 
             return strings;
         }
+
+        /// <summary>
+        /// Simple wrapper for String.Compare to compare the beginning of strings.
+        /// </summary>
+        public static bool StartsWithCount(string first, string second, int count, StringComparison comparisonType)
+        {
+            return String.Compare(first, 0, second, 0, count, comparisonType) == 0;
+        }
     }
 }

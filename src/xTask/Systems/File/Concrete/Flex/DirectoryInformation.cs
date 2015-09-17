@@ -8,14 +8,12 @@
 namespace XTask.Systems.File.Concrete.Flex
 {
     using Interop;
+    using Microsoft.Win32.SafeHandles;
     using System;
     using System.Collections.Generic;
 
     internal class DirectoryInformation : FileSystemInformation, IDirectoryInformation
     {
-        // True if this was populated from attributes (can't find file on volumes, e.g. C:\)
-        bool fromAttributes = false;
-
         private DirectoryInformation(IFileService fileService)
             : base(fileService)
         {
@@ -23,27 +21,29 @@ namespace XTask.Systems.File.Concrete.Flex
 
         new static internal IFileSystemInformation Create(NativeMethods.FileManagement.FindResult findResult, IFileService fileService)
         {
-            if (!findResult.Attributes.HasFlag(System.IO.FileAttributes.Directory)) throw new ArgumentOutOfRangeException(nameof(findResult));
+            if ((findResult.Attributes & System.IO.FileAttributes.Directory) == 0) throw new ArgumentOutOfRangeException(nameof(findResult));
 
-            var info = new DirectoryInformation(fileService);
-            info.PopulateData(findResult);
-            return info;
+            var directoryInfo = new DirectoryInformation(fileService);
+            directoryInfo.PopulateData(findResult);
+            return directoryInfo;
         }
 
         new static internal IFileSystemInformation Create(string path, System.IO.FileAttributes attributes, IFileService fileService)
         {
-            if (!attributes.HasFlag(System.IO.FileAttributes.Directory)) throw new ArgumentOutOfRangeException(nameof(attributes));
+            if ((attributes & System.IO.FileAttributes.Directory) == 0) throw new ArgumentOutOfRangeException(nameof(attributes));
 
-            var info = new DirectoryInformation(fileService);
-            info.PopulateData(path, attributes);
-            info.fromAttributes = true;
-
-            return info;
+            var directoryInfo = new DirectoryInformation(fileService);
+            directoryInfo.PopulateData(path, attributes);
+            return directoryInfo;
         }
 
-        protected override void Refresh(bool fromAttributes)
+        new internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info, IFileService fileService)
         {
-            base.Refresh(this.fromAttributes);
+            if ((info.dwFileAttributes & System.IO.FileAttributes.Directory) == 0) throw new ArgumentOutOfRangeException(nameof(info));
+
+            var directoryInfo = new DirectoryInformation(fileService);
+            directoryInfo.PopulateData(originalPath, fileHandle, info);
+            return directoryInfo;
         }
 
         protected override void PopulateData(NativeMethods.FileManagement.FindResult findResult)

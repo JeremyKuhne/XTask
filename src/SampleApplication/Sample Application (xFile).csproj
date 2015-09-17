@@ -69,7 +69,9 @@
     <Compile Include="Tasks\ChangeDirectoryTask.cs" />
     <Compile Include="Tasks\CopyTask.cs" />
     <Compile Include="Tasks\EchoTask.cs" />
+    <Compile Include="Tasks\FileTaskWithTarget.cs" />
     <Compile Include="Tasks\FileTask.cs" />
+    <Compile Include="Tasks\GetFileInfoTask.cs" />
     <Compile Include="Tasks\GetVolumePathNameTask.cs" />
     <Compile Include="Tasks\ListStreamsTask.cs" />
     <Compile Include="Tasks\PrintCurrentDirectoryTask.cs" />

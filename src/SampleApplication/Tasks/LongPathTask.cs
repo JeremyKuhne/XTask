@@ -10,11 +10,11 @@ namespace XFile.Tasks
     using XTask.Logging;
     using XTask.Utility;
 
-    public class LongPathTask : FileTask
+    public class LongPathTask : FileTaskWithTarget
     {
         protected override ExitCode ExecuteFileTask()
         {
-            this.Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetLongPath(FileService.GetFullPath(this.Arguments.Target)));
+            this.Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetLongPath(GetFullTargetPath()));
             return ExitCode.Success;
         }
     }

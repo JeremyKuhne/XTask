@@ -39,6 +39,7 @@ namespace XFile
             registry.RegisterTask(() => new ShortPathTask(), "shortpath", "sp");
             registry.RegisterTask(() => new FinalPathTask(), "finalpath", "final");
             registry.RegisterTask(() => new GetVolumeInformationTask(), "getvolumeinformation", "getvolumeinfo", "gvi");
+            registry.RegisterTask(() => new GetFileInfoTask(), "getfileinfo", "gfi");
             registry.RegisterTask(() => new MakeDirectoryTask(), "makedirectory", "makedir", "md");
             registry.RegisterTask(() => new QueryDosDeviceTask(), "querydosdevice", "qdd");
             registry.RegisterTask(() => new GetLogicalDriveStringsTask(), "getlogicaldrivestrings", "glds");

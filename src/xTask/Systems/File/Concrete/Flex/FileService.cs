@@ -38,7 +38,7 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
             path = this.GetFullPath(path);
-            int pathRootLength = Paths.GetPathRootLength(path);
+            int pathRootLength = Paths.GetRootLength(path);
             if (pathRootLength < 0) throw NativeMethods.GetIoExceptionForError(NativeMethods.WinError.ERROR_BAD_PATHNAME);
 
             int i = pathRootLength;
@@ -152,7 +152,7 @@ namespace XTask.Systems.File.Concrete.Flex
         public string GetFullPath(string path, string basePath = null)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
-            if (basePath == null || !Paths.IsPathRelative(path))
+            if (basePath == null || !Paths.IsRelative(path))
             {
                 // Fixed, or we don't have a base path
                 return NativeMethods.FileManagement.GetFullPathName(path);

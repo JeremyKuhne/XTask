@@ -22,7 +22,7 @@ namespace XTask.Tests.FileSystem
         [Fact]
         public void CreateInfoForRootDrive()
         {
-            string driveRoot = Paths.GetPathRoot(Path.GetTempPath());
+            string driveRoot = Paths.GetRoot(Path.GetTempPath());
             FileService fileService = new FileService();
 
             var info = fileService.GetPathInfo(driveRoot);

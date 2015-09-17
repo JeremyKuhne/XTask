@@ -112,6 +112,7 @@
     <Compile Include="Interop\PrivilegeState.cs" />
     <Compile Include="Interop\SafeCloseHandle.cs" />
     <Compile Include="Settings\ArgumentProvider.cs" />
+    <Compile Include="Systems\File\IExtendedFileSystemInformation.cs" />
     <Compile Include="Tasks\UnknownTask.cs" />
     <Compile Include="Tasks\TaskInteraction.cs" />
     <Compile Include="Tasks\TaskService.cs" />

@@ -86,41 +86,37 @@ namespace XTask.Interop
 
         private static StringBuilderCache stringCache = new StringBuilderCache(256);
 
-        /// <summary>
-        /// Delegate that returns zero for failure or the length of the buffer used/needed.
-        /// </summary>
-        private delegate uint ConvertStringWithBuffer(string input, StringBuilder buffer);
 
         /// <summary>
-        /// Uses the stringbuilder cache and increases the buffer size if needed.
+        /// Uses the stringbuilder cache and increases the buffer size if needed. Handles path prepending as needed.
         /// </summary>
-        private static string ConvertString(string value, ConvertStringWithBuffer converter, bool utilizeExtendedSyntax = true)
+        private static string BufferPathInvoke(string path, Func<string, StringBuilder, uint> invoker, bool utilizeExtendedSyntax = true)
         {
-            if (value == null) return null;
+            if (path == null) return null;
 
-            bool hadExtendedPrefix = value.StartsWith(Paths.ExtendedPathPrefix, StringComparison.Ordinal);
+            bool hadExtendedPrefix = path.StartsWith(Paths.ExtendedPathPrefix, StringComparison.Ordinal);
             bool addedExtendedPrefix = false;
-            if (utilizeExtendedSyntax && !hadExtendedPrefix && (value.Length > Paths.MaxPath))
+            if (utilizeExtendedSyntax && !hadExtendedPrefix && (path.Length > Paths.MaxPath))
             {
-                value = Paths.ExtendedPathPrefix + value;
+                path = Paths.ExtendedPathPrefix + path;
                 addedExtendedPrefix = true;
             }
 
             StringBuilder buffer = NativeMethods.stringCache.Acquire();
-            uint returnValue = converter(value, buffer);
+            uint returnValue = invoker(path, buffer);
 
             while (returnValue > (uint)buffer.Capacity)
             {
                 // Need more room for the output string
                 buffer.EnsureCapacity((int)returnValue);
-                returnValue = converter(value, buffer);
+                returnValue = invoker(path, buffer);
             }
 
             if (returnValue == 0)
             {
                 // Failed
                 int error = Marshal.GetLastWin32Error();
-                throw GetIoExceptionForError(error, value);
+                throw GetIoExceptionForError(error, path);
             }
 
             bool nowHasExtendedPrefix = buffer.StartsWithOrdinal(Paths.ExtendedPathPrefix);
@@ -128,6 +124,31 @@ namespace XTask.Interop
             {
                 // Remove the prefix
                 buffer.Remove(0, Paths.ExtendedPathPrefix.Length);
+            }
+
+            return NativeMethods.stringCache.ToStringAndRelease(buffer);
+        }
+
+        /// <summary>
+        /// Uses the stringbuilder cache and increases the buffer size if needed.
+        /// </summary>
+        private static string BufferInvoke(Func<StringBuilder, uint> invoker, string path = null)
+        {
+            StringBuilder buffer = NativeMethods.stringCache.Acquire();
+            uint returnValue = invoker(buffer);
+
+            while (returnValue > (uint)buffer.Capacity)
+            {
+                // Need more room for the output string
+                buffer.EnsureCapacity((int)returnValue);
+                returnValue = invoker(buffer);
+            }
+
+            if (returnValue == 0)
+            {
+                // Failed
+                int error = Marshal.GetLastWin32Error();
+                throw GetIoExceptionForError(error, path);
             }
 
             return NativeMethods.stringCache.ToStringAndRelease(buffer);
@@ -376,7 +397,7 @@ namespace XTask.Interop
         internal static IEnumerable<AlternateStreamInformation> GetAlternateStreams(string path)
         {
             List<AlternateStreamInformation> streams = new List<AlternateStreamInformation>();
-            path = Paths.AddExtendedPathPrefix(path);
+            path = Paths.AddExtendedPrefix(path);
             using (var fileHandle = FileManagement.CreateFile(path, FileAccess.Read, FileShare.ReadWrite, FileMode.Open, FileManagement.AllFileAttributeFlags.FILE_FLAG_BACKUP_SEMANTICS))
             {
                 using (BackupReader reader = new BackupReader(fileHandle))
@@ -424,6 +445,16 @@ namespace XTask.Interop
                 int error = Marshal.GetLastWin32Error();
                 throw GetIoExceptionForError(error);
             }
+        }
+
+        internal static ulong HighLowToLong(uint high, uint low)
+        {
+            return ((ulong)high) << 32 | ((ulong)low & 0xFFFFFFFFL);
+        }
+
+        internal static DateTime GetDateTime(System.Runtime.InteropServices.ComTypes.FILETIME fileTime)
+        {
+            return DateTime.FromFileTime((((long)fileTime.dwHighDateTime) << 32) + fileTime.dwLowDateTime);
         }
 
         //[DllImport("ntdll.dll", SetLastError = true)]

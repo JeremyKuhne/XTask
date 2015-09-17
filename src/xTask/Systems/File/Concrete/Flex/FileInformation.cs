@@ -8,6 +8,7 @@
 namespace XTask.Systems.File.Concrete.Flex
 {
     using Interop;
+    using Microsoft.Win32.SafeHandles;
     using System;
 
     internal class FileInformation : FileSystemInformation, IFileInformation
@@ -23,21 +24,37 @@ namespace XTask.Systems.File.Concrete.Flex
 
         new static internal IFileSystemInformation Create(NativeMethods.FileManagement.FindResult findResult, IFileService fileService)
         {
-            if (findResult.Attributes.HasFlag(System.IO.FileAttributes.Directory)) throw new ArgumentOutOfRangeException(nameof(findResult));
+            if ((findResult.Attributes & System.IO.FileAttributes.Directory) != 0) throw new ArgumentOutOfRangeException(nameof(findResult));
 
-            var info = new FileInformation(fileService);
-            info.PopulateData(findResult);
-            return info;
+            var fileInfo = new FileInformation(fileService);
+            fileInfo.PopulateData(findResult);
+            return fileInfo;
+        }
+
+        new internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info, IFileService fileService)
+        {
+            if ((info.dwFileAttributes & System.IO.FileAttributes.Directory) != 0) throw new ArgumentOutOfRangeException(nameof(info));
+
+            var fileInfo = new FileInformation(fileService);
+            fileInfo.PopulateData(originalPath, fileHandle, info);
+            return fileInfo;
         }
 
         protected override void PopulateData(NativeMethods.FileManagement.FindResult findResult)
         {
+            base.PopulateData(findResult);
             this.Length = findResult.Length;
             this.directory = findResult.BasePath;
-            base.PopulateData(findResult);
         }
 
-        public long Length { get; private set; }
+        protected override void PopulateData(string originalPath, SafeFileHandle fileHandle, NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info)
+        {
+            base.PopulateData(originalPath, fileHandle, info);
+            this.Length = NativeMethods.HighLowToLong(info.nFileSizeHigh, info.nFileSizeLow);
+            this.directory = Paths.GetDirectory(this.Path);
+        }
+
+        public ulong Length { get; private set; }
 
         public IDirectoryInformation Directory
         {
@@ -45,8 +62,7 @@ namespace XTask.Systems.File.Concrete.Flex
             {
                 if (this.directoryInformation == null)
                 {
-                    var findResult = NativeMethods.FileManagement.FindFirstFile(this.directory);
-                    this.directoryInformation = (IDirectoryInformation)DirectoryInformation.Create(findResult, this.FileService);
+                    this.directoryInformation = (IDirectoryInformation)FileSystemInformation.Create(this.directory, this.FileService);
                 }
                 return this.directoryInformation;
             }
@@ -64,7 +80,7 @@ namespace XTask.Systems.File.Concrete.Flex
             }
         }
 
-        protected override void Refresh(bool fromAttributes)
+        public override void Refresh()
         {
             this.md5Hash = null;
             this.directoryInformation = null;

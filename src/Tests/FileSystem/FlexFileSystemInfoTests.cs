@@ -7,16 +7,11 @@
 
 namespace XTask.Tests.FileSystem
 {
-    using System;
-    using System.IO;
-    using System.Linq;
     using FluentAssertions;
+    using System.IO;
     using XTask.Systems.File;
-    using Xunit;
-    using Interop;
     using XTask.Systems.File.Concrete.Flex;
-    using DotNet = XTask.Systems.File.Concrete.DotNet;
-    using XTask.Interop;
+    using Xunit;
 
     public class FlexFileSystemInfoTests
     {
@@ -25,7 +20,7 @@ namespace XTask.Tests.FileSystem
             InlineData(Paths.ExtendedPathPrefix)]
         public void CreateInfoForRootDrive(string prefix)
         {
-            string driveRoot = prefix + Paths.GetPathRoot(Path.GetTempPath());
+            string driveRoot = prefix + Paths.GetRoot(Path.GetTempPath());
             FileService fileService = new FileService();
 
             var info = fileService.GetPathInfo(driveRoot);

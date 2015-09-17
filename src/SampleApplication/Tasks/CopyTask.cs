@@ -8,7 +8,6 @@
 namespace XFile.Tasks
 {
     using System;
-    using XTask.Systems.File;
     using XTask.Logging;
     using XTask.Utility;
 
@@ -21,8 +20,8 @@ namespace XFile.Tasks
                 this.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, XFileStrings.RequiresSourceAndDestinationError);
             }
 
-            string source = FileService.GetFullPath(Arguments.Targets[0], CurrentDirectory.GetCurrentDirectory());
-            string destination = FileService.GetFullPath(Arguments.Targets[1], CurrentDirectory.GetCurrentDirectory());
+            string source = GetFullPath(Arguments.Targets[0]);
+            string destination = GetFullPath(Arguments.Targets[1]);
 
             this.Loggers[LoggerType.Status].WriteLine($"Copying '{source}' to '{destination}'...");
             FileService.CopyFile(source, destination);

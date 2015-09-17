@@ -11,20 +11,11 @@ namespace XFile.Tasks
     using XTask.Logging;
     using XTask.Utility;
 
-    public class GetVolumePathNameTask : FileTask
+    public class GetVolumePathNameTask : FileTaskWithTarget
     {
         protected override ExitCode ExecuteFileTask()
         {
-            string target = this.Arguments.Target;
-
-            if (String.IsNullOrWhiteSpace(target))
-            {
-                this.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, XFileStrings.RequiresTargetError);
-                return ExitCode.InvalidArgument;
-            }
-
-            this.Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetVolumePathName(target));
-
+            this.Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetVolumePathName(GetFullTargetPath()));
             return ExitCode.Success;
         }
     }

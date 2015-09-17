@@ -16,7 +16,6 @@ namespace XFile.Tasks
 
     public abstract class FileTask : Task
     {
-        private bool requiresTarget;
         private static CurrentDirectory currentDirectory;
 
         protected CurrentDirectory CurrentDirectory
@@ -31,9 +30,16 @@ namespace XFile.Tasks
             }
         }
 
-        protected FileTask(bool requiresTarget = false)
+        protected string GetFullTargetPath()
         {
-            this.requiresTarget = requiresTarget;
+            return GetFullPath(Arguments.Target);
+        }
+
+        protected string GetFullPath(string target)
+        {
+            return target == null
+                ? FileService.GetFullPath(CurrentDirectory.GetCurrentDirectory())
+                : FileService.GetFullPath(target, this.CurrentDirectory.GetCurrentDirectory());
         }
 
         protected IFileService FileService
@@ -48,11 +54,8 @@ namespace XFile.Tasks
 
         protected sealed override ExitCode ExecuteInternal()
         {
-            if (requiresTarget && String.IsNullOrWhiteSpace(this.Arguments.Target))
-            {
-                this.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, XFileStrings.RequiresTargetError);
-                return ExitCode.InvalidArgument;
-            }
+            ExitCode check = CheckPrerequisites();
+            if (check != ExitCode.Success) return check;
 
             try
             {
@@ -64,6 +67,11 @@ namespace XFile.Tasks
                 return ExitCode.GeneralFailure;
             }
 
+            return ExitCode.Success;
+        }
+
+        protected virtual ExitCode CheckPrerequisites()
+        {
             return ExitCode.Success;
         }
 

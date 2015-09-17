@@ -8,35 +8,14 @@
 namespace XFile.Tasks
 {
     using System;
-    using System.Runtime.InteropServices;
-    using XFile.Utility;
-    using XTask.Systems.File;
-    using XTask.Interop;
-    using XTask.Logging;
-    using XTask.Tasks;
     using XTask.Utility;
 
-    public class MakeDirectoryTask : Task
+    public class MakeDirectoryTask : FileTaskWithTarget
     {
-        protected override ExitCode ExecuteInternal()
+        protected override ExitCode ExecuteFileTask()
         {
-            string target = this.Arguments.Target;
-            if (String.IsNullOrEmpty(target))
-            {
-                this.Loggers[LoggerType.Status].WriteLine("No target specified.");
-                return ExitCode.InvalidArgument;
-            }
-
-
-
-            //if (NativeMethods.CreateDirectory(target, IntPtr.Zero))
-            //{
-            //    this.Loggers[LoggerType.Status].WriteLine("Successfully created '{0}'", target);
-            //    return ExitCode.Success;
-            //}
-
-            this.Loggers[LoggerType.Status].WriteLine(NativeErrorHelper.LastErrorToString(Marshal.GetLastWin32Error()));
-            return ExitCode.GeneralFailure;
+            FileService.CreateDirectory(GetFullTargetPath());
+            return ExitCode.Success;
         }
     }
 }

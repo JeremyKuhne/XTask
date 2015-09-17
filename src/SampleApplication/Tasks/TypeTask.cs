@@ -11,13 +11,11 @@ namespace XFile.Tasks
     using XTask.Logging;
     using XTask.Utility;
 
-    public class TypeTask : FileTask
+    public class TypeTask : FileTaskWithTarget
     {
-        public TypeTask() : base(requiresTarget: true) { }
-
         protected override ExitCode ExecuteFileTask()
         {
-            using (var reader = FileService.CreateReader(Arguments.Target))
+            using (var reader = FileService.CreateReader(GetFullTargetPath()))
             {
                 string nextLine = null;
                 while ((nextLine = reader.ReadLine()) != null)

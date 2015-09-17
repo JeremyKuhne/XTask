@@ -7,20 +7,16 @@
 
 namespace XTask.Interop
 {
+    using Microsoft.Win32.SafeHandles;
     using System;
-    using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Security;
     using System.Text;
-    using Microsoft.Win32.SafeHandles;
-    using XTask.Systems.File;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using Utility;
-    using ComTypes = System.Runtime.InteropServices.ComTypes;
     using System.Threading;
+    using XTask.Systems.File;
+    using ComTypes = System.Runtime.InteropServices.ComTypes;
 
     internal static partial class NativeMethods
     {
@@ -38,7 +34,7 @@ namespace XTask.Interop
 
             internal static FileAttributes GetFileAttributes(string path)
             {
-                path = Paths.AddExtendedPathPrefix(path);
+                path = Paths.AddExtendedPrefix(path);
 
                 uint result = FileManagement.GetFileAttributesPrivate(path);
                 if (result == FileManagement.INVALID_FILE_ATTRIBUTES)
@@ -52,7 +48,7 @@ namespace XTask.Interop
 
             private static uint TryGetFileAttributesPrivate(string path)
             {
-                path = Paths.AddExtendedPathPrefix(path);
+                path = Paths.AddExtendedPrefix(path);
 
                 uint result = FileManagement.GetFileAttributesPrivate(path);
                 if (result == FileManagement.INVALID_FILE_ATTRIBUTES)
@@ -196,7 +192,7 @@ namespace XTask.Interop
 
             internal static string GetLongPathName(string path)
             {
-                return NativeMethods.ConvertString(path, (value, sb) => FileManagement.GetLongPathNamePrivate(value, sb, (uint)sb.Capacity));
+                return NativeMethods.BufferPathInvoke(path, (value, sb) => FileManagement.GetLongPathNamePrivate(value, sb, (uint)sb.Capacity));
             }
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364989.aspx
@@ -208,7 +204,7 @@ namespace XTask.Interop
 
             internal static string GetShortPathName(string path)
             {
-                return NativeMethods.ConvertString(path, (value, sb) => FileManagement.GetShortPathNamePrivate(value, sb, (uint)sb.Capacity));
+                return NativeMethods.BufferPathInvoke(path, (value, sb) => FileManagement.GetShortPathNamePrivate(value, sb, (uint)sb.Capacity));
             }
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364963.aspx
@@ -226,7 +222,7 @@ namespace XTask.Interop
             /// </summary>
             internal static string GetFullPathName(string path)
             {
-                return NativeMethods.ConvertString(path, (value, sb) => FileManagement.GetFullPathNamePrivate(value, (uint)sb.Capacity, sb, IntPtr.Zero), utilizeExtendedSyntax: false);
+                return NativeMethods.BufferPathInvoke(path, (value, sb) => FileManagement.GetFullPathNamePrivate(value, (uint)sb.Capacity, sb, IntPtr.Zero), utilizeExtendedSyntax: false);
             }
 
             [Flags]
@@ -332,7 +328,7 @@ namespace XTask.Interop
                 FileMode creationDisposition,
                 AllFileAttributeFlags flagsAndAttributes)
             {
-                path = Paths.AddExtendedPathPrefix(path);
+                path = Paths.AddExtendedPrefix(path);
                 if (creationDisposition == FileMode.Append) creationDisposition = FileMode.OpenOrCreate;
 
                 SafeFileHandle handle = CreateFilePrivate(path, fileAccess, fileShare, IntPtr.Zero, creationDisposition, flagsAndAttributes, IntPtr.Zero);
@@ -347,13 +343,19 @@ namespace XTask.Interop
 
             internal static string GetFinalPathName(SafeFileHandle fileHandle, FinalPathFlags finalPathFlags)
             {
-                return NativeMethods.ConvertString("GetFinalPathNameByHandle", (value, sb) => FileManagement.GetFinalPathNameByHandlePrivate(fileHandle, sb, (uint)sb.Capacity, finalPathFlags));
+                return NativeMethods.BufferInvoke((sb) => FileManagement.GetFinalPathNameByHandlePrivate(fileHandle, sb, (uint)sb.Capacity, finalPathFlags));
             }
 
-            internal static string GetFinalPathName(string path, FinalPathFlags finalPathFlags)
+            internal static string GetFinalPathName(string path, FinalPathFlags finalPathFlags, bool resolveLinks)
             {
                 if (path == null) return null;
-                string lookupPath = Paths.AddExtendedPathPrefix(path);
+                string lookupPath = Paths.AddExtendedPrefix(path);
+
+                // BackupSemantics is needed to get directory handles
+                AllFileAttributeFlags createFileFlags = AllFileAttributeFlags.FILE_ATTRIBUTE_NORMAL | AllFileAttributeFlags.FILE_FLAG_BACKUP_SEMANTICS;
+                if (!resolveLinks) createFileFlags |= AllFileAttributeFlags.FILE_FLAG_OPEN_REPARSE_POINT;
+
+                string finalPath = null;
 
                 using (SafeFileHandle file = FileManagement.CreateFilePrivate(
                     lookupPath,
@@ -361,8 +363,7 @@ namespace XTask.Interop
                     FileShare.ReadWrite,
                     IntPtr.Zero,
                     FileMode.Open,
-                    // BackupSemantics is needed to get directory handles
-                    AllFileAttributeFlags.FILE_ATTRIBUTE_NORMAL | AllFileAttributeFlags.FILE_FLAG_BACKUP_SEMANTICS,
+                    createFileFlags,
                     IntPtr.Zero))
                 {
                     if (file.IsInvalid)
@@ -371,8 +372,10 @@ namespace XTask.Interop
                         throw GetIoExceptionForError(error, path);
                     }
 
-                    return NativeMethods.ConvertString(path, (value, sb) => FileManagement.GetFinalPathNameByHandlePrivate(file, sb, (uint)sb.Capacity, finalPathFlags));
+                    finalPath = NativeMethods.BufferInvoke((sb) => FileManagement.GetFinalPathNameByHandlePrivate(file, sb, (uint)sb.Capacity, finalPathFlags), path);
                 }
+
+                return Paths.ReplaceRoot(path, finalPath);
             }
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364415.aspx
@@ -394,7 +397,7 @@ namespace XTask.Interop
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
             internal struct WIN32_FIND_DATA
             {
-                public uint dwFileAttributes;
+                public FileAttributes dwFileAttributes;
                 public ComTypes.FILETIME ftCreationTime;
                 public ComTypes.FILETIME ftLastAccessTime;
                 public ComTypes.FILETIME ftLastWriteTime;
@@ -418,7 +421,7 @@ namespace XTask.Interop
                 public DateTime Creation { get; private set; }
                 public DateTime LastAccess { get; private set; }
                 public DateTime LastWrite { get; private set; }
-                public long Length { get; private set; }
+                public ulong Length { get; private set; }
 
                 internal FindResult(SafeFindHandle handle, WIN32_FIND_DATA findData, string basePath)
                 {
@@ -431,13 +434,8 @@ namespace XTask.Interop
                     this.Creation = GetDateTime(findData.ftCreationTime);
                     this.LastAccess = GetDateTime(findData.ftLastAccessTime);
                     this.LastWrite = GetDateTime(findData.ftLastWriteTime);
-                    this.Length = ((long)findData.nFileSizeHigh) << 32 | ((long)findData.nFileSizeLow & 0xFFFFFFFFL);
+                    this.Length = HighLowToLong(findData.nFileSizeHigh, findData.nFileSizeLow);
                 }
-            }
-
-            private static DateTime GetDateTime(ComTypes.FILETIME fileTime)
-            {
-                return DateTime.FromFileTime((((long)fileTime.dwHighDateTime) << 32) + fileTime.dwLowDateTime);
             }
 
             private const int FIND_FIRST_EX_CASE_SENSITIVE = 1;
@@ -464,7 +462,7 @@ namespace XTask.Interop
                 bool getAlternateName = false,
                 bool returnNullIfNotFound = true)
             {
-                if (Paths.PathEndsInDirectorySeparator(path))
+                if (Paths.EndsInDirectorySeparator(path))
                 {
                     // Find first file does not like trailing separators so we'll cull it
                     //
@@ -486,7 +484,7 @@ namespace XTask.Interop
 
                 }
 
-                path = Paths.AddExtendedPathPrefix(path);
+                path = Paths.AddExtendedPrefix(path);
 
                 WIN32_FIND_DATA findData;
                 SafeFindHandle handle = FileManagement.FindFirstFileExPrivate(
@@ -508,7 +506,7 @@ namespace XTask.Interop
                     throw GetIoExceptionForError(error, path);
                 }
 
-                return new FindResult(handle, findData, Paths.GetDirectoryPathOrRoot(path));
+                return new FindResult(handle, findData, Paths.GetDirectory(path));
             }
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364428.aspx
@@ -549,6 +547,40 @@ namespace XTask.Interop
                 }
             }
 
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363788.aspx
+            [StructLayout(LayoutKind.Sequential)]
+            internal struct BY_HANDLE_FILE_INFORMATION
+            {
+                public FileAttributes dwFileAttributes;
+                public ComTypes.FILETIME ftCreationTime;
+                public ComTypes.FILETIME ftLastAccessTime;
+                public ComTypes.FILETIME ftLastWriteTime;
+                public uint dwVolumeSerialNumber;
+                public uint nFileSizeHigh;
+                public uint nFileSizeLow;
+                public uint nNumberOfLinks;
+                public uint nFileIndexHigh;
+                public uint nFileIndexLow;
+            }
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364952.aspx
+            [DllImport("kernel32.dll", EntryPoint = "GetFileInformationByHandle", SetLastError = true, CharSet = CharSet.Unicode)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            private static extern bool GetFileInformationByHandlePrivate(
+                SafeFileHandle hFile,
+                out BY_HANDLE_FILE_INFORMATION lpFileInformation);
+
+            internal static BY_HANDLE_FILE_INFORMATION GetFileInformationByHandle(SafeFileHandle fileHandle)
+            {
+                BY_HANDLE_FILE_INFORMATION fileInformation;
+                if (!GetFileInformationByHandlePrivate(fileHandle, out fileInformation))
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    throw GetIoExceptionForError(error);
+                }
+                return fileInformation;
+            }
+
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363915.aspx
             [DllImport("kernel32.dll", EntryPoint = "DeleteFileW", SetLastError = true, CharSet = CharSet.Unicode)]
             [return: MarshalAs(UnmanagedType.Bool)]
@@ -557,7 +589,7 @@ namespace XTask.Interop
 
             internal static void DeleteFile(string path)
             {
-                path = Paths.AddExtendedPathPrefix(path);
+                path = Paths.AddExtendedPrefix(path);
                 if (!DeleteFilePrivate(path))
                 {
                     int error = Marshal.GetLastWin32Error();
@@ -700,8 +732,8 @@ namespace XTask.Interop
 
             internal static void CopyFile(string existingPath, string newPath, bool overwrite)
             {
-                existingPath = Paths.AddExtendedPathPrefix(existingPath);
-                newPath = Paths.AddExtendedPathPrefix(newPath);
+                existingPath = Paths.AddExtendedPrefix(existingPath);
+                newPath = Paths.AddExtendedPrefix(newPath);
 
                 bool cancel = false;
 

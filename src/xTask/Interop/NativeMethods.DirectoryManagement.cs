@@ -27,7 +27,7 @@ namespace XTask.Interop
 
             internal static void RemoveDirectory(string path)
             {
-                path = Paths.AddExtendedPathPrefix(NativeMethods.FileManagement.GetFullPathName(path));
+                path = Paths.AddExtendedPrefix(NativeMethods.FileManagement.GetFullPathName(path));
 
                 if (!RemoveDirectoryPrivate(path))
                 {
@@ -46,7 +46,7 @@ namespace XTask.Interop
             internal static void CreateDirectory(string path)
             {
                 // CreateDirectory will refuse paths that are over MAX_PATH - 12, so we always want to add the prefix
-                path = Paths.AddExtendedPathPrefix(path, addIfUnderLegacyMaxPath: true);
+                path = Paths.AddExtendedPrefix(path, addIfUnderLegacyMaxPath: true);
 
                 if (!CreateDirectoryPrivate(path, IntPtr.Zero))
                 {

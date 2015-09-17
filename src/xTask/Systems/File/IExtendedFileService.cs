@@ -31,7 +31,8 @@ namespace XTask.Systems.File
         /// <summary>
         /// Gets the final path for the given path (case normalized).
         /// </summary>
-        string GetFinalPath(string path);
+        /// <param name="resolveLinks">True to follow reparse points to their target.</param>
+        string GetFinalPath(string path, bool resolveLinks = false);
 
         /// <summary>
         /// Returns the device name for the given DOS alias/symlink (as defined in \$GLOBAL).

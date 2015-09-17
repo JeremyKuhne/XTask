@@ -73,7 +73,7 @@ namespace XTask.Systems.File
                         {
                             // If we can't delete the flag file (open handle) we'll throw and move on
                             this.fileServiceProvider.DeleteFile(flagFile.Path);
-                            this.fileServiceProvider.DeleteDirectory(Paths.GetDirectoryPathOrRoot(flagFile.Path), deleteChildren: true);
+                            this.fileServiceProvider.DeleteDirectory(Paths.GetDirectory(flagFile.Path), deleteChildren: true);
                         }
                         catch (Exception)
                         {

@@ -104,7 +104,7 @@ namespace XTask.Utility
             foreach (string path in this.resolutionPaths)
             {
                 Uri fullAssemblyUri;
-                if (Paths.IsPathRelative(path))
+                if (Paths.IsRelative(path))
                 {
                     if (!Uri.TryCreate(toolLocation, path, out fullAssemblyUri)) continue;
                 }
