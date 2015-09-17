@@ -76,6 +76,7 @@
     <Compile Include="Build\BuildTaskInteraction.cs" />
     <Compile Include="Build\TaskItem.cs" />
     <Compile Include="Collections\ListExtensions.cs" />
+    <Compile Include="Interop\NativeMethods.Backup.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationManagerWrapper.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationSectionGroupWrapper.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationWrapper.cs" />

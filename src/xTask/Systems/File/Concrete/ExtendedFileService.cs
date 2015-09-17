@@ -67,7 +67,7 @@ namespace XTask.Systems.File.Concrete
 
         public IEnumerable<AlternateStreamInformation> GetAlternateStreams(string path)
         {
-            return NativeMethods.GetAlternateStreams(path);
+            return NativeMethods.Backup.GetAlternateStreams(path);
         }
 
         public bool CanCreateSymbolicLinks()

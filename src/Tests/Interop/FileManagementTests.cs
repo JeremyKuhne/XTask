@@ -333,7 +333,7 @@ namespace XTask.Tests.Interop
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
                 FileAttributes attributes;
                 NativeMethods.FileManagement.TryGetFileAttributes(longPath, out attributes).Should().BeFalse();
-                attributes.Should().Be((FileAttributes)0);
+                attributes.Should().Be(NativeMethods.FileManagement.InvalidFileAttributes);
             }
         }
 

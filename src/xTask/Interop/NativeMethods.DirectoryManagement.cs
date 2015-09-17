@@ -16,56 +16,65 @@ namespace XTask.Interop
     internal static partial class NativeMethods
     {
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363950.aspx
-        [SuppressUnmanagedCodeSecurity]
         internal static class DirectoryManagement
         {
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365488.aspx
-            [DllImport("kernel32.dll", EntryPoint = "RemoveDirectoryW", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool RemoveDirectoryPrivate(
-                string lpPathName);
+            // Putting private P/Invokes in a subclass to allow exact matching of signatures for perf on initial call and reduce string count
+            [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
+            private static class Private
+            {
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365488.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool RemoveDirectoryW(
+                    string lpPathName);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool CreateDirectoryW(
+                    string lpPathName,
+                    IntPtr lpSecurityAttributes);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364934.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                internal static extern uint GetCurrentDirectoryW(
+                    uint nBufferLength,
+                    StringBuilder lpBuffer);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365530.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool SetCurrentDirectoryW(
+                    string lpPathName);
+            }
 
             internal static void RemoveDirectory(string path)
             {
                 path = Paths.AddExtendedPrefix(NativeMethods.FileManagement.GetFullPathName(path));
 
-                if (!RemoveDirectoryPrivate(path))
+                if (!Private.RemoveDirectoryW(path))
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error, path);
                 }
             }
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855.aspx
-            [DllImport("kernel32.dll", EntryPoint = "CreateDirectoryW", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool CreateDirectoryPrivate(
-                string lpPathName,
-                IntPtr lpSecurityAttributes);
 
             internal static void CreateDirectory(string path)
             {
                 // CreateDirectory will refuse paths that are over MAX_PATH - 12, so we always want to add the prefix
                 path = Paths.AddExtendedPrefix(path, addIfUnderLegacyMaxPath: true);
 
-                if (!CreateDirectoryPrivate(path, IntPtr.Zero))
+                if (!Private.CreateDirectoryW(path, IntPtr.Zero))
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error, path);
                 }
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364934.aspx
-            [DllImport("kernel32.dll", EntryPoint = "GetCurrentDirectoryW", CharSet = CharSet.Unicode, SetLastError = true)]
-            private static extern uint GetCurrentDirectoryPrivate(
-                uint nBufferLength,
-                StringBuilder lpBuffer
-                );
-
             internal static string GetCurrentDirectory()
             {
                 // Call to get the needed size
-                uint result = GetCurrentDirectoryPrivate(0, null);
+                uint result = Private.GetCurrentDirectoryW(0, null);
                 if (result == 0)
                 {
                     int error = Marshal.GetLastWin32Error();
@@ -74,7 +83,7 @@ namespace XTask.Interop
 
                 var sb = NativeMethods.stringCache.Acquire();
                 sb.EnsureCapacity((int)result);
-                result = GetCurrentDirectoryPrivate((uint)sb.Capacity, sb);
+                result = Private.GetCurrentDirectoryW((uint)sb.Capacity, sb);
 
                 if (result == 0)
                 {
@@ -86,16 +95,9 @@ namespace XTask.Interop
                 return NativeMethods.stringCache.ToStringAndRelease(sb);
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365530.aspx
-            [DllImport("kernel32.dll", EntryPoint = "SetCurrentDirectoryW", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool SetCurrentDirectoryPrivate(
-                string lpPathName
-                );
-
             internal static void SetCurrentDirectory(string path)
             {
-                if (!SetCurrentDirectoryPrivate(path))
+                if (!Private.SetCurrentDirectoryW(path))
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error);

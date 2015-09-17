@@ -9,7 +9,6 @@ namespace XTask.Interop
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Runtime.InteropServices;
     using System.Security;
     using System.Text;
@@ -18,12 +17,62 @@ namespace XTask.Interop
 
     internal static partial class NativeMethods
     {
-        [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
         internal static class VolumeManagement
         {
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365461.aspx
-            [DllImport("kernel32.dll", EntryPoint = "QueryDosDeviceW", CharSet = CharSet.Unicode, SetLastError = true)]
-            private static extern uint QueryDosDevicePrivate(string lpDeviceName, IntPtr lpTargetPath, uint ucchMax);
+            // Putting private P/Invokes in a subclass to allow exact matching of signatures for perf on initial call and reduce string count
+            [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
+            private static class Private
+            {
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365461.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                internal static extern uint QueryDosDeviceW(
+                    string lpDeviceName,
+                    IntPtr lpTargetPath,
+                    uint ucchMax);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364975.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                internal static extern uint GetLogicalDriveStringsW(
+                    uint nBufferLength,
+                    IntPtr lpBuffer);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364996.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool GetVolumePathNameW(
+                    string lpszFileName,
+                    StringBuilder lpszVolumePathName,
+                    uint cchBufferLength);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364998.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool GetVolumePathNamesForVolumeNameW(
+                    string lpszVolumeName,
+                    IntPtr lpszVolumePathNames,
+                    uint cchBuferLength,
+                    ref uint lpcchReturnLength);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364994.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool GetVolumeNameForVolumeMountPointW(
+                    string lpszVolumeMountPoint,
+                    StringBuilder lpszVolumeName,
+                    uint cchBufferLength);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364993.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                internal static extern bool GetVolumeInformationW(
+                   string lpRootPathName,
+                   StringBuilder lpVolumeNameBuffer,
+                   int nVolumeNameSize,
+                   out uint lpVolumeSerialNumber,
+                   out uint lpMaximumComponentLength,
+                   out FileSystemFeature lpFileSystemFlags,
+                   StringBuilder lpFileSystemNameBuffer,
+                   int nFileSystemNameSize);
+            }
 
             public static IEnumerable<string> QueryDosDevice(string deviceName)
             {
@@ -35,7 +84,7 @@ namespace XTask.Interop
                     uint result = 0;
 
                     // QueryDosDevicePrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while ((result = QueryDosDevicePrivate(deviceName, buffer, buffer.Size / 2)) == 0)
+                    while ((result = Private.QueryDosDeviceW(deviceName, buffer, buffer.Size / 2)) == 0)
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         switch (lastError)
@@ -52,10 +101,6 @@ namespace XTask.Interop
                 }
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364975.aspx
-            [DllImport("kernel32.dll", EntryPoint = "GetLogicalDriveStringsW", CharSet = CharSet.Unicode, SetLastError = true)]
-            private static extern uint GetLogicalDriveStringsPrivate(uint nBufferLength, IntPtr lpBuffer);
-
             internal static IEnumerable<string> GetLogicalDriveStrings()
             {
                 using (NativeBuffer buffer = new NativeBuffer())
@@ -63,7 +108,7 @@ namespace XTask.Interop
                     uint result = 0;
 
                     // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while ((result = GetLogicalDriveStringsPrivate((uint)buffer.Size / 2, buffer)) > buffer.Size / 2)
+                    while ((result = Private.GetLogicalDriveStringsW((uint)buffer.Size / 2, buffer)) > buffer.Size / 2)
                     {
                         buffer.Resize(result * 2);
                     }
@@ -78,19 +123,11 @@ namespace XTask.Interop
                 }
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364996.aspx
-            [DllImport("kernel32.dll", EntryPoint = "GetVolumePathNameW", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool GetVolumePathNamePrivate(
-                string lpszFileName,
-                StringBuilder lpszVolumePathName,
-                uint cchBufferLength);
-
             internal static string GetVolumePathName(string fileName)
             {
                 StringBuilder volumePathName = new StringBuilder(10);
 
-                while (!GetVolumePathNamePrivate(fileName, volumePathName, (uint)volumePathName.Capacity))
+                while (!Private.GetVolumePathNameW(fileName, volumePathName, (uint)volumePathName.Capacity))
                 {
                     int lastError = Marshal.GetLastWin32Error();
                     switch (lastError)
@@ -106,15 +143,6 @@ namespace XTask.Interop
                 return volumePathName.ToString();
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364998.aspx
-            [DllImport("kernel32.dll", EntryPoint = "GetVolumePathNamesForVolumeNameW", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool GetVolumePathNamesForVolumeNamePrivate(
-                string lpszVolumeName,
-                IntPtr lpszVolumePathNames,
-                uint cchBuferLength,
-                ref uint lpcchReturnLength);
-
             internal static IEnumerable<string> GetVolumePathNamesForVolumeName(string volumeName)
             {
                 using (NativeBuffer buffer = new NativeBuffer())
@@ -122,7 +150,7 @@ namespace XTask.Interop
                     uint returnLength = 0;
 
                     // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while (!GetVolumePathNamesForVolumeNamePrivate(volumeName, buffer, (uint)buffer.Size / 2, ref returnLength))
+                    while (!Private.GetVolumePathNamesForVolumeNameW(volumeName, buffer, (uint)buffer.Size / 2, ref returnLength))
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         switch (lastError)
@@ -139,21 +167,13 @@ namespace XTask.Interop
                 }
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364994.aspx
-            [DllImport("kernel32.dll", EntryPoint = "GetVolumeNameForVolumeMountPoint", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool GetVolumeNameForVolumeMountPointPrivate(
-                string lpszVolumeMountPoint,
-                StringBuilder lpszVolumeName,
-                uint cchBufferLength);
-
             internal static string GetVolumeNameForVolumeMountPoint(string volumeMountPoint)
             {
                 volumeMountPoint = Paths.AddTrailingSeparator(volumeMountPoint);
 
                 // MSDN claims 50 is "reasonable", let's go double.
                 StringBuilder volumeName = new StringBuilder(100);
-                if (!GetVolumeNameForVolumeMountPointPrivate(volumeMountPoint, volumeName, (uint)volumeName.Capacity))
+                if (!Private.GetVolumeNameForVolumeMountPointW(volumeMountPoint, volumeName, (uint)volumeName.Capacity))
                 {
                     int lastError = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(lastError, volumeMountPoint);
@@ -161,18 +181,6 @@ namespace XTask.Interop
 
                 return volumeName.ToString();
             }
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364993.aspx
-            [DllImport("Kernel32.dll", EntryPoint = "GetVolumeInformation", CharSet = CharSet.Unicode, SetLastError = true)]
-            private static extern bool GetVolumeInformationPrivate(
-               string lpRootPathName,
-               StringBuilder lpVolumeNameBuffer,
-               int nVolumeNameSize,
-               out uint lpVolumeSerialNumber,
-               out uint lpMaximumComponentLength,
-               out FileSystemFeature lpFileSystemFlags,
-               StringBuilder lpFileSystemNameBuffer,
-               int nFileSystemNameSize);
 
             internal static VolumeInformation GetVolumeInformation(string rootPath)
             {
@@ -182,7 +190,7 @@ namespace XTask.Interop
                 StringBuilder fileSystemName = new StringBuilder(Paths.MaxPath + 1);
                 uint serialNumber, maxComponentLength;
                 FileSystemFeature flags;
-                if (!GetVolumeInformationPrivate(rootPath, volumeName, volumeName.Capacity, out serialNumber, out maxComponentLength, out flags, fileSystemName, fileSystemName.Capacity))
+                if (!Private.GetVolumeInformationW(rootPath, volumeName, volumeName.Capacity, out serialNumber, out maxComponentLength, out flags, fileSystemName, fileSystemName.Capacity))
                 {
                     int lastError = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(lastError, rootPath);
