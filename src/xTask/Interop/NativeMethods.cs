@@ -101,18 +101,39 @@ namespace XTask.Interop
             internal static extern bool CloseHandle(
                 IntPtr handle);
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms684179).aspx
-            [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-            internal static extern IntPtr LoadLibraryExW(
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms684179.aspx
+            [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+            internal static extern SafeLibraryHandle LoadLibraryExW(
                 string lpFileName,
                 IntPtr hReservedNull,
                 LoadLibraryFlags dwFlags);
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683152.aspx
+            [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool FreeLibrary(
+                IntPtr hModule);
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms647486.aspx
+            [DllImport(Libraries.User32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+            unsafe internal static extern int LoadStringW(
+                SafeLibraryHandle hInstance,
+                int uID,
+                out char* lpBuffer,
+                int nBufferMax);
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683212.aspx
+            [DllImport(Libraries.Kernel32, CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
+            internal static extern IntPtr GetProcAddress(
+                SafeLibraryHandle hModule,
+                string methodName);
         }
 
         private static class Libraries
         {
             internal const string Kernel32 = "kernel32.dll";
             internal const string Advapi32 = "advapi32.dll";
+            internal const string User32 = "user32.dll";
         }
 
         private static StringBuilderCache stringCache = new StringBuilderCache(256);
@@ -216,21 +237,47 @@ namespace XTask.Interop
         //public static extern uint NtQueryObject(IntPtr handle, ObjectInformationClass objectInformationClass,
         //    IntPtr objectInformation, uint objectInformationLength, out uint returnLength);
 
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/ms684179.aspx
-        [Flags]
-        internal enum LoadLibraryFlags : uint
+        internal static bool FreeLibrary(SafeLibraryHandle handle)
         {
-            DONT_RESOLVE_DLL_REFERENCES = 0x00000001,
-            LOAD_LIBRARY_AS_DATAFILE = 0x00000002,
-            LOAD_WITH_ALTERED_SEARCH_PATH = 0x00000008,
-            LOAD_IGNORE_CODE_AUTHZ_LEVEL = 0x00000010,
-            LOAD_LIBRARY_AS_IMAGE_RESOURCE = 0x00000020,
-            LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE = 0x00000040,
-            LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR = 0x00000100,
-            LOAD_LIBRARY_SEARCH_APPLICATION_DIR = 0x00000200,
-            LOAD_LIBRARY_SEARCH_USER_DIRS = 0x00000400,
-            LOAD_LIBRARY_SEARCH_SYSTEM32 = 0x00000800,
-            LOAD_LIBRARY_SEARCH_DEFAULT_DIRS = 0x00001000
+            return Private.FreeLibrary(handle.DangerousGetHandle());
+        }
+
+        internal static SafeLibraryHandle LoadLibrary(string path, LoadLibraryFlags flags)
+        {
+            SafeLibraryHandle handle = Private.LoadLibraryExW(path, IntPtr.Zero, flags);
+            if (handle.IsInvalid)
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw GetIoExceptionForError(error, path);
+            }
+            return handle;
+        }
+
+        unsafe internal static string LoadString(SafeLibraryHandle library, int identifier)
+        {
+            // Passing 0 will give us a read only handle to the string resource
+            char* buffer;
+            int result = Private.LoadStringW(library, identifier, out buffer, 0);
+            if (result <= 0)
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw GetIoExceptionForError(error, identifier.ToString());
+            }
+
+            // Null is not included in the result
+            return new string(buffer, 0, result);
+        }
+
+        internal static DelegateType GetFunctionDelegate<DelegateType>(SafeLibraryHandle library, string methodName)
+        {
+            IntPtr method = Private.GetProcAddress(library, methodName);
+            if (method == IntPtr.Zero)
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw GetIoExceptionForError(error, methodName);
+            }
+
+            return (DelegateType)(object)Marshal.GetDelegateForFunctionPointer(method, typeof(DelegateType));
         }
     }
 }

@@ -7,7 +7,7 @@
 
 namespace XTask.Tests.FileSystem
 {
-    using System.IO;
+    using Systems.File;
 
     public static class PathGenerator
     {
@@ -20,12 +20,12 @@ namespace XTask.Tests.FileSystem
             string fullPath = root;
             for (int i = 0; i < directoryCount; i++)
             {
-                fullPath = Path.Combine(fullPath, directoryName);
+                fullPath = Paths.Combine(fullPath, directoryName);
             }
 
             if (lastDirectory > 0)
             {
-                fullPath = Path.Combine(fullPath, directoryName.Substring(0, lastDirectory));
+                fullPath = Paths.Combine(fullPath, directoryName.Substring(0, lastDirectory));
             }
 
             return fullPath;

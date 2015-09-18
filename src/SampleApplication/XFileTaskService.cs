@@ -53,6 +53,7 @@ namespace XFile
             registry.RegisterTask(() => new EchoTask(), "echo");
             registry.RegisterTask(() => new CopyTask(), "copy", "cp");
             registry.RegisterTask(() => new ListStreamsTask(), "liststreams", "streams");
+            registry.RegisterTask(() => new TestTask(), "test");
 
             base.Initialize();
         }
