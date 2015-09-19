@@ -18,5 +18,7 @@ namespace XFile.Tasks
             this.Loggers[LoggerType.Result].WriteLine(CurrentDirectory.GetCurrentDirectory());
             return ExitCode.Success;
         }
+
+        public override string Summary { get { return XFileStrings.PrintCurrentDirectoryTaskSummary; } }
     }
 }

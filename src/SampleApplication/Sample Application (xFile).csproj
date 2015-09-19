@@ -59,8 +59,8 @@
     <Compile Include="Tasks\EchoTask.cs" />
     <Compile Include="Tasks\FileTaskWithTarget.cs" />
     <Compile Include="Tasks\FileTask.cs" />
-    <Compile Include="Tasks\GetFileInfoTask.cs" />
-    <Compile Include="Tasks\GetVolumePathNameTask.cs" />
+    <Compile Include="Tasks\FileInfoTask.cs" />
+    <Compile Include="Tasks\MountPointTask.cs" />
     <Compile Include="Tasks\ListStreamsTask.cs" />
     <Compile Include="Tasks\PrintCurrentDirectoryTask.cs" />
     <Compile Include="Tasks\TestTask.cs" />
@@ -75,13 +75,13 @@
     <Compile Include="Tasks\DirectoryTask.cs" />
     <Compile Include="Tasks\FinalPathTask.cs" />
     <Compile Include="Tasks\FullPathTask.cs" />
-    <Compile Include="Tasks\GetLogicalDriveStringsTask.cs" />
-    <Compile Include="Tasks\GetVolumeInformationTask.cs" />
-    <Compile Include="Tasks\GetVolumePathNamesTask.cs" />
-    <Compile Include="Tasks\GetVolumeNameTask.cs" />
+    <Compile Include="Tasks\LogicalDriveStringsTask.cs" />
+    <Compile Include="Tasks\VolumeInformationTask.cs" />
+    <Compile Include="Tasks\VolumeMountPointsTask.cs" />
+    <Compile Include="Tasks\VolumeNameTask.cs" />
     <Compile Include="Tasks\LongPathTask.cs" />
     <Compile Include="Tasks\MakeDirectoryTask.cs" />
-    <Compile Include="Tasks\QueryDosDeviceTask.cs" />
+    <Compile Include="Tasks\DosAliasTask.cs" />
     <Compile Include="Tasks\ShortPathTask.cs" />
     <Compile Include="Utility\FileContentComparer.cs" />
   </ItemGroup>

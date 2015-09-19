@@ -66,7 +66,10 @@ namespace XTask.Tasks
             logger.WriteLine(WriteStyle.Fixed, optionDetails);
         }
 
+
         protected virtual string GeneralHelp { get { return null; } }
         protected virtual string OptionDetails { get { return null; } }
+
+        public virtual string Summary { get { return null; } }
     }
 }

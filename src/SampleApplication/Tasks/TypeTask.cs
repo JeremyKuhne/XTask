@@ -26,5 +26,7 @@ namespace XFile.Tasks
 
             return ExitCode.Success;
         }
+
+        public override string Summary { get { return XFileStrings.MakeDirectoryTaskSummary; } }
     }
 }

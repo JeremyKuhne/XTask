@@ -47,5 +47,7 @@ namespace XTask.Tasks
 
             return ExitCode.Success;
         }
+
+        public override string Summary { get { return XTaskStrings.InteractiveTaskSummary; } }
     }
 }

@@ -17,5 +17,7 @@ namespace XFile.Tasks
             FileService.CreateDirectory(GetFullTargetPath());
             return ExitCode.Success;
         }
+
+        public override string Summary { get { return XFileStrings.MakeDirectoryTaskSummary; } }
     }
 }

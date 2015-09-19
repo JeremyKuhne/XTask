@@ -9,16 +9,9 @@ namespace XTask.Tasks
 {
     using System.Collections.Generic;
 
-    /// <summary>
-    /// Task registry
-    /// </summary>
-    public interface ITaskRegistry
+    public interface ITaskEntry
     {
-        /// <summary>
-        /// Return the task with the given task name or alias, if any
-        /// </summary>
-        ITask this[string taskName] { get; }
-
-        IEnumerable<ITaskEntry> Tasks { get; }
+        IEnumerable<string> Aliases { get; }
+        ITask Task { get; }
     }
 }

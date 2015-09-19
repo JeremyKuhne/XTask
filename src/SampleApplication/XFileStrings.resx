@@ -117,13 +117,73 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ChangeDirectorySummary" xml:space="preserve">
+    <value>Change the current directory</value>
+  </data>
+  <data name="CopyTaskSummary" xml:space="preserve">
+    <value>Copy a file to a given location</value>
+  </data>
+  <data name="DirectoryTaskSummary" xml:space="preserve">
+    <value>List files in the current directory</value>
+  </data>
+  <data name="DosAliasTaskSummary" xml:space="preserve">
+    <value>Get the device alias for the given volume or list all aliases</value>
+  </data>
+  <data name="EchoTaskSummary" xml:space="preserve">
+    <value>Echo input</value>
+  </data>
+  <data name="FileInfoTaskSummary" xml:space="preserve">
+    <value>List detailed file information</value>
+  </data>
+  <data name="FinalPathTaskSummary" xml:space="preserve">
+    <value>Get the final (canonical) path</value>
+  </data>
+  <data name="FullPathTaskSummary" xml:space="preserve">
+    <value>Get the full (qualified) path</value>
+  </data>
   <data name="HelpGeneral" xml:space="preserve">
     <value>XFile is a sample xTask based application.</value>
+  </data>
+  <data name="ListStreamsTaskSummary" xml:space="preserve">
+    <value>List alternate streams for the given path</value>
+  </data>
+  <data name="LogicalDriveStringsTaskSummary" xml:space="preserve">
+    <value>List available drives</value>
+  </data>
+  <data name="LongPathTaskSummary" xml:space="preserve">
+    <value>Get the long name path</value>
+  </data>
+  <data name="MakeDirectoryTaskSummary" xml:space="preserve">
+    <value>Make the given directory</value>
+  </data>
+  <data name="MountPointTaskSummary" xml:space="preserve">
+    <value>Get the mount point for the given path</value>
+  </data>
+  <data name="NoTargetSpecifiedError" xml:space="preserve">
+    <value>No target was specified.</value>
+  </data>
+  <data name="PrintCurrentDirectoryTaskSummary" xml:space="preserve">
+    <value>Get the current directory</value>
   </data>
   <data name="RequiresSourceAndDestinationError" xml:space="preserve">
     <value>This command requires a source and a destination.</value>
   </data>
   <data name="RequiresTargetError" xml:space="preserve">
     <value>This command requires a target.</value>
+  </data>
+  <data name="ShortPathTaskSummary" xml:space="preserve">
+    <value>Get the short name path</value>
+  </data>
+  <data name="TypeTaskSummary" xml:space="preserve">
+    <value>Type the given file</value>
+  </data>
+  <data name="VolumeInformationTaskSummary" xml:space="preserve">
+    <value>List information for the given volume</value>
+  </data>
+  <data name="VolumeMountPointsTaskSummary" xml:space="preserve">
+    <value>List the mount points for the given volume</value>
+  </data>
+  <data name="VolumeNameTaskSummary" xml:space="preserve">
+    <value>Get the volume name for the given mount point</value>
   </data>
 </root>

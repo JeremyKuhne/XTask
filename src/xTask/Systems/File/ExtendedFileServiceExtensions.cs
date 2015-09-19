@@ -41,7 +41,7 @@ namespace XTask.Systems.File
                 case PathFormat.VolumeAbsoluteExtended:
                 case PathFormat.DriveAbsolute:
                     canonicalRoot = fileService.GetVolumeName(root);
-                    simpleRoot = fileService.GetVolumePathName(root);
+                    simpleRoot = fileService.GetMountPoint(root);
                     break;
             }
 

@@ -20,6 +20,14 @@ namespace XTask.Tasks
     /// </summary>
     public interface ITaskDocumentation
     {
+        /// <summary>
+        /// Get the brief description for use in task lists
+        /// </summary>
+        string Summary { get; }
+
+        /// <summary>
+        /// Get the full usage documentation
+        /// </summary>
         void GetUsage(ITaskInteraction interaction);
     }
 }

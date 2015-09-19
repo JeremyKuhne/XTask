@@ -134,6 +134,15 @@ namespace XTask {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to List and set option defaults.
+        /// </summary>
+        internal static string DefaultsTaskSummary {
+            get {
+                return ResourceManager.GetString("DefaultsTaskSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Default Value.
         /// </summary>
         internal static string DefaultsValueColumnHeader {
@@ -298,6 +307,15 @@ namespace XTask {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Start interactive mode.
+        /// </summary>
+        internal static string InteractiveTaskSummary {
+            get {
+                return ResourceManager.GetString("InteractiveTaskSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;NONE&gt;.
         /// </summary>
         internal static string NoValue {
@@ -312,6 +330,33 @@ namespace XTask {
         internal static string NullString {
             get {
                 return ResourceManager.GetString("NullString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Task.
+        /// </summary>
+        internal static string OverviewColumn1 {
+            get {
+                return ResourceManager.GetString("OverviewColumn1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Aliases.
+        /// </summary>
+        internal static string OverviewColumn2 {
+            get {
+                return ResourceManager.GetString("OverviewColumn2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Summary.
+        /// </summary>
+        internal static string OverviewColumn3 {
+            get {
+                return ResourceManager.GetString("OverviewColumn3", resourceCulture);
             }
         }
         

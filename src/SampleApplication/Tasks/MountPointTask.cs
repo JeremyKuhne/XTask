@@ -7,19 +7,18 @@
 
 namespace XFile.Tasks
 {
+    using System;
     using XTask.Logging;
     using XTask.Utility;
 
-    public class GetVolumePathNamesTask : FileTaskWithTarget
+    public class MountPointTask : FileTaskWithTarget
     {
         protected override ExitCode ExecuteFileTask()
         {
-            foreach (string pathName in ExtendedFileService.GetVolumePathNames(this.Arguments.Target))
-            {
-                this.Loggers[LoggerType.Result].WriteLine(pathName);
-            }
-
+            this.Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetMountPoint(GetFullTargetPath()));
             return ExitCode.Success;
         }
+
+        public override string Summary { get { return XFileStrings.MountPointTaskSummary; } }
     }
 }

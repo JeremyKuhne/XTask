@@ -36,14 +36,14 @@ namespace XTask.Systems.File.Concrete
             return NativeMethods.VolumeManagement.GetVolumeNameForVolumeMountPoint(volumeMountPoint);
         }
 
-        public string GetVolumePathName(string path)
+        public string GetMountPoint(string path)
         {
             if (String.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
 
             return NativeMethods.VolumeManagement.GetVolumePathName(path);
         }
 
-        public IEnumerable<string> GetVolumePathNames(string volumeName)
+        public IEnumerable<string> GetVolumeMountPoints(string volumeName)
         {
             if (String.IsNullOrWhiteSpace(volumeName)) throw new ArgumentNullException(nameof(volumeName));
 

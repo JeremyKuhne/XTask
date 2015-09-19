@@ -20,7 +20,9 @@ namespace XTask.Tests.Tasks
         [Fact]
         public void HelpLogsHelp()
         {
-            HelpTask task = new HelpTask("GeneralHelp");
+            ITaskRegistry registry = Substitute.For<ITaskRegistry>();
+            HelpTask task = new HelpTask(registry, "GeneralHelp");
+
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             ILoggers loggers = Substitute.For<ILoggers>();
             interaction.Loggers.Returns(loggers);
@@ -28,7 +30,7 @@ namespace XTask.Tests.Tasks
             loggers[LoggerType.Result].Returns(logger);
 
             task.Execute(interaction).Should().Be(ExitCode.Success);
-            logger.Received(1).WriteLine(WriteStyle.Fixed, "GeneralHelp");
+            logger.Received().WriteLine(WriteStyle.Fixed, "GeneralHelp");
         }
     }
 }

@@ -54,7 +54,7 @@ namespace XTask.Systems.File
         /// Gets the volume mount point for the given path, which is either the folder where the drive is mounted
         /// (e.g. C:\MountedDrives\DDrive\) or the root of the volume (e.g. C:\).
         /// </summary>
-        string GetVolumePathName(string path);
+        string GetMountPoint(string path);
 
         /// <summary>
         /// Gets volume information for the specified root path.
@@ -64,7 +64,7 @@ namespace XTask.Systems.File
         /// <summary>
         /// Gets all of the defined mount points for the given volume name.
         /// </summary>
-        IEnumerable<string> GetVolumePathNames(string volumeName);
+        IEnumerable<string> GetVolumeMountPoints(string volumeName);
 
         /// <summary>
         /// Returns drive strings in use ("C:", "D:", etc.)

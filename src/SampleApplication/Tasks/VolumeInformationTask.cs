@@ -12,7 +12,7 @@ namespace XFile.Tasks
     using XTask.Logging;
     using XTask.Utility;
 
-    public class GetVolumeInformationTask : FileTaskWithTarget
+    public class VolumeInformationTask : FileTaskWithTarget
     {
         protected override ExitCode ExecuteFileTask()
         {
@@ -40,5 +40,7 @@ namespace XFile.Tasks
             this.Loggers[LoggerType.Result].Write(table);
             return ExitCode.Success;
         }
+
+        public override string Summary { get { return XFileStrings.VolumeInformationTaskSummary; } }
     }
 }

@@ -146,6 +146,9 @@
   <data name="DefaultsSettingColumnHeader" xml:space="preserve">
     <value>Setting</value>
   </data>
+  <data name="DefaultsTaskSummary" xml:space="preserve">
+    <value>List and set option defaults</value>
+  </data>
   <data name="DefaultsValueColumnHeader" xml:space="preserve">
     <value>Default Value</value>
   </data>
@@ -211,11 +214,23 @@ Executable           App.exe.config</value>
   <data name="HelpOptionDetailHeader" xml:space="preserve">
     <value>Option Details:</value>
   </data>
+  <data name="InteractiveTaskSummary" xml:space="preserve">
+    <value>Start interactive mode</value>
+  </data>
   <data name="NoValue" xml:space="preserve">
     <value>&lt;NONE&gt;</value>
   </data>
   <data name="NullString" xml:space="preserve">
     <value>&lt;null&gt;</value>
+  </data>
+  <data name="OverviewColumn1" xml:space="preserve">
+    <value>Task</value>
+  </data>
+  <data name="OverviewColumn2" xml:space="preserve">
+    <value>Aliases</value>
+  </data>
+  <data name="OverviewColumn3" xml:space="preserve">
+    <value>Summary</value>
   </data>
   <data name="Succeeded" xml:space="preserve">
     <value>succeeded.</value>

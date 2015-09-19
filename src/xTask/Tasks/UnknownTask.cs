@@ -16,8 +16,8 @@ namespace XTask.Tasks
     /// </summary>
     public class UnknownTask : HelpTask
     {
-        public UnknownTask(string generalHelp)
-            : base (generalHelp)
+        public UnknownTask(ITaskRegistry registry, string generalHelp)
+            : base (registry, generalHelp)
         {
         }
 

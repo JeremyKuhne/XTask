@@ -8,6 +8,7 @@
 namespace XFile.Tasks
 {
     using System;
+    using System.Linq;
     using XTask.Systems.File;
     using XTask.Logging;
     using XTask.Utility;
@@ -16,20 +17,32 @@ namespace XFile.Tasks
     {
         protected override ExitCode ExecuteFileTask()
         {
-            string echo = String.Join(" ", Arguments.Targets);
-
             string target = Arguments.GetOption<string>("target", "t");
-            if (target != null)
+            int redirector = Array.IndexOf<string>(Arguments.Targets, ">");
+
+            if (target == null && redirector == -1)
             {
-                target = GetFullPath(target);
-                FileService.WriteAllText(target, echo);
+                this.Loggers[LoggerType.Result].WriteLine(String.Join(" ", Arguments.Targets));
+                return ExitCode.Success;
             }
-            else
+
+            if (target == null)
             {
-                this.Loggers[LoggerType.Result].WriteLine(echo);
+                if (redirector == Arguments.Targets.Length - 1)
+                {
+                    this.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, XFileStrings.NoTargetSpecifiedError);
+                    return ExitCode.InvalidArgument;
+                }
+
+                target = Arguments.Targets[redirector + 1];
             }
+
+            target = GetFullPath(target);
+            FileService.WriteAllText(target, String.Join(" ", redirector == -1 ? Arguments.Targets : Arguments.Targets.Take(redirector)));
 
             return ExitCode.Success;
         }
+
+        public override string Summary { get { return XFileStrings.EchoTaskSummary; } }
     }
 }

@@ -17,6 +17,7 @@ namespace XFile.Tasks
     using XTask.Systems.File.Concrete.Flex;
     using XTask.Utility;
 
+    [XTask.Tasks.Hidden]
     public class TestTask : FileTask
     {
         internal const string NativeTestLibrary = "NativeTestLibrary.dll";

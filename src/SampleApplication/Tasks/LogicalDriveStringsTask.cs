@@ -10,7 +10,7 @@ namespace XFile.Tasks
     using XTask.Logging;
     using XTask.Utility;
 
-    public class GetLogicalDriveStringsTask : FileTask
+    public class LogicalDriveStringsTask : FileTask
     {
         protected override ExitCode ExecuteFileTask()
         {
@@ -21,5 +21,7 @@ namespace XFile.Tasks
 
             return ExitCode.Success;
         }
+
+        public override string Summary { get { return XFileStrings.LogicalDriveStringsTaskSummary; } }
     }
 }

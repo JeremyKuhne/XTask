@@ -21,7 +21,8 @@ namespace XTask.Tests.Tasks
         [Fact]
         public void UnknownTaskLogsHelp()
         {
-            UnknownTask task = new UnknownTask("GeneralHelp");
+            ITaskRegistry registry = Substitute.For<ITaskRegistry>();
+            UnknownTask task = new UnknownTask(registry, "GeneralHelp");
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             ILoggers loggers = Substitute.For<ILoggers>();
             interaction.Loggers.Returns(loggers);
@@ -29,13 +30,14 @@ namespace XTask.Tests.Tasks
             loggers[LoggerType.Result].Returns(logger);
 
             task.Execute(interaction).Should().Be(ExitCode.InvalidArgument);
-            logger.Received(1).WriteLine(WriteStyle.Fixed, "GeneralHelp");
+            logger.Received().WriteLine(WriteStyle.Fixed, "GeneralHelp");
         }
 
         [Fact]
         public void NoParameters()
         {
-            UnknownTask task = new UnknownTask("GeneralHelp");
+            ITaskRegistry registry = Substitute.For<ITaskRegistry>();
+            UnknownTask task = new UnknownTask(registry, "GeneralHelp");
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             ILoggers loggers = Substitute.For<ILoggers>();
             interaction.Loggers.Returns(loggers);
@@ -43,13 +45,14 @@ namespace XTask.Tests.Tasks
             loggers[LoggerType.Status].Returns(logger);
 
             task.Execute(interaction).Should().Be(ExitCode.InvalidArgument);
-            logger.Received(1).WriteLine(WriteStyle.Error, XTaskStrings.ErrorNoParametersSpecified);
+            logger.Received().WriteLine(WriteStyle.Error, XTaskStrings.ErrorNoParametersSpecified);
         }
 
         [Fact]
         public void UnkownCommand()
         {
-            UnknownTask task = new UnknownTask("GeneralHelp");
+            ITaskRegistry registry = Substitute.For<ITaskRegistry>();
+            UnknownTask task = new UnknownTask(registry, "GeneralHelp");
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
             string commandName = "Foo";
@@ -61,7 +64,7 @@ namespace XTask.Tests.Tasks
             loggers[LoggerType.Status].Returns(logger);
 
             task.Execute(interaction).Should().Be(ExitCode.InvalidArgument);
-            logger.Received(1).WriteLine(WriteStyle.Error, XTaskStrings.UnknownCommand, commandName);
+            logger.Received().WriteLine(WriteStyle.Error, XTaskStrings.UnknownCommand, commandName);
         }
     }
 }

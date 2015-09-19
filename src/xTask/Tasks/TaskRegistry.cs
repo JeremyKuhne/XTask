@@ -9,19 +9,34 @@ namespace XTask.Tasks
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     public abstract class TaskRegistry : ITaskRegistry
     {
-        private Dictionary<string, Func<ITask>> tasks = new Dictionary<string, Func<ITask>>(StringComparer.OrdinalIgnoreCase);
+        private class TaskEntry : ITaskEntry
+        {
+            private HashSet<string> aliases;
+            private Lazy<ITask> task;
 
+            public IEnumerable<string> Aliases { get { return this.aliases; } }
+
+            public ITask Task { get { return task.Value; } }
+
+            public TaskEntry(Func<ITask> task, params string[] taskNames)
+            {
+                this.aliases = new HashSet<string>(taskNames, StringComparer.OrdinalIgnoreCase);
+                this.task = new Lazy<ITask>(task);
+            }
+        }
+
+        private List<TaskEntry> tasks = new List<TaskEntry>();
         private Func<ITask> defaultTask;
+
+        public IEnumerable<ITaskEntry> Tasks { get { return this.tasks; } }
 
         protected void RegisterTaskInternal(Func<ITask> task, params string[] taskNames)
         {
-            foreach (string taskName in taskNames)
-            {
-                this.tasks.Add(taskName, task);
-            }
+            this.tasks.Add(new TaskEntry(task, taskNames));
         }
 
         protected void RegisterDefaultTaskInternal(Func<ITask> task)
@@ -33,19 +48,25 @@ namespace XTask.Tasks
         {
             get
             {
-                Func<ITask> task = null;
-                if (String.IsNullOrEmpty(taskName) || !this.tasks.TryGetValue(taskName, out task))
+                if (!String.IsNullOrEmpty(taskName))
                 {
-                    if (this.defaultTask != null)
+                    foreach (var entry in this.tasks)
                     {
-                        return this.defaultTask();
-                    }
-                    else
-                    {
-                        return new UnknownTask(XTaskStrings.HelpGeneral);
+                        if (entry.Aliases.Contains(taskName))
+                        {
+                            return entry.Task;
+                        }
                     }
                 }
-                return task();
+
+                if (this.defaultTask != null)
+                {
+                    return this.defaultTask();
+                }
+                else
+                {
+                    return new UnknownTask(this, XTaskStrings.HelpGeneral);
+                }
             }
         }
     }

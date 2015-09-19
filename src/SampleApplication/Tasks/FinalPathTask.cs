@@ -17,5 +17,7 @@ namespace XFile.Tasks
             this.Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetFinalPath(this.GetFullTargetPath()));
             return ExitCode.Success;
         }
+
+        public override string Summary { get { return XFileStrings.FinalPathTaskSummary; } }
     }
 }

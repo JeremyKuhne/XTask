@@ -38,8 +38,8 @@ namespace XTask.Tasks
             // These commands are provided as part of the XTask framework
             registry.RegisterTask(() => new DefaultsTask(this.applicationName), "defaults");
             registry.RegisterTask(() => new InteractiveTask($"({this.applicationName}) ", registry), "interactive", "int", "i");
-            registry.RegisterTask(() => new HelpTask(this.generalHelpString), "help", "?");
-            registry.RegisterDefaultTask(() => new UnknownTask(this.generalHelpString));
+            registry.RegisterTask(() => new HelpTask(registry, this.generalHelpString), "help", "?");
+            registry.RegisterDefaultTask(() => new UnknownTask(registry, this.generalHelpString));
         }
 
         protected virtual SimpleTaskRegistry GetTaskRegistry()

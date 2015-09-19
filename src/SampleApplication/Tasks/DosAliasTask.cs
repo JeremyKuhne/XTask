@@ -12,7 +12,7 @@ namespace XFile.Tasks
     using XTask.Logging;
     using XTask.Utility;
 
-    public class QueryDosDeviceTask : FileTask
+    public class DosAliasTask : FileTask
     {
         protected override ExitCode ExecuteFileTask()
         {
@@ -35,5 +35,7 @@ namespace XFile.Tasks
 
             return ExitCode.Success;
         }
+
+        public override string Summary { get { return XFileStrings.DosAliasTaskSummary; } }
     }
 }

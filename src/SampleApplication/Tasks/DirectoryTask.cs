@@ -65,5 +65,7 @@ namespace XFile.Tasks
                     info.Name
                 );
         }
+
+        public override string Summary { get { return XFileStrings.DirectoryTaskSummary; } }
     }
 }
