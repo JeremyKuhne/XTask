@@ -156,7 +156,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\bin\Win32\$(Configuration)\NativeTestLibrary\NativeTestLibrary.dll">
+    <None Include="..\..\bin\x64\$(Configuration)\NativeTestLibrary\NativeTestLibrary.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

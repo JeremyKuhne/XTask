@@ -9,6 +9,7 @@ namespace XTask.Tests.Interop
 {
     using FileSystem;
     using FluentAssertions;
+    using System;
     using System.Runtime.InteropServices;
     using System.Security;
     using Systems.File;
@@ -20,10 +21,21 @@ namespace XTask.Tests.Interop
     {
         internal const string NativeTestLibrary = "NativeTestLibrary.dll";
 
+        private string GetNativeTestLibraryLocation()
+        {
+            string path = Paths.Combine(Paths.GetDirectory((new Uri(typeof(LoadLibraryTests).Assembly.CodeBase)).LocalPath), NativeTestLibrary);
+            IFileService system = new FileService();
+            if (!system.FileExists(path))
+            {
+                throw new System.IO.FileNotFoundException(path);
+            }
+            return path;
+        }
+
         [Fact]
         public void LoadAsResource()
         {
-            using (var handle = NativeMethods.LoadLibrary(NativeTestLibrary, LoadLibraryFlags.LOAD_LIBRARY_AS_IMAGE_RESOURCE | LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE))
+            using (var handle = NativeMethods.LoadLibrary(GetNativeTestLibraryLocation(), LoadLibraryFlags.LOAD_LIBRARY_AS_IMAGE_RESOURCE | LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE))
             {
                 handle.IsInvalid.Should().BeFalse();
             }
@@ -37,8 +49,8 @@ namespace XTask.Tests.Interop
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
                 IFileService system = new FileService();
                 system.CreateDirectory(longPath);
-                string longPathLibrary = Paths.Combine(longPath, NativeTestLibrary);
-                system.CopyFile(NativeTestLibrary, longPathLibrary);
+                string longPathLibrary = Paths.Combine(longPath, "LoadAsResourceFromLongPath.dll");
+                system.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
                 longPathLibrary = Paths.AddExtendedPrefix(longPathLibrary);
 
                 using (var handle = NativeMethods.LoadLibrary(longPathLibrary, LoadLibraryFlags.LOAD_LIBRARY_AS_IMAGE_RESOURCE | LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE))
@@ -51,7 +63,7 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LoadString()
         {
-            using (var handle = NativeMethods.LoadLibrary(NativeTestLibrary, LoadLibraryFlags.LOAD_LIBRARY_AS_IMAGE_RESOURCE | LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE))
+            using (var handle = NativeMethods.LoadLibrary(GetNativeTestLibraryLocation(), LoadLibraryFlags.LOAD_LIBRARY_AS_IMAGE_RESOURCE | LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE))
             {
                 string resource = NativeMethods.LoadString(handle, 101);
                 resource.Should().Be("Test");
@@ -66,8 +78,8 @@ namespace XTask.Tests.Interop
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
                 IFileService system = new FileService();
                 system.CreateDirectory(longPath);
-                string longPathLibrary = Paths.Combine(longPath, NativeTestLibrary);
-                system.CopyFile(NativeTestLibrary, longPathLibrary);
+                string longPathLibrary = Paths.Combine(longPath, "LoadStringFromLongPath.dll");
+                system.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
                 longPathLibrary = Paths.AddExtendedPrefix(longPathLibrary);
 
                 using (var handle = NativeMethods.LoadLibrary(longPathLibrary, LoadLibraryFlags.LOAD_LIBRARY_AS_IMAGE_RESOURCE | LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE))
@@ -95,8 +107,8 @@ namespace XTask.Tests.Interop
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
                 IFileService system = new FileService();
                 system.CreateDirectory(longPath);
-                string longPathLibrary = Paths.Combine(longPath, NativeTestLibrary);
-                system.CopyFile(NativeTestLibrary, longPathLibrary);
+                string longPathLibrary = Paths.Combine(longPath, "LoadAsBinaryFromLongPath.dll");
+                system.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
                 longPathLibrary = Paths.AddExtendedPrefix(longPathLibrary);
 
                 using (var handle = NativeMethods.LoadLibrary(longPathLibrary, LoadLibraryFlags.LOAD_WITH_ALTERED_SEARCH_PATH))
@@ -113,7 +125,7 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LoadFunction()
         {
-            using (var handle = NativeMethods.LoadLibrary(NativeTestLibrary, LoadLibraryFlags.LOAD_WITH_ALTERED_SEARCH_PATH))
+            using (var handle = NativeMethods.LoadLibrary(GetNativeTestLibraryLocation(), LoadLibraryFlags.LOAD_WITH_ALTERED_SEARCH_PATH))
             {
                 var doubler = NativeMethods.GetFunctionDelegate<DoubleDelegate>(handle, "Double");
                 doubler(2).Should().Be(4);
@@ -128,8 +140,8 @@ namespace XTask.Tests.Interop
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
                 IFileService system = new FileService();
                 system.CreateDirectory(longPath);
-                string longPathLibrary = Paths.Combine(longPath, NativeTestLibrary);
-                system.CopyFile(NativeTestLibrary, longPathLibrary);
+                string longPathLibrary = Paths.Combine(longPath, "LoadFunctionFromLongPath.dll");
+                system.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
                 longPathLibrary = Paths.AddExtendedPrefix(longPathLibrary);
 
                 using (var handle = NativeMethods.LoadLibrary(longPathLibrary, 0))
