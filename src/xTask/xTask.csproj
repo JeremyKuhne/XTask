@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), dir.props))\dir.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -13,27 +13,13 @@
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <!-- Default configurations to help VS understand the options -->
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -76,6 +62,10 @@
     <Compile Include="Build\BuildTaskInteraction.cs" />
     <Compile Include="Build\TaskItem.cs" />
     <Compile Include="Collections\ListExtensions.cs" />
+    <Compile Include="Interop\LoadLibraryFlags.cs" />
+    <Compile Include="Interop\NativeMethods.Backup.cs" />
+    <Compile Include="Interop\SafeHandleZeroIsInvalid.cs" />
+    <Compile Include="Interop\SafeLibraryHandle.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationManagerWrapper.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationSectionGroupWrapper.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationWrapper.cs" />
@@ -92,6 +82,7 @@
     <Compile Include="Systems\File\Concrete\Flex\FileInformation.cs" />
     <Compile Include="Systems\File\Concrete\Flex\FileSystemInformation.cs" />
     <Compile Include="Systems\File\Concrete\DotNet\FileSystemInformation.cs" />
+    <Compile Include="Systems\File\Concrete\Flex\LibraryService.cs" />
     <Compile Include="Systems\File\DirectoryInformationExtensions.cs" />
     <Compile Include="Systems\File\Concrete\ExtendedFileService.cs" />
     <Compile Include="Systems\File\ExtendedFileServiceExtensions.cs" />

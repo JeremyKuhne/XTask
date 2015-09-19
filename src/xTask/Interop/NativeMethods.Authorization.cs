@@ -17,12 +17,101 @@ namespace XTask.Interop
     using System.Security.Principal;
     using System.Text;
 
-
     internal static partial class NativeMethods
     {
-        [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
         internal static class Authorization
         {
+            // Putting private P/Invokes in a subclass to allow exact matching of signatures for perf on initial call and reduce string count
+            [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
+            private static class Private
+            {
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa375202.aspx
+                [DllImport(Libraries.Advapi32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool AdjustTokenPrivileges(
+                    IntPtr TokenHandle,
+                    [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges,
+                    TOKEN_PRIVILEGES NewState,
+                    uint BufferLength,
+                    out TOKEN_PRIVILEGES PreviousState,
+                    out uint ReturnLength);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa446671.aspx
+                [DllImport(Libraries.Advapi32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool GetTokenInformation(
+                    IntPtr TokenHandle,
+                    TOKEN_INFORMATION_CLASS TokenInformationClass,
+                    IntPtr TokenInformation,
+                    uint TokenInformationLength,
+                    out uint ReturnLength);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379176.aspx
+                [DllImport(Libraries.Advapi32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool LookupPrivilegeNameW(
+                    IntPtr lpSystemName,
+                    ref LUID lpLuid,
+                    StringBuilder lpName,
+                    ref uint cchName);
+
+                // https://msdn.microsoft.com/en-us/library/aa379180.aspx
+                [DllImport(Libraries.Advapi32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool LookupPrivilegeValueW(
+                    string lpSystemName,
+                    string lpName,
+                    ref LUID lpLuid);
+
+                // https://msdn.microsoft.com/en-us/library/aa379304.aspx
+                [DllImport(Libraries.Advapi32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool PrivilegeCheck(
+                    SafeCloseHandle ClientToken,
+                    ref PRIVILEGE_SET RequiredPrivileges,
+                    [MarshalAs(UnmanagedType.Bool)] out bool pfResult);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379590.aspx
+                [DllImport(Libraries.Advapi32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool SetThreadToken(
+                    IntPtr Thread,
+                    SafeCloseHandle Token);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379317.aspx
+                [DllImport(Libraries.Advapi32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool RevertToSelf();
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa446617.aspx
+                [DllImport(Libraries.Advapi32, CharSet = CharSet.Auto, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool DuplicateTokenEx(
+                    SafeCloseHandle hExistingToken,
+                    TokenAccessLevels dwDesiredAccess,
+                    IntPtr lpTokenAttributes,
+                    SECURITY_IMPERSONATION_LEVEL ImpersonationLevel,
+                    TOKEN_TYPE TokenType,
+                    ref SafeCloseHandle phNewToken);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379295.aspx
+                [DllImport(Libraries.Advapi32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool OpenProcessToken(
+                    IntPtr ProcessHandle,
+                    TokenAccessLevels DesiredAccesss,
+                    out SafeCloseHandle TokenHandle);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379296.aspx
+                [DllImport(Libraries.Advapi32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool OpenThreadToken(
+                    IntPtr ThreadHandle,
+                    TokenAccessLevels DesiredAccess,
+                    [MarshalAs(UnmanagedType.Bool)] bool OpenAsSelf,
+                    out SafeCloseHandle TokenHandle);
+            }
+
             // In winnt.h
             private const uint PRIVILEGE_SET_ALL_NECESSARY = 1;
             internal const uint SE_PRIVILEGE_ENABLED_BY_DEFAULT = 0x00000001;
@@ -128,33 +217,11 @@ namespace XTask.Interop
                 TokenImpersonation
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa375202.aspx
-            [DllImport("advapi32.dll", EntryPoint = "AdjustTokenPrivileges", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool AdjustTokenPrivilegesPrivate(
-                IntPtr TokenHandle,
-                [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges,
-                TOKEN_PRIVILEGES NewState,
-                uint BufferLength,
-                out TOKEN_PRIVILEGES PreviousState,
-                out uint ReturnLength);
-
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa446671.aspx
-            [DllImport("advapi32.dll", EntryPoint = "GetTokenInformation", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool GetTokenInformationPrivate(
-                IntPtr TokenHandle,
-                TOKEN_INFORMATION_CLASS TokenInformationClass,
-                IntPtr TokenInformation,
-                uint TokenInformationLength,
-                out uint ReturnLength);
-
             internal static IEnumerable<PrivilegeSetting> GetTokenPrivileges(SafeCloseHandle token)
             {
                 // Get the buffer size we need
                 uint bytesNeeded;
-                if (GetTokenInformationPrivate(
+                if (Private.GetTokenInformation(
                     token.DangerousGetHandle(),
                     TOKEN_INFORMATION_CLASS.TokenPrivileges,
                     IntPtr.Zero,
@@ -171,7 +238,7 @@ namespace XTask.Interop
 
                 // Initialize the buffer and get the data
                 NativeBuffer buffer = new NativeBuffer(bytesNeeded);
-                if (!GetTokenInformationPrivate(
+                if (!Private.GetTokenInformation(
                     token.DangerousGetHandle(),
                     TOKEN_INFORMATION_CLASS.TokenPrivileges,
                     buffer,
@@ -200,7 +267,7 @@ namespace XTask.Interop
 
                     uint length = (uint)sb.Capacity;
 
-                    if (!LookupPrivilegeNamePrivate(IntPtr.Zero, ref luid, sb, ref length))
+                    if (!Private.LookupPrivilegeNameW(IntPtr.Zero, ref luid, sb, ref length))
                     {
                         error = Marshal.GetLastWin32Error();
                         throw GetIoExceptionForError(error);
@@ -222,28 +289,10 @@ namespace XTask.Interop
                 return GetTokenPrivileges(token).Any(t => t.Privilege == privilege);
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379176.aspx
-            [DllImport("advapi32.dll", EntryPoint = "LookupPrivilegeName", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool LookupPrivilegeNamePrivate(
-                IntPtr lpSystemName,
-                ref LUID lpLuid,
-                StringBuilder lpName,
-                ref uint cchName
-            );
-
-            // https://msdn.microsoft.com/en-us/library/aa379180.aspx
-            [DllImport("advapi32.dll", EntryPoint = "LookupPrivilegeValueW", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool LookupPrivilegeValuePrivate(
-                string lpSystemName,
-                string lpName,
-                ref LUID lpLuid);
-
             internal static LUID LookupPrivilegeValue(string name)
             {
                 LUID luid = new LUID();
-                if (!LookupPrivilegeValuePrivate(null, name, ref luid))
+                if (!Private.LookupPrivilegeValueW(null, name, ref luid))
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error, name);
@@ -251,14 +300,6 @@ namespace XTask.Interop
 
                 return luid;
             }
-
-            // https://msdn.microsoft.com/en-us/library/aa379304.aspx
-            [DllImport("advapi32.dll", EntryPoint = "PrivilegeCheck", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool PrivilegeCheckPrivate(
-                SafeCloseHandle ClientToken,
-                ref PRIVILEGE_SET RequiredPrivileges,
-                [MarshalAs(UnmanagedType.Bool)] out bool pfResult);
 
             /// <summary>
             /// Checks if the given privilege is enabled. This does not tell you whether or not it
@@ -283,7 +324,7 @@ namespace XTask.Interop
 
 
                 bool result;
-                if (!PrivilegeCheckPrivate(token, ref set, out result))
+                if (!Private.PrivilegeCheck(token, ref set, out result))
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error, privilege.ToString());
@@ -292,18 +333,10 @@ namespace XTask.Interop
                 return result;
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379295.aspx
-            [DllImport("advapi32.dll", EntryPoint = "OpenProcessToken", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool OpenProcessTokenPrivate(
-                IntPtr ProcessHandle,
-                TokenAccessLevels DesiredAccesss,
-                out SafeCloseHandle TokenHandle);
-
             internal static SafeCloseHandle OpenProcessToken(TokenAccessLevels desiredAccess)
             {
                 SafeCloseHandle processToken;
-                if (!OpenProcessTokenPrivate(Process.GetCurrentProcess().Handle, desiredAccess, out processToken))
+                if (!Private.OpenProcessToken(Process.GetCurrentProcess().Handle, desiredAccess, out processToken))
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error, desiredAccess.ToString());
@@ -312,27 +345,17 @@ namespace XTask.Interop
                 return processToken;
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379296.aspx
-            [DllImport("advapi32.dll", EntryPoint = "OpenThreadToken", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool OpenThreadTokenPrivate(
-                IntPtr ThreadHandle,
-                TokenAccessLevels DesiredAccess,
-                [MarshalAs(UnmanagedType.Bool)] bool OpenAsSelf,
-                out SafeCloseHandle TokenHandle
-            );
-
             internal static SafeCloseHandle OpenThreadToken(TokenAccessLevels desiredAccess, bool openAsSelf)
             {
                 SafeCloseHandle threadToken;
-                if (!OpenThreadTokenPrivate(GetCurrentThread(), desiredAccess, openAsSelf, out threadToken))
+                if (!Private.OpenThreadToken(NativeMethods.Private.GetCurrentThread(), desiredAccess, openAsSelf, out threadToken))
                 {
                     int error = Marshal.GetLastWin32Error();
                     if (error != WinError.ERROR_NO_TOKEN)
                         throw GetIoExceptionForError(error, desiredAccess.ToString());
 
                     SafeCloseHandle processToken = OpenProcessToken(TokenAccessLevels.Duplicate);
-                    if (!DuplicateTokenExPrivate(
+                    if (!Private.DuplicateTokenEx(
                         processToken,
                         TokenAccessLevels.Impersonate | TokenAccessLevels.Query | TokenAccessLevels.AdjustPrivileges,
                         IntPtr.Zero,
@@ -347,29 +370,6 @@ namespace XTask.Interop
 
                 return threadToken;
             }
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379590.aspx
-            [DllImport("advapi32.dll", EntryPoint = "SetThreadToken", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool SetThreadTokenPrivate(
-                IntPtr Thread,
-                SafeCloseHandle Token);
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379317.aspx
-            [DllImport("advapi32.dll", EntryPoint = "RevertToSelf", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool RevertToSelf();
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa446617.aspx
-            [DllImport("advapi32.dll", EntryPoint = "DuplicateTokenEx", CharSet = CharSet.Auto, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool DuplicateTokenExPrivate(
-                SafeCloseHandle hExistingToken,
-                TokenAccessLevels dwDesiredAccess,
-                IntPtr lpTokenAttributes,
-                SECURITY_IMPERSONATION_LEVEL ImpersonationLevel,
-                TOKEN_TYPE TokenType,
-                ref SafeCloseHandle phNewToken);
         }
     }
 }

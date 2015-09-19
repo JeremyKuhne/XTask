@@ -20,38 +20,158 @@ namespace XTask.Interop
 
     internal static partial class NativeMethods
     {
-        [SuppressUnmanagedCodeSecurity]
         internal static class FileManagement
         {
-            internal const uint INVALID_FILE_ATTRIBUTES = unchecked((uint)(-1));
-            internal const uint FILE_ATTRIBUTE_DIRECTORY = 0x00000010;
-            internal const uint FILE_ATTRIBUTE_VIRTUAL = 0x00010000;
-            internal const uint FILE_ATTRIBUTE_HIDDEN = 0x00000002;
+            // Putting private P/Invokes in a subclass to allow exact matching of signatures for perf on initial call and reduce string count
+            [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
+            private static class Private
+            {
+                internal const uint INVALID_FILE_ATTRIBUTES = unchecked((uint)(-1));
+                // internal const uint FILE_ATTRIBUTE_DIRECTORY = 0x00000010;
+                // internal const uint FILE_ATTRIBUTE_VIRTUAL = 0x00010000;
+                // internal const uint FILE_ATTRIBUTE_HIDDEN = 0x00000002;
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364944.aspx
-            [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "GetFileAttributes")]
-            private static extern uint GetFileAttributesPrivate(string lpFileName);
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364944.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                internal static extern FileAttributes GetFileAttributesW(
+                    string lpFileName);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365535.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool SetFileAttributesW(
+                    string lpFileName,
+                    uint dwFileAttributes);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364980.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                internal static extern uint GetLongPathNameW(
+                    string lpszShortPath,
+                    StringBuilder lpszLongPath,
+                    uint cchBuffer);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364989.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                internal static extern uint GetShortPathNameW(
+                    string lpszLongPath,
+                    StringBuilder lpszShortPath,
+                    uint cchBuffer);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364963.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                internal static extern uint GetFullPathNameW(
+                    string lpFileName,
+                    uint nBufferLength,
+                    StringBuilder lpBuffer,
+                    IntPtr lpFilePart);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364962.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                internal static extern uint GetFinalPathNameByHandleW(
+                    SafeFileHandle hFile,
+                    StringBuilder lpszFilePath,
+                    uint cchFilePath,
+                    FinalPathFlags dwFlags);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363858.aspx
+                [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+                internal static extern SafeFileHandle CreateFileW(
+                    string fileName,
+                    [MarshalAs(UnmanagedType.U4)] FileAccess fileAccess,
+                    [MarshalAs(UnmanagedType.U4)] FileShare fileShare,
+                    IntPtr securityAttributes,
+                    [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
+                    AllFileAttributeFlags flagsAndAttributes,
+                    IntPtr template);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364419.aspx
+                [DllImport(Libraries.Kernel32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+                internal static extern SafeFindHandle FindFirstFileExW(
+                     string lpFileName,
+                     FINDEX_INFO_LEVELS fInfoLevelId,
+                     out WIN32_FIND_DATA lpFindFileData,
+                     FINDEX_SEARCH_OPS fSearchOp,
+                     IntPtr lpSearchFilter,                 // Reserved
+                     int dwAdditionalFlags);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364428.aspx
+                [DllImport(Libraries.Kernel32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool FindNextFileW(
+                    IntPtr hFindFile,
+                    out WIN32_FIND_DATA lpFindFileData);
+
+                [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool FindClose(
+                    IntPtr hFindFile);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364952.aspx
+                [DllImport(Libraries.Kernel32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool GetFileInformationByHandle(
+                    SafeFileHandle hFile,
+                    out BY_HANDLE_FILE_INFORMATION lpFileInformation);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363915.aspx
+                [DllImport(Libraries.Kernel32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool DeleteFileW(
+                    string lpFilename);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365467.aspx
+                [DllImport(Libraries.Kernel32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                unsafe internal static extern bool ReadFile(
+                    SafeFileHandle hFile,
+                    byte* lpBuffer,
+                    uint nNumberOfBytesToRead,
+                    out uint lpNumberOfBytesRead,
+                    NativeOverlapped* lpOverlapped);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363852.aspx
+                // CopyFile calls CopyFileEx with COPY_FILE_FAIL_IF_EXISTS if fail if exists is set
+                [DllImport(Libraries.Kernel32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool CopyFileExW(
+                    string lpExistingFileName,
+                    string lpNewFileName,
+                    CopyProgressRoutine lpProgressRoutine,
+                    IntPtr lpData,
+                    [MarshalAs(UnmanagedType.Bool)] ref bool pbCancel,
+                    CopyFileFlags dwCopyFlags);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363866(v=vs.85).aspx
+                [DllImport(Libraries.Kernel32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool CreateSymbolicLinkW(
+                    string lpSymlinkFileName,
+                    string lpTargetFileName,
+                    uint dwFlags);
+            }
+
+            internal const FileAttributes InvalidFileAttributes = unchecked((FileAttributes)Private.INVALID_FILE_ATTRIBUTES);
 
             internal static FileAttributes GetFileAttributes(string path)
             {
                 path = Paths.AddExtendedPrefix(path);
 
-                uint result = FileManagement.GetFileAttributesPrivate(path);
-                if (result == FileManagement.INVALID_FILE_ATTRIBUTES)
+                FileAttributes result = Private.GetFileAttributesW(path);
+                if (result == InvalidFileAttributes)
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error, path);
                 }
 
-                return ConvertToFileAttributes(result);
+                return result;
             }
 
-            private static uint TryGetFileAttributesPrivate(string path)
+            private static FileAttributes TryGetFileAttributesPrivate(string path)
             {
                 path = Paths.AddExtendedPrefix(path);
 
-                uint result = FileManagement.GetFileAttributesPrivate(path);
-                if (result == FileManagement.INVALID_FILE_ATTRIBUTES)
+                FileAttributes result = Private.GetFileAttributesW(path);
+                if (result == InvalidFileAttributes)
                 {
                     int error = Marshal.GetLastWin32Error();
                     switch (error)
@@ -65,14 +185,6 @@ namespace XTask.Interop
                 return result;
             }
 
-            private static FileAttributes ConvertToFileAttributes(uint attributes)
-            {
-                // Virtual is the only attribute that isn't defined in .NET's FileAttributes- it is reserved currently
-                // https://msdn.microsoft.com/en-us/library/windows/desktop/gg258117(v=vs.85).aspx
-                attributes &= ~FileManagement.FILE_ATTRIBUTE_VIRTUAL;
-                return (FileAttributes)attributes;
-            }
-
             /// <summary>
             /// Gets the file attributes if possible.
             /// </summary>
@@ -83,16 +195,8 @@ namespace XTask.Interop
             /// <returns>'false' if the path is not valid or doesn't exist.</returns>
             internal static bool TryGetFileAttributes(string path, out FileAttributes attributes)
             {
-                attributes = 0;
-                uint result = FileManagement.TryGetFileAttributesPrivate(path);
-                if (result == FileManagement.INVALID_FILE_ATTRIBUTES)
-                {
-                    return false;
-                }
-
-                attributes = FileManagement.ConvertToFileAttributes(result);
-
-                return true;
+                attributes = FileManagement.TryGetFileAttributesPrivate(path);
+                return attributes != InvalidFileAttributes;
             }
 
             /// <summary>
@@ -105,7 +209,7 @@ namespace XTask.Interop
             internal static bool PathExists(string path)
             {
                 // If we didn't get invalid file attributes it must actually exist
-                return FileManagement.TryGetFileAttributesPrivate(path) != FileManagement.INVALID_FILE_ATTRIBUTES;
+                return FileManagement.TryGetFileAttributesPrivate(path) != InvalidFileAttributes;
             }
 
             /// <summary>
@@ -117,13 +221,13 @@ namespace XTask.Interop
             /// <exception cref="System.UnauthorizedAccessException">Thrown if the current user does not have rights to the specified path.</exception>
             internal static bool FileExists(string path)
             {
-                uint attributes = FileManagement.TryGetFileAttributesPrivate(path);
-                if (attributes == FileManagement.INVALID_FILE_ATTRIBUTES)
+                FileAttributes attributes = FileManagement.TryGetFileAttributesPrivate(path);
+                if (attributes == InvalidFileAttributes)
                 {
                     // Nothing there or bad path name
                     return false;
                 }
-                return (attributes & FileManagement.FILE_ATTRIBUTE_DIRECTORY) != FileManagement.FILE_ATTRIBUTE_DIRECTORY;
+                return (attributes & FileAttributes.Directory) == 0;
             }
 
             /// <summary>
@@ -135,23 +239,18 @@ namespace XTask.Interop
             /// <exception cref="System.UnauthorizedAccessException">Thrown if the current user does not have rights to the specified path.</exception>
             internal static bool DirectoryExists(string path)
             {
-                uint attributes = FileManagement.TryGetFileAttributesPrivate(path);
-                if (attributes == FileManagement.INVALID_FILE_ATTRIBUTES)
+                FileAttributes attributes = FileManagement.TryGetFileAttributesPrivate(path);
+                if (attributes == InvalidFileAttributes)
                 {
                     // Nothing there or bad path name
                     return false;
                 }
-                return (attributes & FileManagement.FILE_ATTRIBUTE_DIRECTORY) == FileManagement.FILE_ATTRIBUTE_DIRECTORY;
+                return (attributes & FileAttributes.Directory) != 0;
             }
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365535.aspx
-            [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "SetFileAttributes")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool SetFileAttributesPrivate(string lpFileName, uint dwFileAttributes);
 
             internal static void SetFileAttributes(string path, FileAttributes attributes)
             {
-                if (!FileManagement.SetFileAttributesPrivate(path, (uint)attributes))
+                if (!Private.SetFileAttributesW(path, (uint)attributes))
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error, path);
@@ -167,7 +266,7 @@ namespace XTask.Interop
             /// <exception cref="System.UnauthorizedAccessException">Thrown if the current user does not have rights to the specified path.</exception>
             internal static bool TrySetFileAttributes(string path, FileAttributes attributes)
             {
-                if (!FileManagement.SetFileAttributesPrivate(path, (uint)attributes))
+                if (!Private.SetFileAttributesW(path, (uint)attributes))
                 {
                     int lastError = Marshal.GetLastWin32Error();
                     switch (lastError)
@@ -183,37 +282,15 @@ namespace XTask.Interop
                 return true;
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364980.aspx
-            [DllImport("kernel32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetLongPathName", SetLastError = true)]
-            private static extern uint GetLongPathNamePrivate(
-                string lpszShortPath,
-                StringBuilder lpszLongPath,
-                uint cchBuffer);
-
             internal static string GetLongPathName(string path)
             {
-                return NativeMethods.BufferPathInvoke(path, (value, sb) => FileManagement.GetLongPathNamePrivate(value, sb, (uint)sb.Capacity));
+                return NativeMethods.BufferPathInvoke(path, (value, sb) => Private.GetLongPathNameW(value, sb, (uint)sb.Capacity));
             }
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364989.aspx
-            [DllImport("kernel32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetShortPathName", SetLastError = true)]
-            private static extern uint GetShortPathNamePrivate(
-                string lpszLongPath,
-                StringBuilder lpszShortPath,
-                uint cchBuffer);
 
             internal static string GetShortPathName(string path)
             {
-                return NativeMethods.BufferPathInvoke(path, (value, sb) => FileManagement.GetShortPathNamePrivate(value, sb, (uint)sb.Capacity));
+                return NativeMethods.BufferPathInvoke(path, (value, sb) => Private.GetShortPathNameW(value, sb, (uint)sb.Capacity));
             }
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364963.aspx
-            [DllImport("kernel32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetFullPathName", SetLastError = true)]
-            private static extern uint GetFullPathNamePrivate(
-                string lpFileName,
-                uint nBufferLength,
-                StringBuilder lpBuffer,
-                IntPtr lpFilePart);
 
             /// <summary>
             /// Gets the full path name, resolving against the current working directory.  It does evaluate relative segments (".." and ".").
@@ -222,7 +299,7 @@ namespace XTask.Interop
             /// </summary>
             internal static string GetFullPathName(string path)
             {
-                return NativeMethods.BufferPathInvoke(path, (value, sb) => FileManagement.GetFullPathNamePrivate(value, (uint)sb.Capacity, sb, IntPtr.Zero), utilizeExtendedSyntax: false);
+                return NativeMethods.BufferPathInvoke(path, (value, sb) => Private.GetFullPathNameW(value, (uint)sb.Capacity, sb, IntPtr.Zero), utilizeExtendedSyntax: false);
             }
 
             [Flags]
@@ -306,21 +383,6 @@ namespace XTask.Interop
                 SecurityDelegation
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364962.aspx
-            [DllImport("Kernel32.dll", EntryPoint = "GetFinalPathNameByHandle", CharSet = CharSet.Unicode, SetLastError = true)]
-            private static extern uint GetFinalPathNameByHandlePrivate(SafeFileHandle hFile, [MarshalAs(UnmanagedType.LPTStr)] StringBuilder lpszFilePath, uint cchFilePath, FinalPathFlags dwFlags);
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363858.aspx
-            [DllImport("Kernel32.dll", EntryPoint = "CreateFileW", CharSet = CharSet.Unicode, SetLastError = true)]
-            private static extern SafeFileHandle CreateFilePrivate(
-                string fileName,
-                [MarshalAs(UnmanagedType.U4)] FileAccess fileAccess,
-                [MarshalAs(UnmanagedType.U4)] FileShare fileShare,
-                IntPtr securityAttributes,
-                [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-                AllFileAttributeFlags flagsAndAttributes,
-                IntPtr template);
-
             internal static SafeFileHandle CreateFile(
                 string path,
                 FileAccess fileAccess,
@@ -331,7 +393,7 @@ namespace XTask.Interop
                 path = Paths.AddExtendedPrefix(path);
                 if (creationDisposition == FileMode.Append) creationDisposition = FileMode.OpenOrCreate;
 
-                SafeFileHandle handle = CreateFilePrivate(path, fileAccess, fileShare, IntPtr.Zero, creationDisposition, flagsAndAttributes, IntPtr.Zero);
+                SafeFileHandle handle = Private.CreateFileW(path, fileAccess, fileShare, IntPtr.Zero, creationDisposition, flagsAndAttributes, IntPtr.Zero);
                 if (handle.IsInvalid)
                 {
                     int error = Marshal.GetLastWin32Error();
@@ -343,7 +405,7 @@ namespace XTask.Interop
 
             internal static string GetFinalPathName(SafeFileHandle fileHandle, FinalPathFlags finalPathFlags)
             {
-                return NativeMethods.BufferInvoke((sb) => FileManagement.GetFinalPathNameByHandlePrivate(fileHandle, sb, (uint)sb.Capacity, finalPathFlags));
+                return NativeMethods.BufferInvoke((sb) => Private.GetFinalPathNameByHandleW(fileHandle, sb, (uint)sb.Capacity, finalPathFlags));
             }
 
             internal static string GetFinalPathName(string path, FinalPathFlags finalPathFlags, bool resolveLinks)
@@ -357,7 +419,7 @@ namespace XTask.Interop
 
                 string finalPath = null;
 
-                using (SafeFileHandle file = FileManagement.CreateFilePrivate(
+                using (SafeFileHandle file = Private.CreateFileW(
                     lookupPath,
                     FileAccess.Read,
                     FileShare.ReadWrite,
@@ -372,7 +434,7 @@ namespace XTask.Interop
                         throw GetIoExceptionForError(error, path);
                     }
 
-                    finalPath = NativeMethods.BufferInvoke((sb) => FileManagement.GetFinalPathNameByHandlePrivate(file, sb, (uint)sb.Capacity, finalPathFlags), path);
+                    finalPath = NativeMethods.BufferInvoke((sb) => Private.GetFinalPathNameByHandleW(file, sb, (uint)sb.Capacity, finalPathFlags), path);
                 }
 
                 return Paths.ReplaceRoot(path, finalPath);
@@ -441,16 +503,6 @@ namespace XTask.Interop
             private const int FIND_FIRST_EX_CASE_SENSITIVE = 1;
             private const int FIND_FIRST_EX_LARGE_FETCH = 2;
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364419.aspx
-            [DllImport("kernel32.dll", EntryPoint = "FindFirstFileExW", SetLastError = true, CharSet = CharSet.Unicode)]
-            private static extern SafeFindHandle FindFirstFileExPrivate(
-                 string lpFileName,
-                 FINDEX_INFO_LEVELS fInfoLevelId,
-                 out WIN32_FIND_DATA lpFindFileData,
-                 FINDEX_SEARCH_OPS fSearchOp,
-                 IntPtr lpSearchFilter,                 // Reserved
-                 int dwAdditionalFlags);
-
             /// <summary>
             /// Returns the find information.
             /// </summary>
@@ -487,7 +539,7 @@ namespace XTask.Interop
                 path = Paths.AddExtendedPrefix(path);
 
                 WIN32_FIND_DATA findData;
-                SafeFindHandle handle = FileManagement.FindFirstFileExPrivate(
+                SafeFindHandle handle = Private.FindFirstFileExW(
                     path,
                     getAlternateName ? FINDEX_INFO_LEVELS.FindExInfoStandard : FINDEX_INFO_LEVELS.FindExInfoBasic,
                     out findData,
@@ -509,17 +561,10 @@ namespace XTask.Interop
                 return new FindResult(handle, findData, Paths.GetDirectory(path));
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364428.aspx
-            [DllImport("kernel32.dll", EntryPoint = "FindNextFile", SetLastError = true, CharSet = CharSet.Unicode)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool FindNextFilePrivate(
-                IntPtr hFindFile,
-                out WIN32_FIND_DATA lpFindFileData);
-
             internal static FindResult FindNextFile(FindResult initialResult)
             {
                 WIN32_FIND_DATA findData;
-                if (!FindNextFilePrivate(initialResult.FindHandle.DangerousGetHandle(), out findData))
+                if (!Private.FindNextFileW(initialResult.FindHandle.DangerousGetHandle(), out findData))
                 {
                     int error = Marshal.GetLastWin32Error();
                     if (error == WinError.ERROR_NO_MORE_FILES)
@@ -532,18 +577,13 @@ namespace XTask.Interop
                 return new FindResult(initialResult.FindHandle, findData, initialResult.BasePath);
             }
 
-            [DllImport("kernel32.dll", SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool FindClose(
-                IntPtr hFindFile);
-
             internal sealed class SafeFindHandle : SafeHandleZeroOrMinusOneIsInvalid
             {
                 internal SafeFindHandle() : base(true) { }
 
                 override protected bool ReleaseHandle()
                 {
-                    return FileManagement.FindClose(handle);
+                    return Private.FindClose(handle);
                 }
             }
 
@@ -563,17 +603,10 @@ namespace XTask.Interop
                 public uint nFileIndexLow;
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364952.aspx
-            [DllImport("kernel32.dll", EntryPoint = "GetFileInformationByHandle", SetLastError = true, CharSet = CharSet.Unicode)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool GetFileInformationByHandlePrivate(
-                SafeFileHandle hFile,
-                out BY_HANDLE_FILE_INFORMATION lpFileInformation);
-
             internal static BY_HANDLE_FILE_INFORMATION GetFileInformationByHandle(SafeFileHandle fileHandle)
             {
                 BY_HANDLE_FILE_INFORMATION fileInformation;
-                if (!GetFileInformationByHandlePrivate(fileHandle, out fileInformation))
+                if (!Private.GetFileInformationByHandle(fileHandle, out fileInformation))
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error);
@@ -581,31 +614,15 @@ namespace XTask.Interop
                 return fileInformation;
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363915.aspx
-            [DllImport("kernel32.dll", EntryPoint = "DeleteFileW", SetLastError = true, CharSet = CharSet.Unicode)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool DeleteFilePrivate(
-                string lpFilename);
-
             internal static void DeleteFile(string path)
             {
                 path = Paths.AddExtendedPrefix(path);
-                if (!DeleteFilePrivate(path))
+                if (!Private.DeleteFileW(path))
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error);
                 }
             }
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365467.aspx
-            [DllImport("kernel32.dll", EntryPoint = "ReadFile", SetLastError = true, CharSet = CharSet.Unicode)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            unsafe private static extern bool ReadFilePrivate(
-                SafeFileHandle hFile,
-                byte* lpBuffer,
-                uint nNumberOfBytesToRead,
-                out uint lpNumberOfBytesRead,
-                NativeOverlapped* lpOverlapped);
 
             /// <summary>
             /// Read the specified number of bytes synchronously. Returns the number of bytes read.
@@ -617,7 +634,7 @@ namespace XTask.Interop
                 int error = WinError.ERROR_SUCCESS;
                 fixed(byte* pinnedBuffer = buffer)
                 {
-                    if (!ReadFilePrivate(handle, pinnedBuffer, numberOfBytes, out numberOfBytesRead, null))
+                    if (!Private.ReadFile(handle, pinnedBuffer, numberOfBytes, out numberOfBytesRead, null))
                     {
                         error = Marshal.GetLastWin32Error();
                     }
@@ -718,18 +735,6 @@ namespace XTask.Interop
                 COPY_FILE_NO_BUFFERING = 0x00001000
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363852.aspx
-            // CopyFile calls CopyFileEx with COPY_FILE_FAIL_IF_EXISTS if fail if exists is set
-            [DllImport("kernel32.dll", EntryPoint="CopyFileExW", SetLastError = true, CharSet = CharSet.Unicode)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool CopyFileExPrivate(
-                string lpExistingFileName,
-                string lpNewFileName,
-                CopyProgressRoutine lpProgressRoutine,
-                IntPtr lpData,
-                [MarshalAs(UnmanagedType.Bool)] ref bool pbCancel,
-                CopyFileFlags dwCopyFlags);
-
             internal static void CopyFile(string existingPath, string newPath, bool overwrite)
             {
                 existingPath = Paths.AddExtendedPrefix(existingPath);
@@ -737,7 +742,7 @@ namespace XTask.Interop
 
                 bool cancel = false;
 
-                if (!CopyFileExPrivate(
+                if (!Private.CopyFileExW(
                     existingPath,
                     newPath,
                     null,
@@ -750,20 +755,11 @@ namespace XTask.Interop
                 }
             }
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363866(v=vs.85).aspx
-            [DllImport("kernel32.dll", EntryPoint = "CreateSymbolicLinkW", SetLastError = true, CharSet = CharSet.Unicode)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool CreateSymbolicLinkPrivate(
-                string lpSymlinkFileName,
-                string lpTargetFileName,
-                uint  dwFlags
-            );
-
             private const uint SYMBOLIC_LINK_FLAG_DIRECTORY = 0x1;
 
             internal static void CreateSymbolicLink(string symbolicLinkPath, string targetPath, bool targetIsDirectory = false)
             {
-                if (!CreateSymbolicLinkPrivate(symbolicLinkPath, targetPath, targetIsDirectory ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0))
+                if (!Private.CreateSymbolicLinkW(symbolicLinkPath, targetPath, targetIsDirectory ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0))
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error, symbolicLinkPath);

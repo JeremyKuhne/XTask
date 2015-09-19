@@ -7,17 +7,13 @@
 
 namespace XTask.Interop
 {
-    using Microsoft.Win32.SafeHandles;
     using System;
-    using System.Collections.Generic;
-    using System.IO;
     using System.Runtime.InteropServices;
     using System.Security;
     using System.Text;
     using Utility;
     using XTask.Systems.File;
 
-    [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
     internal static partial class NativeMethods
     {
         // Design Guidelines and Notes
@@ -84,8 +80,63 @@ namespace XTask.Interop
         //
         // PInvoke code is in dllimport, method, and ilmarshalers in coreclr\src\vm.
 
-        private static StringBuilderCache stringCache = new StringBuilderCache(256);
+        // Putting private P/Invokes in a subclass to allow exact matching of signatures for perf on initial call and reduce string count
+        [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
+        private static class Private
+        {
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms686206.aspx
+            [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool SetEnvironmentVariableW(
+                string lpName,
+                string lpValue);
 
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683182.aspx
+            [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            internal static extern IntPtr GetCurrentThread();
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211.aspx
+            [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool CloseHandle(
+                IntPtr handle);
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms684179.aspx
+            [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+            internal static extern SafeLibraryHandle LoadLibraryExW(
+                string lpFileName,
+                IntPtr hReservedNull,
+                LoadLibraryFlags dwFlags);
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683152.aspx
+            [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool FreeLibrary(
+                IntPtr hModule);
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms647486.aspx
+            [DllImport(Libraries.User32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+            unsafe internal static extern int LoadStringW(
+                SafeLibraryHandle hInstance,
+                int uID,
+                out char* lpBuffer,
+                int nBufferMax);
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683212.aspx
+            [DllImport(Libraries.Kernel32, CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
+            internal static extern IntPtr GetProcAddress(
+                SafeLibraryHandle hModule,
+                string methodName);
+        }
+
+        private static class Libraries
+        {
+            internal const string Kernel32 = "kernel32.dll";
+            internal const string Advapi32 = "advapi32.dll";
+            internal const string User32 = "user32.dll";
+        }
+
+        private static StringBuilderCache stringCache = new StringBuilderCache(256);
 
         /// <summary>
         /// Uses the stringbuilder cache and increases the buffer size if needed. Handles path prepending as needed.
@@ -154,293 +205,18 @@ namespace XTask.Interop
             return NativeMethods.stringCache.ToStringAndRelease(buffer);
         }
 
-        // [MS-BKUP]: Microsoft NT Backup File Structure
-        // https://msdn.microsoft.com/en-us/library/dd305136.aspx
-        // Most defines from WinBase.h
-
-        /// <summary>
-        /// The types returned in WIN32_STREAM_ID dwStreamId
-        /// </summary>
-        private enum BackupStreamType : uint
-        {
-            BACKUP_INVALID = 0x00000000,
-
-            /// <summary>
-            /// Standard data
-            /// </summary>
-            BACKUP_DATA = 0x00000001,
-
-            /// <summary>
-            /// Extended attribute data
-            /// </summary>
-            BACKUP_EA_DATA = 0x00000002,
-
-            /// <summary>
-            /// Security descriptor data
-            /// </summary>
-            BACKUP_SECURITY_DATA = 0x00000003,
-
-            /// <summary>
-            /// Alternative data streams
-            /// </summary>
-            BACKUP_ALTERNATE_DATA = 0x00000004,
-
-            /// <summary>
-            /// Hard link information
-            /// </summary>
-            BACKUP_LINK = 0x00000005,
-
-            BACKUP_PROPERTY_DATA = 6,
-
-            /// <summary>
-            /// Object identifiers
-            /// </summary>
-            BACKUP_OBJECT_ID = 0x00000007,
-
-            /// <summary>
-            /// Reparse points
-            /// </summary>
-            BACKUP_REPARSE_DATA = 0x00000008,
-
-            /// <summary>
-            /// Data in a sparse file
-            /// </summary>
-            BACKUP_SPARSE_BLOCK = 0x00000009,
-
-            /// <summary>
-            /// Transactional file system
-            /// </summary>
-            BACKUP_TXFS_DATA = 0x0000000A
-        }
-
-        private struct StreamInfo
-        {
-            public string Name;
-            public BackupStreamType Type;
-            public ulong Size;
-        }
-
-        private class BackupReader : IDisposable
-        {
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa362509.aspx
-            [DllImport("kernel32", SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool BackupRead(
-                SafeFileHandle hFile,
-                IntPtr lpBuffer,
-                uint nNumberOfBytesToRead,
-                out uint lpNumberOfBytesRead,
-                [MarshalAs(UnmanagedType.Bool)] bool bAbort,
-                [MarshalAs(UnmanagedType.Bool)] bool bProcessSecurity,
-                ref IntPtr context);
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa362510.aspx
-            [DllImport("kernel32", SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool BackupSeek(
-                SafeFileHandle hFile,
-                uint dwLowBytesToSeek,
-                uint dwHighBytesToSeek,
-                out uint lpdwLowByteSeeked,
-                out uint lpdwHighByteSeeked,
-                ref IntPtr context);
-
-            // https://msdn.microsoft.com/en-us/library/dd303907.aspx
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa362667.aspx
-            //
-            // typedef struct _WIN32_STREAM_ID
-            // {
-            //     DWORD dwStreamId;
-            //     DWORD dwStreamAttributes;
-            //     LARGE_INTEGER Size;
-            //     DWORD dwStreamNameSize;
-            //     WCHAR cStreamName[ANYSIZE_ARRAY];
-            // }
-            // WIN32_STREAM_ID, *LPWIN32_STREAM_ID;
-
-            [StructLayout(LayoutKind.Sequential, Pack = 4)]
-            private struct WIN32_STREAM_ID
-            {
-                public BackupStreamType dwStreamId;
-                public BackupStreamAttributes dwStreamAttributes;
-                public ulong Size;
-                public uint dwStreamNameSize;
-            }
-
-            /// <summary>
-            /// The attributes returned in WIN32_STREAM_ID dwStreamAttributes
-            /// </summary>
-            [Flags]
-            private enum BackupStreamAttributes : uint
-            {
-                /// <summary>
-                /// This backup stream has no special attributes.
-                /// </summary>
-                STREAM_NORMAL_ATTRIBUTE = 0x00000000,
-
-                STREAM_MODIFIED_WHEN_READ = 0x00000001,
-
-                /// <summary>
-                /// The backup stream contains security information. This attribute applies only to backup stream of type SECURITY_DATA.
-                /// </summary>
-                STREAM_CONTAINS_SECURITY = 0x00000002,
-
-                STREAM_CONTAINS_PROPERTIES = 0x00000004,
-
-                /// <summary>
-                /// The backup stream is part of a sparse file stream. This attribute applies only to backup stream of type DATA, ALTERNATE_DATA, and SPARSE_BLOCK.
-                /// </summary>
-                STREAM_SPARSE_ATTRIBUTE = 0x00000008
-            }
-
-            private IntPtr context = IntPtr.Zero;
-            private SafeFileHandle fileHandle;
-            NativeBuffer buffer = new NativeBuffer(4096);
-            uint structureSize = (uint)Marshal.SizeOf(typeof(WIN32_STREAM_ID));
-
-            public BackupReader(SafeFileHandle fileHandle)
-            {
-                this.fileHandle = fileHandle;
-            }
-
-            public StreamInfo? GetNextInfo()
-            {
-                uint bytesRead;
-                if (!BackupRead(
-                    hFile: fileHandle,
-                    lpBuffer: buffer,
-                    nNumberOfBytesToRead: structureSize,
-                    lpNumberOfBytesRead: out bytesRead,
-                    bAbort: false,
-                    bProcessSecurity: true,
-                    context: ref this.context))
-                {
-                    int error = Marshal.GetLastWin32Error();
-                    throw GetIoExceptionForError(error);
-                }
-
-                // Exit if at the end
-                if (bytesRead == 0) return null;
-
-                WIN32_STREAM_ID streamId = (WIN32_STREAM_ID)Marshal.PtrToStructure(buffer, typeof(WIN32_STREAM_ID));
-                string name = null;
-                if (streamId.dwStreamNameSize > 0)
-                {
-                    buffer.EnsureCapacity(streamId.dwStreamNameSize);
-                    if (!BackupRead(
-                        hFile: fileHandle,
-                        lpBuffer: buffer,
-                        nNumberOfBytesToRead: streamId.dwStreamNameSize,
-                        lpNumberOfBytesRead: out bytesRead,
-                        bAbort: false,
-                        bProcessSecurity: true,
-                        context: ref this.context))
-                    {
-                        int error = Marshal.GetLastWin32Error();
-                        throw GetIoExceptionForError(error);
-                    }
-                    name = Marshal.PtrToStringUni(buffer, (int)bytesRead / 2);
-                }
-
-                if (streamId.Size > 0)
-                {
-                    // Move to the next header, if any
-                    uint low, high;
-                    if (!BackupSeek(
-                        hFile: fileHandle,
-                        dwLowBytesToSeek: uint.MaxValue,
-                        dwHighBytesToSeek: int.MaxValue,
-                        lpdwLowByteSeeked: out low,
-                        lpdwHighByteSeeked: out high,
-                        context: ref context))
-                    {
-                        int error = Marshal.GetLastWin32Error();
-                        if (error != WinError.ERROR_SEEK)
-                        {
-                            throw GetIoExceptionForError(error);
-                        }
-                    }
-                }
-
-                return new StreamInfo
-                {
-                    Name = name,
-                    Type = streamId.dwStreamId,
-                    Size = streamId.Size
-                };
-            }
-
-            public void Dispose()
-            {
-                this.buffer.Dispose();
-                this.buffer = null;
-
-                if (context != IntPtr.Zero)
-                {
-                    uint bytesRead;
-                    if (!BackupRead(
-                        hFile: fileHandle,
-                        lpBuffer: IntPtr.Zero,
-                        nNumberOfBytesToRead: 0,
-                        lpNumberOfBytesRead: out bytesRead,
-                        bAbort: true,
-                        bProcessSecurity: false,
-                        context: ref this.context))
-                    {
-                        int error = Marshal.GetLastWin32Error();
-                        throw GetIoExceptionForError(error);
-                    }
-                }
-            }
-        }
-
-        internal static IEnumerable<AlternateStreamInformation> GetAlternateStreams(string path)
-        {
-            List<AlternateStreamInformation> streams = new List<AlternateStreamInformation>();
-            path = Paths.AddExtendedPrefix(path);
-            using (var fileHandle = FileManagement.CreateFile(path, FileAccess.Read, FileShare.ReadWrite, FileMode.Open, FileManagement.AllFileAttributeFlags.FILE_FLAG_BACKUP_SEMANTICS))
-            {
-                using (BackupReader reader = new BackupReader(fileHandle))
-                {
-                    StreamInfo? info;
-                    while ((info = reader.GetNextInfo()).HasValue)
-                    {
-                        if (info.Value.Type == BackupStreamType.BACKUP_ALTERNATE_DATA)
-                        {
-                            streams.Add(new AlternateStreamInformation { Name = info.Value.Name, Size = info.Value.Size });
-                        }
-                    }
-                }
-            }
-
-            return streams;
-        }
-
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/ms686206.aspx
-        [DllImport("kernel32", EntryPoint = "SetEnvironmentVariableW", CharSet = CharSet.Unicode, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool SetEnvironmentVariablePrivate(string lpName, string lpValue);
-
         internal static void SetEnvironmentVariable(string name, string value)
         {
-            if (!SetEnvironmentVariablePrivate(name, value))
+            if (!Private.SetEnvironmentVariableW(name, value))
             {
                 int error = Marshal.GetLastWin32Error();
                 throw GetIoExceptionForError(error, name);
             }
         }
 
-        [DllImport("kernel32.dll", EntryPoint = "GetCurrentThread", SetLastError = true)]
-        internal static extern IntPtr GetCurrentThread();
-
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211.aspx
-        [DllImport("kernel32.dll", EntryPoint = "CloseHandle", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool CloseHandlePrivate(IntPtr handle);
-
         internal static void CloseHandle(IntPtr handle)
         {
-            if (!CloseHandlePrivate(handle))
+            if (!Private.CloseHandle(handle))
             {
                 int error = Marshal.GetLastWin32Error();
                 throw GetIoExceptionForError(error);
@@ -460,5 +236,48 @@ namespace XTask.Interop
         //[DllImport("ntdll.dll", SetLastError = true)]
         //public static extern uint NtQueryObject(IntPtr handle, ObjectInformationClass objectInformationClass,
         //    IntPtr objectInformation, uint objectInformationLength, out uint returnLength);
+
+        internal static bool FreeLibrary(SafeLibraryHandle handle)
+        {
+            return Private.FreeLibrary(handle.DangerousGetHandle());
+        }
+
+        internal static SafeLibraryHandle LoadLibrary(string path, LoadLibraryFlags flags)
+        {
+            SafeLibraryHandle handle = Private.LoadLibraryExW(path, IntPtr.Zero, flags);
+            if (handle.IsInvalid)
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw GetIoExceptionForError(error, path);
+            }
+            return handle;
+        }
+
+        unsafe internal static string LoadString(SafeLibraryHandle library, int identifier)
+        {
+            // Passing 0 will give us a read only handle to the string resource
+            char* buffer;
+            int result = Private.LoadStringW(library, identifier, out buffer, 0);
+            if (result <= 0)
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw GetIoExceptionForError(error, identifier.ToString());
+            }
+
+            // Null is not included in the result
+            return new string(buffer, 0, result);
+        }
+
+        internal static DelegateType GetFunctionDelegate<DelegateType>(SafeLibraryHandle library, string methodName)
+        {
+            IntPtr method = Private.GetProcAddress(library, methodName);
+            if (method == IntPtr.Zero)
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw GetIoExceptionForError(error, methodName);
+            }
+
+            return (DelegateType)(object)Marshal.GetDelegateForFunctionPointer(method, typeof(DelegateType));
+        }
     }
 }
