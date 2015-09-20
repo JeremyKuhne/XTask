@@ -13,6 +13,8 @@ namespace XTask.Tests.Tasks
     using System;
     using XTask.Tasks;
     using Xunit;
+    using FluentAssertions;
+    using System.Collections.Generic;
 
     public class TaskExecutionTests
     {
@@ -23,8 +25,8 @@ namespace XTask.Tests.Tasks
             ITaskRegistry taskRegistry = Substitute.For<ITaskRegistry>();
             ITask task = Substitute.For<ITask>();
 
-            arguments.Command.Returns("TestCommand");
-            taskRegistry["TestCommand"].Returns(task);
+            arguments.Command.Returns("ExecutionGetsSpecifiedCommand");
+            taskRegistry["ExecutionGetsSpecifiedCommand"].Returns(task);
 
             TaskExecution execution = Substitute.ForPartsOf<TaskExecution>(arguments, taskRegistry, null);
             execution.ExecuteTask();
@@ -40,43 +42,84 @@ namespace XTask.Tests.Tasks
             ITask task = Substitute.For<ITask>();
             task.GetService<ITaskDocumentation>().Returns(docs);
 
-            arguments.Command.Returns("TestCommand");
+            arguments.Command.Returns("HelpOutputsUsage");
             arguments.HelpRequested.Returns(true);
-            taskRegistry["TestCommand"].Returns(task);
+            taskRegistry["HelpOutputsUsage"].Returns(task);
 
             TaskExecution execution = Substitute.ForPartsOf<TaskExecution>(arguments, taskRegistry, null);
             execution.ExecuteTask();
             docs.Received(1).GetUsage(Arg.Any<ITaskInteraction>());
         }
 
+        public class TestTask : ITask, IDisposable
+        {
+            public int DisposeCount;
+
+            public virtual void Dispose()
+            {
+                DisposeCount++;
+            }
+
+            public T GetService<T>() where T : class
+            {
+                return null;
+            }
+        }
+
+        public class TestArgumentProvider : IArgumentProvider
+        {
+            public string Command { get; set; }
+
+            public bool HelpRequested { get; set; }
+
+            public IReadOnlyDictionary<string, string> Options { get; set; }
+
+            public string Target { get; set; }
+
+            public string[] Targets
+            {
+                get
+                {
+                    return new string[0];
+                }
+            }
+
+            public T GetOption<T>(params string[] optionNames)
+            {
+                return default(T);
+            }
+        }
+
+        // Something evil is going on here with NSubstitute when running all tests- see the history for what should work,
+        // but only works when run by itself. Something to do with indexers?
         [Fact]
         public void TaskIsDisposed()
         {
-            IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
-            ITaskRegistry taskRegistry = Substitute.For<ITaskRegistry>();
-            ITask task = Substitute.For<ITask, IDisposable>();
+            TestArgumentProvider arguments = new TestArgumentProvider();
+            arguments.Command = "TaskIsDisposed";
 
-            arguments.Command.Returns("TestCommand");
-            taskRegistry["TestCommand"].Returns(task);
+            SimpleTaskRegistry taskRegistry = new SimpleTaskRegistry();
+            TestTask task = new TestTask();
+            taskRegistry.RegisterTask(() => task, "TaskIsDisposed");
 
             TaskExecution execution = Substitute.ForPartsOf<TaskExecution>(arguments, taskRegistry, null);
             execution.ExecuteTask();
-            ((IDisposable)task).Received(1).Dispose();
+            task.DisposeCount.Should().Be(1);
         }
 
         public abstract class TestTaskExecution : TaskExecution
         {
-            public TestTaskExecution(IArgumentProvider argumentProvider, ITaskRegistry taskRegistry, ITypedServiceProvider services)
-                : base(argumentProvider, taskRegistry, services)
+            public TestTaskExecution(IArgumentProvider argumentProvider, ITaskRegistry taskRegistry)
+                : base(argumentProvider, taskRegistry, null)
             {
             }
 
             protected override ITaskInteraction GetInteraction(ITask task)
             {
-                return this.TestGetInteraction(task);
+                return this.TestGetInteraction();
             }
 
-            public abstract ITaskInteraction TestGetInteraction(ITask task);
+            public abstract ITaskInteraction TestGetInteraction();
         }
 
         [Fact]
@@ -86,8 +129,8 @@ namespace XTask.Tests.Tasks
             ITaskRegistry taskRegistry = Substitute.For<ITaskRegistry>();
             ITaskInteraction interaction = Substitute.For<ITaskInteraction, IDisposable>();
 
-            TestTaskExecution execution = Substitute.ForPartsOf<TestTaskExecution>(arguments, taskRegistry, null);
-            execution.TestGetInteraction(Arg.Any<ITask>()).Returns(interaction);
+            TestTaskExecution execution = Substitute.ForPartsOf<TestTaskExecution>(arguments, taskRegistry);
+            execution.TestGetInteraction().Returns(interaction);
             execution.ExecuteTask();
             ((IDisposable)interaction).Received(1).Dispose();
         }

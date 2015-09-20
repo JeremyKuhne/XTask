@@ -30,7 +30,7 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             if (Paths.IsRelative(directory))
             {
-                throw new InvalidOperationException();
+                throw new ArgumentException("Argument cannot be relative", nameof(directory));
             }
 
             this.lastVolume = AddEntry(directory);
@@ -38,11 +38,12 @@ namespace XTask.Systems.File.Concrete.Flex
 
         private string AddEntry(string directory, string canonicalRoot = null)
         {
+            string root = Paths.GetRoot(directory);
             canonicalRoot = canonicalRoot ?? fileService.GetCanonicalRoot(directory);
 
             // If the directory has vanished, walk up
             while (!fileService.DirectoryExists(directory)
-                && !String.Equals((directory = Paths.GetDirectory(directory)), canonicalRoot, StringComparison.Ordinal))
+                && !String.Equals((directory = Paths.GetDirectory(directory)), root, StringComparison.Ordinal))
             {
                 Debug.Assert(directory != null);
             }

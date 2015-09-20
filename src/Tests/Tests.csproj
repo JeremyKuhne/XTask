@@ -75,6 +75,7 @@
     <Compile Include="Build\BuildArgumentParserTests.cs" />
     <Compile Include="Build\BuildTaskBridgeTests.cs" />
     <Compile Include="Collections\ListExtensionsTests.cs" />
+    <Compile Include="FileSystem\CurrentDirectoryTests.cs" />
     <Compile Include="FileSystem\FileServiceExtensionTests.cs" />
     <Compile Include="FileSystem\FlexDirectoryInfoTests.cs" />
     <Compile Include="FileSystem\FlexFileServiceTests.cs" />

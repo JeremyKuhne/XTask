@@ -40,7 +40,8 @@ namespace XTask.Tests.Core.Utility
                 fileServiceProvider.Received(1).CreateFileStream(
                     Path.Combine(cleaner.TempFolder, TestFileCleaner.TestFlagFileName),
                     FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite);
+                    FileAccess.ReadWrite,
+                    FileShare.None);
 
                 memoryStream.Position = 0;
                 StreamReader reader = new StreamReader(memoryStream);
