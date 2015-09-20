@@ -19,6 +19,25 @@ namespace XTask.Systems.File.Concrete.Flex
     /// </remarks>
     internal class FileService : ExtendedFileService, IExtendedFileService
     {
+        private CurrentDirectory directory;
+
+        public FileService() : base()
+        {
+            this.directory = new Flex.CurrentDirectory(this);
+        }
+
+        public string CurrentDirectory
+        {
+            get
+            {
+                return this.directory.GetCurrentDirectory();
+            }
+            set
+            {
+                this.directory.SetCurrentDirectory(value);
+            }
+        }
+
         public System.IO.Stream CreateFileStream(string path, System.IO.FileMode mode = System.IO.FileMode.Open, System.IO.FileAccess access = System.IO.FileAccess.Read, System.IO.FileShare share = System.IO.FileShare.ReadWrite)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));

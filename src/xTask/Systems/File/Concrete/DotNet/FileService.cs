@@ -21,6 +21,12 @@ namespace XTask.Systems.File.Concrete.DotNet
     /// </remarks>
     public class FileService : ExtendedFileService, IExtendedFileService
     {
+        public string CurrentDirectory
+        {
+            get { return Environment.CurrentDirectory; }
+            set { Environment.CurrentDirectory = value; }
+        }
+
         public void CreateDirectory(string path)
         {
             Directory.CreateDirectory(path);

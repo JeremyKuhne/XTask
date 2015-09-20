@@ -8,6 +8,7 @@
 namespace XTask.Interop
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Runtime.InteropServices;
 
@@ -23,24 +24,26 @@ namespace XTask.Interop
         private static uint HEAP_NO_SERIALIZE = 0x00000001;
         private static uint HEAP_GENERATE_EXCEPTIONS = 0x00000004;
         private static uint HEAP_ZERO_MEMORY = 0x00000008;
+        private static uint HEAP_REALLOC_IN_PLACE_ONLY = 0x00000010;
 
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366597.aspx
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
         static extern HeapHandle HeapAlloc(IntPtr hHeap, uint dwFlags, UIntPtr dwBytes);
 
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366704.aspx
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
         static extern HeapHandle HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr lpMem, UIntPtr dwBytes);
 
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366701.aspx
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
         public static extern bool HeapFree(IntPtr hHeap, uint dwFlags, IntPtr lpMem);
 
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366700.aspx
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
         public static extern bool HeapDestroy(IntPtr hHeap);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366569.aspx
+        [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
         static extern IntPtr GetProcessHeap();
 
         private static IntPtr ProcessHeap = GetProcessHeap();
@@ -94,14 +97,19 @@ namespace XTask.Interop
 
         public IntPtr Resize(uint size)
         {
-
-            HeapHandle newHandle = this.Handle == IntPtr.Zero
+            HeapHandle newHandle = (this.Handle == IntPtr.Zero)
                 ? HeapAlloc(ProcessHeap, 0, (UIntPtr)size)
                 : HeapReAlloc(ProcessHeap, 0, this.Handle, (UIntPtr)size);
 
             if (newHandle.IsInvalid)
             {
                 throw new InvalidOperationException("Could not allocate requested memory.");
+            }
+
+            if (this.handle != null)
+            {
+                // Since we've reallocated, we don't need to free the existing handle
+                this.handle.SetHandleAsInvalid();
             }
 
             this.handle = newHandle;
@@ -114,20 +122,18 @@ namespace XTask.Interop
             this.handle?.Dispose();
         }
 
-        private class HeapHandle : SafeHandle
+        private class HeapHandle : SafeHandleZeroIsInvalid
         {
-            HeapHandle() : base (invalidHandleValue: IntPtr.Zero, ownsHandle: true)
+            HeapHandle() : base (ownsHandle: true)
             {
-            }
-
-            public override bool IsInvalid
-            {
-                get { return this.handle == IntPtr.Zero; }
             }
 
             protected override bool ReleaseHandle()
             {
-                return HeapFree(ProcessHeap, 0, this.handle);
+                bool success = HeapFree(ProcessHeap, 0, this.handle);
+                Debug.Assert(success);
+                this.handle = IntPtr.Zero;
+                return success;
             }
         }
     }

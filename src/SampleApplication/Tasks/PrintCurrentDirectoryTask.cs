@@ -15,7 +15,7 @@ namespace XFile.Tasks
     {
         protected override ExitCode ExecuteFileTask()
         {
-            this.Loggers[LoggerType.Result].WriteLine(CurrentDirectory.GetCurrentDirectory());
+            this.Loggers[LoggerType.Result].WriteLine(FileService.CurrentDirectory);
             return ExitCode.Success;
         }
 

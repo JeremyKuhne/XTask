@@ -13,57 +13,19 @@ namespace XFile.Tasks
     using System.Text;
     using System.Threading.Tasks;
     using XTask.Interop;
+    using XTask.Logging;
     using XTask.Systems.File;
     using XTask.Systems.File.Concrete.Flex;
     using XTask.Utility;
 
     [XTask.Tasks.Hidden]
-    public class TestTask : FileTask
+    public class TestTask : FileTaskWithTarget
     {
-        internal const string NativeTestLibrary = "NativeTestLibrary.dll";
-
-
         protected override ExitCode ExecuteFileTask()
         {
-            using (var cleaner = new FileCleaner("TestTask", FileService))
-            {
-                string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
-                FileService.CreateDirectory(longPath);
-                string longPathLibrary = Paths.Combine(longPath, NativeTestLibrary);
-                FileService.CopyFile(NativeTestLibrary, longPathLibrary);
-                longPathLibrary = Paths.AddExtendedPrefix(longPathLibrary);
-
-                var libraryService = new LibraryService();
-
-                using (var handle = libraryService.LoadLibrary(longPathLibrary, LoadLibraryFlags.LOAD_WITH_ALTERED_SEARCH_PATH))
-                {
-                }
-            }
+            Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetDriveLetter(GetFullTargetPath()));
 
             return ExitCode.Success;
-        }
-    }
-
-    public static class PathGenerator
-    {
-        public static string CreatePathOfLength(string root, int totalLength)
-        {
-            const string directoryName = "1234567890";
-            int neededLength = totalLength - root.Length;
-            int directoryCount = neededLength / (directoryName.Length + 1);
-            int lastDirectory = neededLength % (directoryName.Length + 1) + 1;
-            string fullPath = root;
-            for (int i = 0; i < directoryCount; i++)
-            {
-                fullPath = Paths.Combine(fullPath, directoryName);
-            }
-
-            if (lastDirectory > 0)
-            {
-                fullPath = Paths.Combine(fullPath, directoryName.Substring(0, lastDirectory));
-            }
-
-            return fullPath;
         }
     }
 }

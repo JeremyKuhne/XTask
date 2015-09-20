@@ -84,6 +84,13 @@ namespace XTask.Interop
         [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
         private static class Private
         {
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683188.aspx
+            [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+            internal static extern uint GetEnvironmentVariableW(
+                string lpName,
+                StringBuilder lpBuffer,
+                uint nSize);
+
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms686206.aspx
             [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
@@ -129,7 +136,7 @@ namespace XTask.Interop
                 string methodName);
         }
 
-        private static class Libraries
+        internal static class Libraries
         {
             internal const string Kernel32 = "kernel32.dll";
             internal const string Advapi32 = "advapi32.dll";
@@ -183,7 +190,7 @@ namespace XTask.Interop
         /// <summary>
         /// Uses the stringbuilder cache and increases the buffer size if needed.
         /// </summary>
-        private static string BufferInvoke(Func<StringBuilder, uint> invoker, string path = null)
+        internal static string BufferInvoke(Func<StringBuilder, uint> invoker, string value = null, Func<int, bool> shouldThrow = null)
         {
             StringBuilder buffer = NativeMethods.stringCache.Acquire();
             uint returnValue = invoker(buffer);
@@ -199,7 +206,12 @@ namespace XTask.Interop
             {
                 // Failed
                 int error = Marshal.GetLastWin32Error();
-                throw GetIoExceptionForError(error, path);
+
+                if (shouldThrow != null && !shouldThrow(error))
+                {
+                    return null;
+                }
+                throw GetIoExceptionForError(error, value);
             }
 
             return NativeMethods.stringCache.ToStringAndRelease(buffer);
@@ -212,6 +224,14 @@ namespace XTask.Interop
                 int error = Marshal.GetLastWin32Error();
                 throw GetIoExceptionForError(error, name);
             }
+        }
+
+        internal static string GetEnvironmentVariable(string name)
+        {
+            return BufferInvoke(
+                sb => Private.GetEnvironmentVariableW(name, sb, (uint)sb.Capacity + 1),
+                name,
+                error => error != WinError.ERROR_ENVVAR_NOT_FOUND);
         }
 
         internal static void CloseHandle(IntPtr handle)

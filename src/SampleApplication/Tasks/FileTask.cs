@@ -16,20 +16,6 @@ namespace XFile.Tasks
 
     public abstract class FileTask : Task
     {
-        private static CurrentDirectory currentDirectory;
-
-        protected CurrentDirectory CurrentDirectory
-        {
-            get
-            {
-                if (currentDirectory == null)
-                {
-                    currentDirectory = new CurrentDirectory(ExtendedFileService);
-                }
-                return currentDirectory;
-            }
-        }
-
         protected string GetFullTargetPath()
         {
             return GetFullPath(Arguments.Target);
@@ -38,8 +24,8 @@ namespace XFile.Tasks
         protected string GetFullPath(string target)
         {
             return target == null
-                ? FileService.GetFullPath(CurrentDirectory.GetCurrentDirectory())
-                : FileService.GetFullPath(target, this.CurrentDirectory.GetCurrentDirectory());
+                ? FileService.GetFullPath(FileService.CurrentDirectory)
+                : FileService.GetFullPath(target, FileService.CurrentDirectory);
         }
 
         protected IFileService FileService

@@ -65,7 +65,6 @@
     <Compile Include="Tasks\PrintCurrentDirectoryTask.cs" />
     <Compile Include="Tasks\TestTask.cs" />
     <Compile Include="Tasks\TypeTask.cs" />
-    <Compile Include="Utility\CurrentDirectory.cs" />
     <Compile Include="XFileStrings.Designer.cs">
       <DependentUpon>XFileStrings.resx</DependentUpon>
       <AutoGen>True</AutoGen>

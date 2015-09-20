@@ -26,7 +26,7 @@ namespace XFile.Tasks
             string fullPath = GetFullPath(target);
 
             IDirectoryInformation directoryInfo = this.FileService.GetDirectoryInfo(fullPath);
-            CurrentDirectory.SetCurrentDirectory(fullPath);
+            FileService.CurrentDirectory = fullPath;
             this.Loggers[LoggerType.Result].WriteLine(fullPath);
 
             return ExitCode.Success;

@@ -101,6 +101,7 @@ namespace XTask.Interop
                     IntPtr hFindFile,
                     out WIN32_FIND_DATA lpFindFileData);
 
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364413.aspx
                 [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
                 [return: MarshalAs(UnmanagedType.Bool)]
                 internal static extern bool FindClose(
@@ -141,10 +142,10 @@ namespace XTask.Interop
                     [MarshalAs(UnmanagedType.Bool)] ref bool pbCancel,
                     CopyFileFlags dwCopyFlags);
 
-                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363866(v=vs.85).aspx
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363866.aspx
+                // Note that CreateSymbolicLinkW returns a BOOLEAN (byte), not a BOOL (int)
                 [DllImport(Libraries.Kernel32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
-                [return: MarshalAs(UnmanagedType.Bool)]
-                internal static extern bool CreateSymbolicLinkW(
+                internal static extern byte CreateSymbolicLinkW(
                     string lpSymlinkFileName,
                     string lpTargetFileName,
                     uint dwFlags);
@@ -759,7 +760,7 @@ namespace XTask.Interop
 
             internal static void CreateSymbolicLink(string symbolicLinkPath, string targetPath, bool targetIsDirectory = false)
             {
-                if (!Private.CreateSymbolicLinkW(symbolicLinkPath, targetPath, targetIsDirectory ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0))
+                if (Private.CreateSymbolicLinkW(symbolicLinkPath, targetPath, targetIsDirectory ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0) == 0)
                 {
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error, symbolicLinkPath);

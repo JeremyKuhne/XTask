@@ -36,6 +36,7 @@ namespace XTask.Interop
             internal const int ERROR_INVALID_NAME = 123;
             internal const int ERROR_BAD_PATHNAME = 161;
             internal const int ERROR_ALREADY_EXISTS = 183;
+            internal const int ERROR_ENVVAR_NOT_FOUND = 203;
             internal const int ERROR_FILENAME_EXCED_RANGE = 206;
             internal const int ERROR_MORE_DATA = 234;
             internal const int ERROR_OPERATION_ABORTED = 995;

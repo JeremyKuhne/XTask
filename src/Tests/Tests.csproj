@@ -81,6 +81,7 @@
     <Compile Include="FileSystem\FlexFileSystemInfoTests.cs" />
     <Compile Include="FileSystem\NetFileSystemInfoTests.cs" />
     <Compile Include="FileSystem\PathGenerator.cs" />
+    <Compile Include="Interop\BufferInvokeTests.cs" />
     <Compile Include="Interop\DirectoryManagementTests.cs" />
     <Compile Include="Interop\FileManagementTests.cs" />
     <Compile Include="FileSystem\TestFileCleaner.cs" />

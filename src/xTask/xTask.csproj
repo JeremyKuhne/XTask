@@ -78,6 +78,7 @@
     <Compile Include="Systems\File\Concrete\DotNet\DirectoryInformation.cs" />
     <Compile Include="Systems\File\Concrete\DotNet\FileService.cs" />
     <Compile Include="Systems\File\Concrete\DotNet\FileInformation.cs" />
+    <Compile Include="Systems\File\Concrete\Flex\CurrentDirectory.cs" />
     <Compile Include="Systems\File\Concrete\Flex\DirectoryInformation.cs" />
     <Compile Include="Systems\File\Concrete\Flex\FileInformation.cs" />
     <Compile Include="Systems\File\Concrete\Flex\FileSystemInformation.cs" />

@@ -84,7 +84,7 @@ namespace XTask.Interop
                     uint result = 0;
 
                     // QueryDosDevicePrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while ((result = Private.QueryDosDeviceW(deviceName, buffer, buffer.Size / 2)) == 0)
+                    while ((result = Private.QueryDosDeviceW(deviceName, buffer, (buffer.Size / 2) - 1)) == 0)
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         switch (lastError)
@@ -123,20 +123,21 @@ namespace XTask.Interop
                 }
             }
 
-            internal static string GetVolumePathName(string fileName)
+            internal static string GetVolumePathName(string path)
             {
-                StringBuilder volumePathName = new StringBuilder(10);
+                // Most paths are mounted at the root, 50 should handle the canonical (guid) root
+                StringBuilder volumePathName = new StringBuilder(50);
 
-                while (!Private.GetVolumePathNameW(fileName, volumePathName, (uint)volumePathName.Capacity))
+                while (!Private.GetVolumePathNameW(path, volumePathName, (uint)volumePathName.Capacity))
                 {
                     int lastError = Marshal.GetLastWin32Error();
                     switch (lastError)
                     {
                         case WinError.ERROR_FILENAME_EXCED_RANGE:
-                            volumePathName.EnsureCapacity(volumePathName.Length * 2);
+                            volumePathName.EnsureCapacity(volumePathName.Capacity * 2);
                             break;
                         default:
-                            throw GetIoExceptionForError(lastError, fileName);
+                            throw GetIoExceptionForError(lastError, path);
                     }
                 }
 

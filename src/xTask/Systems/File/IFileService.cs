@@ -53,6 +53,11 @@ namespace XTask.Systems.File
         void DeleteDirectory(string path, bool deleteChildren = false);
 
         /// <summary>
+        /// Get/set the current working directory
+        /// </summary>
+        string CurrentDirectory { get; set; }
+
+        /// <summary>
         /// Copy the specified file to the specified location.
         /// </summary>
         void CopyFile(string existingPath, string newPath, bool overwrite = false);

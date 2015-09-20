@@ -77,6 +77,7 @@ namespace XTask.Tests.Core.Utility
             public abstract FileAttributes GetAttributes(string path);
             public abstract void SetAttributes(string path, FileAttributes attributes);
             public abstract void CopyFile(string existingPath, string newPath, bool overwrite = false);
+            public abstract string CurrentDirectory { get; set; }
         }
     }
 }

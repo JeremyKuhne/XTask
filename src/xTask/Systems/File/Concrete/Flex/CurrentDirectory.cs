@@ -5,10 +5,11 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace XFile.Utility
+namespace XTask.Systems.File.Concrete.Flex
 {
     using System;
     using System.Collections.Generic;
+    using Interop;
     using XTask.Systems.File;
 
     public class CurrentDirectory
@@ -31,8 +32,12 @@ namespace XFile.Utility
                 throw new InvalidOperationException();
             }
 
+            this.lastVolume = AddEntry(directory);
+        }
+
+        private string AddEntry(string directory)
+        {
             string canonicalRoot = fileService.GetCanonicalRoot(directory);
-            this.lastVolume = canonicalRoot;
 
             if (this.volumeDirectories.ContainsKey(canonicalRoot))
             {
@@ -42,23 +47,37 @@ namespace XFile.Utility
             {
                 this.volumeDirectories.Add(canonicalRoot, directory);
             }
+
+            return canonicalRoot;
         }
 
-        public string GetCurrentDirectory(string volumeName = null)
+        public string GetCurrentDirectory(string path = null)
         {
-            if (volumeName == null)
-            {
-                volumeName = lastVolume;
-            }
+            string volume = path == null ? lastVolume : fileService.GetCanonicalRoot(path);
 
             string directory;
-            if (this.volumeDirectories.TryGetValue(volumeName, out directory))
+            if (this.volumeDirectories.TryGetValue(volume, out directory))
             {
                 return directory;
             }
             else
             {
-                throw new NotImplementedException();
+                // Try to get the hidden environment variable (e.g. "=C:") for the given drive if available
+                string driveLetter = fileService.GetDriveLetter(path);
+                if (driveLetter != null)
+                {
+                    string environmentPath = NativeMethods.GetEnvironmentVariable("=" + driveLetter.Substring(0, 2));
+                    if (environmentPath != null)
+                    {
+                        AddEntry(environmentPath);
+                        return environmentPath;
+                    }
+                }
+
+                // Nothing is set yet, assume the root
+                string root = Paths.GetRoot(path);
+                AddEntry(root);
+                return root;
             }
         }
     }

@@ -47,5 +47,58 @@ namespace XTask.Systems.File
 
             return canonicalRoot;
         }
+
+        /// <summary>
+        /// Return the legacy drive letter (e.g. "C", "D") for the given path or null if one doesn't exist
+        /// </summary>
+        public static string GetDriveLetter(this IExtendedFileService fileService, string path)
+        {
+            string pathCanonicalRoot = fileService.GetCanonicalRoot(path);
+
+            // We have to walk drives
+            foreach (var drive in fileService.GetLogicalDriveStrings())
+            {
+                string driveCanonicalRoot = fileService.GetCanonicalRoot(drive);
+                if (String.Equals(pathCanonicalRoot, driveCanonicalRoot))
+                {
+                    return drive;
+                }
+            }
+
+            return null;
+            //int rootLength;
+            //switch (Paths.GetPathFormat(path, out rootLength))
+            //{
+            //    case PathFormat.UnknownFormat:
+            //    case PathFormat.CurrentDirectoryRelative:
+            //    case PathFormat.CurrentVolumeRelative:
+            //    case PathFormat.UniformNamingConvention:
+            //    case PathFormat.UniformNamingConventionExtended:
+            //        return null;
+            //    case PathFormat.DriveAbsolute:
+            //    case PathFormat.DriveRelative:
+            //        // Already in the "C:" form
+            //        return path.Substring(0, 1);
+            //    case PathFormat.Device:
+            //    case PathFormat.VolumeAbsoluteExtended:
+            //        // Get the DOS alias for this path
+            //        string root = path.Substring(0, rootLength);
+            //        string deviceAlias = fileService.QueryDosDeviceNames(root).FirstOrDefault();
+            //        if (deviceAlias == null) return null;
+
+            //        // We have to walk drives
+            //        foreach (var drive in fileService.GetLogicalDriveStrings())
+            //        {
+            //            string driveAlias = fileService.QueryDosDeviceNames(drive).FirstOrDefault();
+            //            if (String.Equals(deviceAlias, driveAlias))
+            //            {
+            //                return driveAlias;
+            //            }
+            //        }
+            //        break;
+            //}
+
+            //return null;
+        }
     }
 }
