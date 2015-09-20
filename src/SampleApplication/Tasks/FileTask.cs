@@ -13,6 +13,7 @@ namespace XFile.Tasks
     using XTask.Logging;
     using XTask.Tasks;
     using XTask.Utility;
+    using XTask.Systems.Console;
 
     public abstract class FileTask : Task
     {
@@ -31,6 +32,11 @@ namespace XFile.Tasks
         protected IFileService FileService
         {
             get { return this.GetService<IFileService>(); }
+        }
+
+        protected IConsoleService ConsoleService
+        {
+            get { return this.GetService<IConsoleService>(); }
         }
 
         protected IExtendedFileService ExtendedFileService

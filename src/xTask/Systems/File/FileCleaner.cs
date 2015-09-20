@@ -37,7 +37,7 @@ namespace XTask.Systems.File
 
             // Create a flag file and leave it open- this way we can track and clean abandoned (crashed/terminated) processes
             string flagFile = Paths.Combine(this.TempFolder, FileCleaner.XTaskFlagFileName);
-            Stream flagStream = this.fileServiceProvider.CreateFileStream(flagFile, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            Stream flagStream = this.fileServiceProvider.CreateFileStream(flagFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             this.flagFile = new StreamWriter(flagStream);
             this.flagFile.WriteLine(XTaskStrings.FlagFileContent);
             this.flagFile.Flush();

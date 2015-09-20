@@ -93,7 +93,7 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LoadAsBinary()
         {
-            using (var handle = NativeMethods.LoadLibrary(NativeTestLibrary, 0))
+            using (var handle = NativeMethods.LoadLibrary(GetNativeTestLibraryLocation(), 0))
             {
                 handle.IsInvalid.Should().BeFalse();
             }

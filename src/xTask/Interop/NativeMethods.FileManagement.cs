@@ -9,6 +9,7 @@ namespace XTask.Interop
 {
     using Microsoft.Win32.SafeHandles;
     using System;
+    using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
@@ -617,11 +618,14 @@ namespace XTask.Interop
 
             internal static void DeleteFile(string path)
             {
-                path = Paths.AddExtendedPrefix(path);
+                Debug.Assert(!Paths.IsRelative(path));
+
+                // Can't delete Posix files (end with "." for example) unless we've got the prefix
+                path = Paths.AddExtendedPrefix(path, addIfUnderLegacyMaxPath: true);
                 if (!Private.DeleteFileW(path))
                 {
                     int error = Marshal.GetLastWin32Error();
-                    throw GetIoExceptionForError(error);
+                    throw GetIoExceptionForError(error, path);
                 }
             }
 

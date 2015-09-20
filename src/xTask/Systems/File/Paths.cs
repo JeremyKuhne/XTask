@@ -274,6 +274,7 @@ namespace XTask.Systems.File
 
         /// <summary>
         /// Puts the root from the source path onto the target path if needed.
+        /// If either root can't be determined just returns the target path.
         /// </summary>
         public static string ReplaceRoot(string sourcePath, string targetPath)
         {
@@ -281,13 +282,21 @@ namespace XTask.Systems.File
             if (targetPath == null) throw new ArgumentNullException(nameof(targetPath));
 
             int sourceRoot = GetRootLength(sourcePath);
-            if (Strings.StartsWithCount(sourcePath, targetPath, sourceRoot, StringComparison.OrdinalIgnoreCase))
+            int targetRoot;
+
+            // Skip out if we can't figure out the roots or are already good
+            if (sourceRoot == -1
+                || Strings.StartsWithCount(sourcePath, targetPath, sourceRoot, StringComparison.OrdinalIgnoreCase)
+                || (targetRoot = GetRootLength(targetPath)) == -1)
                 return targetPath;
 
-            int targetRoot = GetRootLength(targetPath);
             var sb = stringCache.Acquire();
-            sb.Append(sourcePath, 0, sourceRoot);
-            sb.Append(targetPath, targetRoot, targetPath.Length - targetRoot);
+
+            // Try and keep the casing of the target path
+            int keepLength = Strings.FindRightmostCommonCount(sourcePath, sourceRoot -1, targetPath, targetRoot - 1, StringComparison.OrdinalIgnoreCase);
+
+            sb.Append(sourcePath, 0, sourceRoot - keepLength);
+            sb.Append(targetPath, targetRoot - keepLength, targetPath.Length - targetRoot + keepLength);
             return stringCache.ToStringAndRelease(sb);
         }
 
@@ -525,10 +534,13 @@ namespace XTask.Systems.File
         /// Combines two strings, adding a directory separator between if needed.
         /// Does not validate path characters.
         /// </summary>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="path1"/> is null.</exception>
         public static string Combine(string path1, string path2)
         {
             if (path1 == null) throw new ArgumentNullException(nameof(path1));
-            if (path2 == null) throw new ArgumentNullException(nameof(path2));
+
+            // Add nothing to something is something
+            if (String.IsNullOrEmpty(path2)) return path1;
 
             StringBuilder sb = stringCache.Acquire();
             if (!EndsInDirectorySeparator(path1) && !BeginsWithDirectorySeparator(path2))

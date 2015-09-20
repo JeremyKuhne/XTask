@@ -301,5 +301,22 @@ namespace XTask.Utility
         {
             return String.Compare(first, 0, second, 0, count, comparisonType) == 0;
         }
+
+        /// <summary>
+        /// Get the count of characters that match at the given indexes walking backwards.
+        /// </summary>
+        public static int FindRightmostCommonCount(string first, int firstIndex, string second, int secondIndex, StringComparison comparisonType)
+        {
+            int matchCount = 0;
+            while (String.Compare(first, firstIndex, second, secondIndex, 1, comparisonType) == 0)
+            {
+                matchCount++;
+                if (firstIndex == 0 || secondIndex == 0) break;
+                firstIndex--;
+                secondIndex--;
+            }
+
+            return matchCount;
+        }
     }
 }

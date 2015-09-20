@@ -132,6 +132,15 @@
   <data name="EchoTaskSummary" xml:space="preserve">
     <value>Echo input</value>
   </data>
+  <data name="ErrorNoTargetSpecified" xml:space="preserve">
+    <value>No target was specified.</value>
+  </data>
+  <data name="ErrorRequiresSourceAndDestination" xml:space="preserve">
+    <value>This command requires a source and a destination.</value>
+  </data>
+  <data name="ErrorRequiresTarget" xml:space="preserve">
+    <value>This command requires a target.</value>
+  </data>
   <data name="FileInfoTaskSummary" xml:space="preserve">
     <value>List detailed file information</value>
   </data>
@@ -159,17 +168,14 @@
   <data name="MountPointTaskSummary" xml:space="preserve">
     <value>Get the mount point for the given path</value>
   </data>
-  <data name="NoTargetSpecifiedError" xml:space="preserve">
-    <value>No target was specified.</value>
-  </data>
   <data name="PrintCurrentDirectoryTaskSummary" xml:space="preserve">
     <value>Get the current directory</value>
   </data>
-  <data name="RequiresSourceAndDestinationError" xml:space="preserve">
-    <value>This command requires a source and a destination.</value>
+  <data name="QueryDeleteDirectory" xml:space="preserve">
+    <value>Are you sure you want to delete '{0}' and all directories and files within?</value>
   </data>
-  <data name="RequiresTargetError" xml:space="preserve">
-    <value>This command requires a target.</value>
+  <data name="RemoveDirectoryTaskSummary" xml:space="preserve">
+    <value>Removes the given directory</value>
   </data>
   <data name="ShortPathTaskSummary" xml:space="preserve">
     <value>Get the short name path</value>

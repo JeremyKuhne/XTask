@@ -22,7 +22,7 @@ namespace XFile.Tasks
 
             if (target == null && redirector == -1)
             {
-                this.Loggers[LoggerType.Result].WriteLine(String.Join(" ", Arguments.Targets));
+                ResultLog.WriteLine(String.Join(" ", Arguments.Targets));
                 return ExitCode.Success;
             }
 
@@ -30,7 +30,7 @@ namespace XFile.Tasks
             {
                 if (redirector == Arguments.Targets.Length - 1)
                 {
-                    this.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, XFileStrings.NoTargetSpecifiedError);
+                    StatusLog.WriteLine(WriteStyle.Error, XFileStrings.ErrorNoTargetSpecified);
                     return ExitCode.InvalidArgument;
                 }
 

@@ -63,6 +63,7 @@
     <Compile Include="Tasks\MountPointTask.cs" />
     <Compile Include="Tasks\ListStreamsTask.cs" />
     <Compile Include="Tasks\PrintCurrentDirectoryTask.cs" />
+    <Compile Include="Tasks\RemoveDirectoryTask.cs" />
     <Compile Include="Tasks\TestTask.cs" />
     <Compile Include="Tasks\TypeTask.cs" />
     <Compile Include="XFileStrings.Designer.cs">

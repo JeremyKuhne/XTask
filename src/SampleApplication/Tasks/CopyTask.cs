@@ -17,15 +17,15 @@ namespace XFile.Tasks
         {
             if (Arguments.Targets.Length != 2)
             {
-                this.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, XFileStrings.RequiresSourceAndDestinationError);
+                StatusLog.WriteLine(WriteStyle.Error, XFileStrings.ErrorRequiresSourceAndDestination);
             }
 
             string source = GetFullPath(Arguments.Targets[0]);
             string destination = GetFullPath(Arguments.Targets[1]);
 
-            this.Loggers[LoggerType.Status].WriteLine($"Copying '{source}' to '{destination}'...");
+            StatusLog.WriteLine($"Copying '{source}' to '{destination}'...");
             FileService.CopyFile(source, destination);
-            this.Loggers[LoggerType.Status].WriteLine("1 file copied.");
+            StatusLog.WriteLine("1 file copied.");
 
             return ExitCode.Success;
         }

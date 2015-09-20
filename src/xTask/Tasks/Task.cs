@@ -28,6 +28,9 @@ namespace XTask.Tasks
         protected IArgumentProvider Arguments { get { return this.interaction.Arguments; } }
         protected ILoggers Loggers { get { return this.interaction.Loggers; } }
 
+        protected ILogger StatusLog { get { return this.Loggers[LoggerType.Status]; } }
+        protected ILogger ResultLog { get { return this.Loggers[LoggerType.Result]; } }
+
         protected void Output(object value)
         {
             this.interaction.Output(value);

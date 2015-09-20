@@ -11,6 +11,7 @@ namespace XTask.Systems.File.Concrete.Flex
     using System.Collections.Generic;
     using Interop;
     using XTask.Systems.File;
+    using System.Diagnostics;
 
     public class CurrentDirectory
     {
@@ -35,9 +36,16 @@ namespace XTask.Systems.File.Concrete.Flex
             this.lastVolume = AddEntry(directory);
         }
 
-        private string AddEntry(string directory)
+        private string AddEntry(string directory, string canonicalRoot = null)
         {
-            string canonicalRoot = fileService.GetCanonicalRoot(directory);
+            canonicalRoot = canonicalRoot ?? fileService.GetCanonicalRoot(directory);
+
+            // If the directory has vanished, walk up
+            while (!fileService.DirectoryExists(directory)
+                && !String.Equals((directory = Paths.GetDirectory(directory)), canonicalRoot, StringComparison.Ordinal))
+            {
+                Debug.Assert(directory != null);
+            }
 
             if (this.volumeDirectories.ContainsKey(canonicalRoot))
             {
@@ -58,6 +66,7 @@ namespace XTask.Systems.File.Concrete.Flex
             string directory;
             if (this.volumeDirectories.TryGetValue(volume, out directory))
             {
+                AddEntry(directory, volume);
                 return directory;
             }
             else

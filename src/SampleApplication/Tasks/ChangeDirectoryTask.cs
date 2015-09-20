@@ -7,9 +7,7 @@
 
 namespace XFile.Tasks
 {
-    using Utility;
     using XTask.Systems.File;
-    using XTask.Logging;
     using XTask.Utility;
 
     public class ChangeDirectoryTask : FileTask
@@ -21,13 +19,11 @@ namespace XFile.Tasks
             {
                 target = ".";
             }
-            target = Paths.AddTrailingSeparator(target);
 
-            string fullPath = GetFullPath(target);
+            string fullPath = ExtendedFileService.GetFinalPath(GetFullPath(target));
 
-            IDirectoryInformation directoryInfo = this.FileService.GetDirectoryInfo(fullPath);
             FileService.CurrentDirectory = fullPath;
-            this.Loggers[LoggerType.Result].WriteLine(fullPath);
+            ResultLog.WriteLine(FileService.CurrentDirectory);
 
             return ExitCode.Success;
         }

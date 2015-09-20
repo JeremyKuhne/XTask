@@ -15,16 +15,19 @@ namespace XTask.Systems.File
 
     public static class ExtendedFileServiceExtensions
     {
+        /// <summary>
+        /// Get the canonical volume root (e.g. the \\?\VolumeGuid format) for the given path. The path must not be relative.
+        /// </summary>
+        /// <exception cref="ArgumentException">Thrown if the path is relative or indeterminate.</exception>
+        /// <exception cref="System.IO.IOException">Thrown if unable to get the root from the OS.</exception>
         public static string GetCanonicalRoot(this IExtendedFileService fileService, string path)
         {
-            // Get the canonical volume path name for the given directory
+            if (Paths.IsRelative(path)) throw new ArgumentException();
+
             path = fileService.GetFullPath(path);
             int rootLength;
             var format = Paths.GetPathFormat(path, out rootLength);
-            if (format == PathFormat.UnknownFormat)
-            {
-                throw new InvalidOperationException();
-            }
+            if (format == PathFormat.UnknownFormat) throw new ArgumentException();
 
             string root = path.Substring(0, rootLength);
             string simpleRoot = root;

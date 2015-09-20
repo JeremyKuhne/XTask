@@ -17,7 +17,7 @@ namespace XFile.Tasks
         {
             if (String.IsNullOrWhiteSpace(this.Arguments.Target))
             {
-                this.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, XFileStrings.RequiresTargetError);
+                StatusLog.WriteLine(WriteStyle.Error, XFileStrings.ErrorRequiresTarget);
                 return ExitCode.InvalidArgument;
             }
 

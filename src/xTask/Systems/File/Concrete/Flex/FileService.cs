@@ -98,7 +98,7 @@ namespace XTask.Systems.File.Concrete.Flex
         public void DeleteFile(string path)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
-            NativeMethods.FileManagement.DeleteFile(path);
+            NativeMethods.FileManagement.DeleteFile(GetFullPath(path));
         }
 
         private void DeleteDirectoryRecursive(string path)
@@ -156,7 +156,9 @@ namespace XTask.Systems.File.Concrete.Flex
         public void DeleteDirectory(string path, bool deleteChildren = false)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
-            path = NativeMethods.FileManagement.GetFullPathName(path);
+
+            // Always add the prefix to ensure we can delete Posix names (end in space/period)
+            path = Paths.AddExtendedPrefix(NativeMethods.FileManagement.GetFullPathName(path), addIfUnderLegacyMaxPath: true);
 
             if (deleteChildren)
             {
@@ -171,6 +173,21 @@ namespace XTask.Systems.File.Concrete.Flex
         public string GetFullPath(string path, string basePath = null)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
+
+            switch (Paths.GetPathFormat(path))
+            {
+                case PathFormat.UniformNamingConventionExtended:
+                case PathFormat.VolumeAbsoluteExtended:
+                    // Don't mess with \\?\
+                    return path;
+                case PathFormat.DriveRelative:
+                    // Get the directory for the specified drive, and remove the drive specifier
+                    string drive = Paths.AddTrailingSeparator(path.Substring(0, 2));
+                    basePath = directory.GetCurrentDirectory(drive);
+                    path = path.Substring(2);
+                    break;
+            }
+
             if (basePath == null || !Paths.IsRelative(path))
             {
                 // Fixed, or we don't have a base path

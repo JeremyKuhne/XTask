@@ -38,6 +38,7 @@ namespace XFile
             registry.RegisterTask(() => new ChangeDirectoryTask(), "changedirectory", "chdir", "cd");
             registry.RegisterTask(() => new PrintCurrentDirectoryTask(), "printcurrentdirectory", "pwd", "pcd");
             registry.RegisterTask(() => new MakeDirectoryTask(), "makedirectory", "mkdir", "md");
+            registry.RegisterTask(() => new RemoveDirectoryTask(), "removedirectory", "rmdir", "rd");
             registry.RegisterTask(() => new FileInfoTask(), "fileinfo", "fi");
             registry.RegisterTask(() => new ListStreamsTask(), "liststreams", "streams");
             registry.RegisterTask(() => new TypeTask(), "type");

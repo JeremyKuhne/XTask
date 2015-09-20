@@ -106,6 +106,33 @@ namespace XFile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No target was specified..
+        /// </summary>
+        internal static string ErrorNoTargetSpecified {
+            get {
+                return ResourceManager.GetString("ErrorNoTargetSpecified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This command requires a source and a destination..
+        /// </summary>
+        internal static string ErrorRequiresSourceAndDestination {
+            get {
+                return ResourceManager.GetString("ErrorRequiresSourceAndDestination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This command requires a target..
+        /// </summary>
+        internal static string ErrorRequiresTarget {
+            get {
+                return ResourceManager.GetString("ErrorRequiresTarget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to List detailed file information.
         /// </summary>
         internal static string FileInfoTaskSummary {
@@ -187,15 +214,6 @@ namespace XFile {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No target was specified..
-        /// </summary>
-        internal static string NoTargetSpecifiedError {
-            get {
-                return ResourceManager.GetString("NoTargetSpecifiedError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Get the current directory.
         /// </summary>
         internal static string PrintCurrentDirectoryTaskSummary {
@@ -205,20 +223,20 @@ namespace XFile {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This command requires a source and a destination..
+        ///   Looks up a localized string similar to Are you sure you want to delete &apos;{0}&apos; and all directories and files within?.
         /// </summary>
-        internal static string RequiresSourceAndDestinationError {
+        internal static string QueryDeleteDirectory {
             get {
-                return ResourceManager.GetString("RequiresSourceAndDestinationError", resourceCulture);
+                return ResourceManager.GetString("QueryDeleteDirectory", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This command requires a target..
+        ///   Looks up a localized string similar to Removes the given directory.
         /// </summary>
-        internal static string RequiresTargetError {
+        internal static string RemoveDirectoryTaskSummary {
             get {
-                return ResourceManager.GetString("RequiresTargetError", resourceCulture);
+                return ResourceManager.GetString("RemoveDirectoryTaskSummary", resourceCulture);
             }
         }
         
