@@ -15,7 +15,7 @@ namespace XTask.Interop
     /// <summary>
     /// Wrapper for access to the native heap. Dispose to free the memory. Try to use with using statements.
     /// </summary>
-    public class NativeBuffer : IDisposable
+    public class NativeBuffer : Stream
     {
         // Heap Functions
         // --------------
@@ -28,27 +28,36 @@ namespace XTask.Interop
 
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366597.aspx
         [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-        static extern HeapHandle HeapAlloc(IntPtr hHeap, uint dwFlags, UIntPtr dwBytes);
+        private static extern HeapHandle HeapAlloc(IntPtr hHeap, uint dwFlags, UIntPtr dwBytes);
 
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366704.aspx
         [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-        static extern HeapHandle HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr lpMem, UIntPtr dwBytes);
+        private static extern HeapHandle HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr lpMem, UIntPtr dwBytes);
 
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366701.aspx
         [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-        public static extern bool HeapFree(IntPtr hHeap, uint dwFlags, IntPtr lpMem);
+        private static extern bool HeapFree(IntPtr hHeap, uint dwFlags, IntPtr lpMem);
 
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366700.aspx
         [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-        public static extern bool HeapDestroy(IntPtr hHeap);
+        private static extern bool HeapDestroy(IntPtr hHeap);
 
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366569.aspx
         [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-        static extern IntPtr GetProcessHeap();
+        private static extern IntPtr GetProcessHeap();
 
         private static IntPtr ProcessHeap = GetProcessHeap();
         private HeapHandle handle;
         private UnmanagedMemoryStream stream;
+        private bool disposed;
+
+        public NativeBuffer(uint initialLength = 0)
+        {
+            if (initialLength != 0)
+            {
+                this.Resize(initialLength);
+            }
+        }
 
         public IntPtr Handle
         {
@@ -58,28 +67,38 @@ namespace XTask.Interop
             }
         }
 
-        public uint Size { get; private set; }
-
-        public NativeBuffer(uint initialSize = 0)
+        public override bool CanRead
         {
-            if (initialSize != 0)
-            {
-                this.Resize(initialSize);
-            }
+            get { return this.stream?.CanRead ?? !disposed; }
         }
 
-        public Stream GetStream()
+        public override bool CanSeek
         {
-            return this.CreateStream();
+            get { return this.stream?.CanSeek ?? !disposed; }
         }
 
-        private unsafe Stream CreateStream()
+        public override bool CanWrite
         {
-            if (this.stream == null && this.Size > 0)
+            get { return this.stream?.CanWrite ?? !disposed; }
+        }
+
+        public override long Length
+        {
+            get { return this.stream?.Length ?? 0; }
+        }
+
+        public override long Position
+        {
+            get
             {
-                this.stream = new UnmanagedMemoryStream((byte*)this.Handle.ToPointer(), this.Size);
+                return this.stream?.Position ?? 0;
             }
-            return this.stream;
+            set
+            {
+                if (value < 0 || value > Length) throw new ArgumentOutOfRangeException(nameof(value));
+                if (this.Position != value)
+                    this.stream.Position = value;
+            }
         }
 
         public static implicit operator IntPtr(NativeBuffer buffer)
@@ -87,15 +106,21 @@ namespace XTask.Interop
             return buffer.Handle;
         }
 
-        public IntPtr EnsureCapacity(uint size)
+        public void EnsureLength(long value)
         {
-            if (size < this.Size)
-                return this.Handle;
-            else
-                return this.Resize(size);
+            if (this.Length < value)
+            {
+                this.Resize(value);
+            }
         }
 
-        public IntPtr Resize(uint size)
+        public override void SetLength(long value)
+        {
+            if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+            this.Resize(value);
+        }
+
+        unsafe private IntPtr Resize(long size)
         {
             HeapHandle newHandle = (this.Handle == IntPtr.Zero)
                 ? HeapAlloc(ProcessHeap, 0, (UIntPtr)size)
@@ -113,13 +138,61 @@ namespace XTask.Interop
             }
 
             this.handle = newHandle;
-            this.Size = size;
+            this.stream = new UnmanagedMemoryStream((byte*)this.Handle.ToPointer(), size);
             return this.Handle;
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
+            disposed = true;
             this.handle?.Dispose();
+        }
+
+        public override void Flush()
+        {
+            this.stream?.Flush();
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            if (this.stream == null)
+            {
+                // Only 0 makes any sense, otherwise throw IOException like UnmanagedMemoryStream would
+                if (offset != 0) throw new IOException();
+                else return 0;
+            }
+
+            return this.stream.Seek(offset, origin);
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            if (this.stream == null)
+            {
+                // Mimic UnmanagedMemoryStream with a 0 length buffer
+                if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+                if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
+                if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
+                if (offset != 0 || count != 0) throw new ArgumentException();
+                return 0;
+            }
+
+            return this.stream.Read(buffer, offset, count);
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            if (this.stream == null)
+            {
+                // Mimic UnmanagedMemoryStream with a 0 length buffer
+                if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+                if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
+                if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
+                if (offset != 0 || count != 0) throw new ArgumentException();
+                return;
+            }
+
+            this.stream.Write(buffer, offset, count);
         }
 
         private class HeapHandle : SafeHandleZeroIsInvalid

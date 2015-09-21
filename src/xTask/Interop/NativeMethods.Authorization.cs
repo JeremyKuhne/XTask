@@ -242,7 +242,7 @@ namespace XTask.Interop
                     token.DangerousGetHandle(),
                     TOKEN_INFORMATION_CLASS.TokenPrivileges,
                     buffer,
-                    buffer.Size,
+                    (uint)buffer.Length,
                     out bytesNeeded))
                 {
                     error = Marshal.GetLastWin32Error();
@@ -251,7 +251,7 @@ namespace XTask.Interop
 
 
                 // Loop through and get our privileges
-                BinaryReader reader = new BinaryReader(buffer.GetStream(), Encoding.Unicode, leaveOpen: true);
+                BinaryReader reader = new BinaryReader(buffer, Encoding.Unicode, leaveOpen: true);
                 uint count = reader.ReadUInt32();
 
                 var privileges = new List<PrivilegeSetting>();

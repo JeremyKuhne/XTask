@@ -87,6 +87,7 @@
     <Compile Include="Interop\FileManagementTests.cs" />
     <Compile Include="FileSystem\TestFileCleaner.cs" />
     <Compile Include="Interop\LoadLibraryTests.cs" />
+    <Compile Include="Interop\NativeBufferTests.cs" />
     <Compile Include="Logging\AggregatedLoggerTests.cs" />
     <Compile Include="Logging\ClipboardTests.cs" />
     <Compile Include="Logging\ConsoleLoggerTests.cs" />

@@ -192,7 +192,7 @@ namespace XTask.Interop
                     string name = null;
                     if (streamId.dwStreamNameSize > 0)
                     {
-                        buffer.EnsureCapacity(streamId.dwStreamNameSize);
+                        buffer.EnsureLength(streamId.dwStreamNameSize);
                         if (!BackupRead(
                             hFile: fileHandle,
                             lpBuffer: buffer,

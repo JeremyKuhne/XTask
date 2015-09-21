@@ -84,13 +84,13 @@ namespace XTask.Interop
                     uint result = 0;
 
                     // QueryDosDevicePrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while ((result = Private.QueryDosDeviceW(deviceName, buffer, (buffer.Size / 2) - 1)) == 0)
+                    while ((result = Private.QueryDosDeviceW(deviceName, buffer, (uint)(buffer.Length / 2) - 1)) == 0)
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         switch (lastError)
                         {
                             case WinError.ERROR_INSUFFICIENT_BUFFER:
-                                buffer.Resize(buffer.Size * 2);
+                                buffer.SetLength(buffer.Length * 2);
                                 break;
                             default:
                                 throw GetIoExceptionForError(lastError, deviceName);
@@ -108,9 +108,9 @@ namespace XTask.Interop
                     uint result = 0;
 
                     // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while ((result = Private.GetLogicalDriveStringsW((uint)buffer.Size / 2, buffer)) > buffer.Size / 2)
+                    while ((result = Private.GetLogicalDriveStringsW((uint)buffer.Length / 2, buffer)) > (uint)buffer.Length / 2)
                     {
-                        buffer.Resize(result * 2);
+                        buffer.SetLength(result * 2);
                     }
 
                     if (result == 0)
@@ -151,13 +151,13 @@ namespace XTask.Interop
                     uint returnLength = 0;
 
                     // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while (!Private.GetVolumePathNamesForVolumeNameW(volumeName, buffer, (uint)buffer.Size / 2, ref returnLength))
+                    while (!Private.GetVolumePathNamesForVolumeNameW(volumeName, buffer, (uint)buffer.Length / 2, ref returnLength))
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         switch (lastError)
                         {
                             case WinError.ERROR_MORE_DATA:
-                                buffer.Resize(returnLength * 2);
+                                buffer.SetLength(returnLength * 2);
                                 break;
                             default:
                                 throw GetIoExceptionForError(lastError, volumeName);
