@@ -238,6 +238,12 @@ namespace XTask.Interop
 
                 public void Dispose()
                 {
+                    this.Dispose(true);
+                    GC.SuppressFinalize(this);
+                }
+
+                private void Dispose(bool disposing)
+                {
                     this.buffer.Dispose();
                     this.buffer = null;
 
@@ -257,6 +263,11 @@ namespace XTask.Interop
                             throw GetIoExceptionForError(error);
                         }
                     }
+                }
+
+                ~BackupReader()
+                {
+                    this.Dispose(false);
                 }
             }
 

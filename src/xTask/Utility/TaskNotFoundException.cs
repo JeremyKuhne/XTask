@@ -13,6 +13,7 @@ namespace XTask.Utility
     /// <summary>
     /// Used to centrally handle missing items
     /// </summary>
+    [Serializable]
     public class TaskNotFoundException : TaskException
     {
         public TaskNotFoundException(string item)

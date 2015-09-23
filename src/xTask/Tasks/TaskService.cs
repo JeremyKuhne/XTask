@@ -57,7 +57,7 @@ namespace XTask.Tasks
             this.Dispose(disposing: true);
         }
 
-        public virtual void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
         }
     }

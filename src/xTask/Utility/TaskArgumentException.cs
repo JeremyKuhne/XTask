@@ -13,6 +13,7 @@ namespace XTask.Utility
     /// <summary>
     /// Used to centrally handle invalid user arguments
     /// </summary>
+    [Serializable]
     public class TaskArgumentException : TaskException
     {
         public TaskArgumentException(string message, Exception innerException = null)

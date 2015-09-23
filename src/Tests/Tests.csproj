@@ -72,6 +72,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Build\BuildArgumentParserTests.cs" />
     <Compile Include="Build\BuildTaskBridgeTests.cs" />
     <Compile Include="Collections\ListExtensionsTests.cs" />
@@ -150,9 +151,7 @@
       <Name>xTask</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="TestData.resx">
       <Generator>ResXFileCodeGenerator</Generator>

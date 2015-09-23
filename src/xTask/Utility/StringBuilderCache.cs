@@ -7,13 +7,14 @@
 
 namespace XTask.Utility
 {
+    using System;
     using System.Text;
     using System.Threading;
 
     /// <summary>
     /// Allows limited reuse of StringBuilders to improve memory pressure
     /// </summary>
-    public class StringBuilderCache
+    public class StringBuilderCache : IDisposable
     {
         private ThreadLocal<StringBuilder> stringBuilder;
         private int minSize;
@@ -63,6 +64,19 @@ namespace XTask.Utility
             string value = sb.ToString();
             this.Release(sb);
             return value;
+        }
+
+        public void Dispose()
+        {
+            this.Dispose(disposing: true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.stringBuilder.Dispose();
+            }
         }
     }
 }

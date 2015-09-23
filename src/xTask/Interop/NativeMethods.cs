@@ -8,6 +8,7 @@
 namespace XTask.Interop
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using System.Security;
     using System.Text;
@@ -129,11 +130,12 @@ namespace XTask.Interop
                 out char* lpBuffer,
                 int nBufferMax);
 
+            // This API is only available in ANSI
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683212.aspx
-            [DllImport(Libraries.Kernel32, CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
+            [DllImport(Libraries.Kernel32, CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true, BestFitMapping = false)]
             internal static extern IntPtr GetProcAddress(
                 SafeLibraryHandle hModule,
-                string methodName);
+                [MarshalAs(UnmanagedType.LPStr)] string methodName);
         }
 
         internal static class Libraries
@@ -148,6 +150,7 @@ namespace XTask.Interop
         /// <summary>
         /// Uses the stringbuilder cache and increases the buffer size if needed. Handles path prepending as needed.
         /// </summary>
+        [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
         private static string BufferPathInvoke(string path, Func<string, StringBuilder, uint> invoker, bool utilizeExtendedSyntax = true)
         {
             if (path == null) return null;
@@ -190,6 +193,7 @@ namespace XTask.Interop
         /// <summary>
         /// Uses the stringbuilder cache and increases the buffer size if needed.
         /// </summary>
+        [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
         internal static string BufferInvoke(Func<StringBuilder, uint> invoker, string value = null, Func<int, bool> shouldThrow = null)
         {
             StringBuilder buffer = NativeMethods.stringCache.Acquire();

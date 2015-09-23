@@ -31,7 +31,7 @@ namespace XTask.Interop
                 internal static extern bool AdjustTokenPrivileges(
                     IntPtr TokenHandle,
                     [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges,
-                    TOKEN_PRIVILEGES NewState,
+                    ref TOKEN_PRIVILEGES NewState,
                     uint BufferLength,
                     out TOKEN_PRIVILEGES PreviousState,
                     out uint ReturnLength);
@@ -221,20 +221,22 @@ namespace XTask.Interop
             {
                 // Get the buffer size we need
                 uint bytesNeeded;
-                if (Private.GetTokenInformation(
+                if (!Private.GetTokenInformation(
                     token.DangerousGetHandle(),
                     TOKEN_INFORMATION_CLASS.TokenPrivileges,
                     IntPtr.Zero,
                     0,
                     out bytesNeeded))
                 {
+                    int error = Marshal.GetLastWin32Error();
+                    if (error != WinError.ERROR_INSUFFICIENT_BUFFER)
+                        throw GetIoExceptionForError(error);
+                }
+                else
+                {
                     // Didn't need any space for output, let's assume there are no privileges
                     return Enumerable.Empty<PrivilegeSetting>();
                 }
-
-                int error = Marshal.GetLastWin32Error();
-                if (error != WinError.ERROR_INSUFFICIENT_BUFFER)
-                    throw GetIoExceptionForError(error);
 
                 // Initialize the buffer and get the data
                 NativeBuffer buffer = new NativeBuffer(bytesNeeded);
@@ -245,10 +247,9 @@ namespace XTask.Interop
                     (uint)buffer.Length,
                     out bytesNeeded))
                 {
-                    error = Marshal.GetLastWin32Error();
+                    int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error);
                 }
-
 
                 // Loop through and get our privileges
                 BinaryReader reader = new BinaryReader(buffer, Encoding.Unicode, leaveOpen: true);
@@ -269,7 +270,7 @@ namespace XTask.Interop
 
                     if (!Private.LookupPrivilegeNameW(IntPtr.Zero, ref luid, sb, ref length))
                     {
-                        error = Marshal.GetLastWin32Error();
+                        int error = Marshal.GetLastWin32Error();
                         throw GetIoExceptionForError(error);
                     }
 

@@ -12,6 +12,7 @@ namespace XTask.Utility
     /// <summary>
     /// Used to centrally handle app failure state
     /// </summary>
+    [Serializable]
     public abstract class TaskException : Exception
     {
         public TaskException(string message, Exception innerException = null)

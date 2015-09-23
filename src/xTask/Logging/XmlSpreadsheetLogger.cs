@@ -7,12 +7,12 @@
 
 namespace XTask.Logging
 {
-    using XTask.Utility;
+    using System;
     using System.IO;
     using System.Security;
     using System.Text;
 
-    public class XmlSpreadsheetLogger : Logger, IClipboardSource
+    public class XmlSpreadsheetLogger : Logger, IClipboardSource, IDisposable
     {
         private bool anyData;
 
@@ -70,6 +70,20 @@ namespace XTask.Logging
             this.streamWriter.Flush();
 
             return new ClipboardData { Data = this.streamWriter.BaseStream, Format = ClipboardFormat.XmlSpreadsheet };
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.streamWriter.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            this.Dispose(true);
         }
     }
 }

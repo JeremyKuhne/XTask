@@ -78,6 +78,9 @@ namespace XTask.Tasks
 
                     Clipboard.AddToClipboard(allData.ToArray());
                     this.richTextLogger = null;
+
+                    this.csvLogger.Dispose();
+                    this.spreadsheetLogger.Dispose();
                 }
             }
         }

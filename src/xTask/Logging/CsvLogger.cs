@@ -7,10 +7,11 @@
 
 namespace XTask.Logging
 {
+    using System;
     using System.IO;
     using System.Text;
 
-    public class CsvLogger : Logger, IClipboardSource
+    public class CsvLogger : Logger, IClipboardSource, IDisposable
     {
         private StreamWriter streamWriter = new StreamWriter(new MemoryStream(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
@@ -41,6 +42,20 @@ namespace XTask.Logging
         public ClipboardData GetClipboardData()
         {
             return new ClipboardData { Data = this.streamWriter.BaseStream.Length > 0 ? this.streamWriter.BaseStream : null, Format = ClipboardFormat.CommaSeparatedValues };
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.streamWriter.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            this.Dispose(true);
         }
     }
 }

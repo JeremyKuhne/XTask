@@ -43,15 +43,15 @@ namespace XTask.Settings
         public IEnumerable<ClientSetting> GetAllSettings() { return this.clientSettings.GetAllSettings(); }
         public string GetConfigurationPath(SettingsLocation location) { return this.clientSettings.GetConfigurationPath(location); }
 
-        string IArgumentProvider.Target { get { return this.argumentProvider.Target; } }
-        string IArgumentProvider.Command { get { return this.argumentProvider.Command; } }
-        string[] IArgumentProvider.Targets { get { return this.argumentProvider.Targets; } }
-        bool IArgumentProvider.HelpRequested { get { return this.argumentProvider.HelpRequested; } }
+        public string Target { get { return this.argumentProvider.Target; } }
+        public string Command { get { return this.argumentProvider.Command; } }
+        public string[] Targets { get { return this.argumentProvider.Targets; } }
+        public bool HelpRequested { get { return this.argumentProvider.HelpRequested; } }
 
         // We don't consider deafult options to be set unless we're explicitly looking for them by name
-        IReadOnlyDictionary<string, string> IArgumentProvider.Options { get { return this.argumentProvider.Options; } }
+        public IReadOnlyDictionary<string, string> Options { get { return this.argumentProvider.Options; } }
 
-        T IArgumentProvider.GetOption<T>(params string[] optionNames)
+        public T GetOption<T>(params string[] optionNames)
         {
             if (optionNames == null || optionNames.Length == 0) { return default(T); }
 

@@ -10,6 +10,7 @@ namespace XTask.Interop
     using Microsoft.Win32.SafeHandles;
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
@@ -424,6 +425,7 @@ namespace XTask.Interop
                 return NativeMethods.BufferInvoke((sb) => Private.GetFinalPathNameByHandleW(fileHandle, sb, (uint)sb.Capacity, finalPathFlags));
             }
 
+            [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static string GetFinalPathName(string path, FinalPathFlags finalPathFlags, bool resolveLinks)
             {
                 if (path == null) return null;

@@ -14,6 +14,7 @@ namespace XTask.Systems.File
     /// <summary>
     /// Thrown when a file or directory exists and invalidates the current operation.
     /// </summary>
+    [Serializable]
     public class FileExistsException : IOException
     {
         public FileExistsException(string format, params object[] args)

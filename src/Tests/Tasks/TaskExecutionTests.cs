@@ -15,6 +15,7 @@ namespace XTask.Tests.Tasks
     using Xunit;
     using FluentAssertions;
     using System.Collections.Generic;
+    using Logging;
 
     public class TaskExecutionTests
     {
@@ -127,12 +128,35 @@ namespace XTask.Tests.Tasks
         {
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
             ITaskRegistry taskRegistry = Substitute.For<ITaskRegistry>();
-            ITaskInteraction interaction = Substitute.For<ITaskInteraction, IDisposable>();
+            TestTaskInteraction interaction = new TestTaskInteraction { Arguments = arguments };
 
             TestTaskExecution execution = Substitute.ForPartsOf<TestTaskExecution>(arguments, taskRegistry);
             execution.TestGetInteraction().Returns(interaction);
             execution.ExecuteTask();
-            ((IDisposable)interaction).Received(1).Dispose();
+            interaction.DisposeCount.Should().Be(1);
+        }
+
+        public class TestTaskInteraction : ITaskInteraction, IDisposable
+        {
+            public int DisposeCount;
+
+            public virtual void Dispose()
+            {
+                DisposeCount++;
+            }
+
+            public IArgumentProvider Arguments { get; set; }
+
+            public ILoggers Loggers { get; set; }
+
+            public T GetService<T>() where T : class
+            {
+                return null;
+            }
+
+            public void Output(object value)
+            {
+            }
         }
     }
 }

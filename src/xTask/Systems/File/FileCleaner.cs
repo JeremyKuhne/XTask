@@ -89,36 +89,44 @@ namespace XTask.Systems.File
 
         public void Dispose()
         {
-            lock (this.cleanLock)
+            this.Dispose(disposing: true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                this.flagFile.Dispose();
-                this.flagFile = null;
-
-                // Delete our own temp folder
-                try
+                lock (this.cleanLock)
                 {
-                    this.fileServiceProvider.DeleteDirectory(this.TempFolder, deleteChildren: true);
-                }
-                catch (Exception)
-                {
-                }
+                    this.flagFile.Dispose();
+                    this.flagFile = null;
 
-                // Clean any loose files we're tracking
-                foreach (string file in this.filesToClean.Distinct(StringComparer.OrdinalIgnoreCase))
-                {
-                    if (String.IsNullOrWhiteSpace(file)) { continue; }
-
+                    // Delete our own temp folder
                     try
                     {
-                        this.fileServiceProvider.DeleteFile(file);
+                        this.fileServiceProvider.DeleteDirectory(this.TempFolder, deleteChildren: true);
                     }
                     catch (Exception)
                     {
-                        // Don't fail if we can't delete for any reason
                     }
-                }
 
-                this.CleanOrphanedTempFolders();
+                    // Clean any loose files we're tracking
+                    foreach (string file in this.filesToClean.Distinct(StringComparer.OrdinalIgnoreCase))
+                    {
+                        if (String.IsNullOrWhiteSpace(file)) { continue; }
+
+                        try
+                        {
+                            this.fileServiceProvider.DeleteFile(file);
+                        }
+                        catch (Exception)
+                        {
+                            // Don't fail if we can't delete for any reason
+                        }
+                    }
+
+                    this.CleanOrphanedTempFolders();
+                }
             }
         }
     }

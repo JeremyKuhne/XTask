@@ -9,44 +9,50 @@ namespace XTask.Interop
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Runtime.InteropServices;
+    using System.Security;
 
     /// <summary>
     /// Wrapper for access to the native heap. Dispose to free the memory. Try to use with using statements.
     /// </summary>
     public class NativeBuffer : Stream
     {
-        // Heap Functions
-        // --------------
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366711.aspx
+        [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
+        private static class NativeMethods
+        {
+            // Heap Functions
+            // --------------
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366711.aspx
 
-        private static uint HEAP_NO_SERIALIZE = 0x00000001;
-        private static uint HEAP_GENERATE_EXCEPTIONS = 0x00000004;
-        private static uint HEAP_ZERO_MEMORY = 0x00000008;
-        private static uint HEAP_REALLOC_IN_PLACE_ONLY = 0x00000010;
+            // private static uint HEAP_NO_SERIALIZE = 0x00000001;
+            // private static uint HEAP_GENERATE_EXCEPTIONS = 0x00000004;
+            // private static uint HEAP_ZERO_MEMORY = 0x00000008;
+            // private static uint HEAP_REALLOC_IN_PLACE_ONLY = 0x00000010;
 
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366597.aspx
-        [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-        private static extern HeapHandle HeapAlloc(IntPtr hHeap, uint dwFlags, UIntPtr dwBytes);
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366597.aspx
+            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            internal static extern HeapHandle HeapAlloc(IntPtr hHeap, uint dwFlags, UIntPtr dwBytes);
 
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366704.aspx
-        [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-        private static extern HeapHandle HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr lpMem, UIntPtr dwBytes);
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366704.aspx
+            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            internal static extern HeapHandle HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr lpMem, UIntPtr dwBytes);
 
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366701.aspx
-        [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-        private static extern bool HeapFree(IntPtr hHeap, uint dwFlags, IntPtr lpMem);
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366701.aspx
+            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            internal static extern bool HeapFree(IntPtr hHeap, uint dwFlags, IntPtr lpMem);
 
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366700.aspx
-        [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-        private static extern bool HeapDestroy(IntPtr hHeap);
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366700.aspx
+            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            internal static extern bool HeapDestroy(IntPtr hHeap);
 
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366569.aspx
-        [DllImport(NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-        private static extern IntPtr GetProcessHeap();
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366569.aspx
+            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            internal static extern IntPtr GetProcessHeap();
+        }
 
-        private static IntPtr ProcessHeap = GetProcessHeap();
+        private static IntPtr ProcessHeap = NativeMethods.GetProcessHeap();
         private HeapHandle handle;
         private UnmanagedMemoryStream stream;
         private bool disposed;
@@ -123,8 +129,8 @@ namespace XTask.Interop
         unsafe private IntPtr Resize(long size)
         {
             HeapHandle newHandle = (this.Handle == IntPtr.Zero)
-                ? HeapAlloc(ProcessHeap, 0, (UIntPtr)size)
-                : HeapReAlloc(ProcessHeap, 0, this.Handle, (UIntPtr)size);
+                ? NativeMethods.HeapAlloc(ProcessHeap, 0, (UIntPtr)size)
+                : NativeMethods.HeapReAlloc(ProcessHeap, 0, this.Handle, (UIntPtr)size);
 
             if (newHandle.IsInvalid)
             {
@@ -142,10 +148,15 @@ namespace XTask.Interop
             return this.Handle;
         }
 
+        [SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "stream")]
         protected override void Dispose(bool disposing)
         {
             disposed = true;
             this.handle?.Dispose();
+            if (disposing)
+            {
+                this.stream?.Dispose();
+            }
         }
 
         public override void Flush()
@@ -203,7 +214,7 @@ namespace XTask.Interop
 
             protected override bool ReleaseHandle()
             {
-                bool success = HeapFree(ProcessHeap, 0, this.handle);
+                bool success = NativeMethods.HeapFree(ProcessHeap, 0, this.handle);
                 Debug.Assert(success);
                 this.handle = IntPtr.Zero;
                 return success;

@@ -9,6 +9,7 @@ namespace XTask.Interop
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using System.Security;
     using System.Text;
@@ -74,6 +75,7 @@ namespace XTask.Interop
                    int nFileSystemNameSize);
             }
 
+            [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             public static IEnumerable<string> QueryDosDevice(string deviceName)
             {
                 if (deviceName != null) deviceName = Paths.RemoveTrailingSeparators(deviceName);
@@ -101,6 +103,7 @@ namespace XTask.Interop
                 }
             }
 
+            [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static IEnumerable<string> GetLogicalDriveStrings()
             {
                 using (NativeBuffer buffer = new NativeBuffer())
@@ -123,6 +126,7 @@ namespace XTask.Interop
                 }
             }
 
+            [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static string GetVolumePathName(string path)
             {
                 // Most paths are mounted at the root, 50 should handle the canonical (guid) root
@@ -144,6 +148,7 @@ namespace XTask.Interop
                 return volumePathName.ToString();
             }
 
+            [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static IEnumerable<string> GetVolumePathNamesForVolumeName(string volumeName)
             {
                 using (NativeBuffer buffer = new NativeBuffer())
