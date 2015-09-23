@@ -155,6 +155,11 @@ namespace XTask.Interop
                     string lpSymlinkFileName,
                     string lpTargetFileName,
                     uint dwFlags);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364960.aspx
+                [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+                internal static extern FileType GetFileType(
+                    SafeFileHandle hFile);
             }
 
             internal const FileAttributes InvalidFileAttributes = unchecked((FileAttributes)Private.INVALID_FILE_ATTRIBUTES);
@@ -777,6 +782,32 @@ namespace XTask.Interop
                     int error = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(error, symbolicLinkPath);
                 }
+            }
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364960.aspx
+            internal enum FileType : uint
+            {
+                FILE_TYPE_UNKNOWN = 0x0000,
+                FILE_TYPE_DISK = 0x0001,
+                FILE_TYPE_CHAR = 0x0002,
+                FILE_TYPE_PIPE = 0x0003,
+                // Unused
+                // FILE_TYPE_REMOTE = 0x8000
+            }
+
+            internal static FileType GetFileType(SafeFileHandle fileHandle)
+            {
+                FileType fileType = Private.GetFileType(fileHandle);
+                if (fileType == FileType.FILE_TYPE_UNKNOWN)
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    if (error != WinError.NO_ERROR)
+                    {
+                        throw GetIoExceptionForError(error);
+                    }
+                }
+
+                return fileType;
             }
         }
     }

@@ -16,6 +16,7 @@ namespace XTask.Interop
         {
             // From winerror.h
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms681382.aspx
+            internal const int NO_ERROR = 0;
             internal const int ERROR_SUCCESS = 0;
             internal const int ERROR_INVALID_FUNCTION = 1;
             internal const int ERROR_FILE_NOT_FOUND = 2;

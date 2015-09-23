@@ -57,5 +57,13 @@ namespace XTask.Tests.FileSystem
                 return this.fileServiceProvider;
             }
         }
+
+        public IExtendedFileService ExtendedFileService
+        {
+            get
+            {
+                return this.fileServiceProvider as IExtendedFileService;
+            }
+        }
     }
 }

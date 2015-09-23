@@ -445,14 +445,11 @@ namespace XTask.Tests.Interop
         {
             using (var cleaner = new TestFileCleaner())
             {
-                string filePath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
-                IExtendedFileService fileService = new FileService();
-                fileService.WriteAllText(filePath, "CreateSymbolicLinkToFile");
-
-                string symbolicLink = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
+                string filePath = cleaner.CreateTestFile("CreateSymbolicLinkToFile");
+                string symbolicLink = cleaner.GetTestPath();
                 Action action = () => NativeMethods.FileManagement.CreateSymbolicLink(symbolicLink, filePath);
 
-                if (fileService.CanCreateSymbolicLinks())
+                if (cleaner.ExtendedFileService.CanCreateSymbolicLinks())
                 {
                     action();
                     var attributes = NativeMethods.FileManagement.GetFileAttributes(symbolicLink);
@@ -471,14 +468,11 @@ namespace XTask.Tests.Interop
         {
             using (var cleaner = new TestFileCleaner())
             {
-                string filePath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
-                IExtendedFileService fileService = new FileService();
-                fileService.WriteAllText(filePath, "CreateSymbolicLinkToFile");
-
-                string symbolicLink = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
+                string filePath = cleaner.CreateTestFile("CreateSymbolicLinkToLongPathFile");
+                string symbolicLink = cleaner.GetTestPath();
                 Action action = () => NativeMethods.FileManagement.CreateSymbolicLink(symbolicLink, filePath);
 
-                if (fileService.CanCreateSymbolicLinks())
+                if (cleaner.ExtendedFileService.CanCreateSymbolicLinks())
                 {
                     action();
                     var attributes = NativeMethods.FileManagement.GetFileAttributes(symbolicLink);
@@ -487,6 +481,23 @@ namespace XTask.Tests.Interop
                 else
                 {
                     action.ShouldThrow<IOException>().And.HResult.Should().Be(NativeErrorHelper.GetHResultForWindowsError(NativeMethods.WinError.ERROR_PRIVILEGE_NOT_HELD));
+                }
+            }
+        }
+
+        [Fact]
+        public void FileTypeOfFile()
+        {
+            using (var cleaner = new TestFileCleaner())
+            {
+                using (var testFile = NativeMethods.FileManagement.CreateFile(
+                    cleaner.GetTestPath(),
+                    FileAccess.ReadWrite,
+                    FileShare.ReadWrite,
+                    FileMode.Create,
+                    0))
+                {
+                    NativeMethods.FileManagement.GetFileType(testFile).Should().Be(NativeMethods.FileManagement.FileType.FILE_TYPE_DISK);
                 }
             }
         }
