@@ -260,11 +260,17 @@ namespace XTask.Interop
                 }
             }
 
-            internal static IEnumerable<AlternateStreamInformation> GetAlternateStreams(string path)
+            internal static IEnumerable<AlternateStreamInformation> GetAlternateStreamInformation(string path)
             {
                 List<AlternateStreamInformation> streams = new List<AlternateStreamInformation>();
                 path = Paths.AddExtendedPrefix(path);
-                using (var fileHandle = FileManagement.CreateFile(path, FileAccess.Read, FileShare.ReadWrite, FileMode.Open, FileManagement.AllFileAttributeFlags.FILE_FLAG_BACKUP_SEMANTICS))
+                using (var fileHandle = FileManagement.CreateFile(
+                    path,
+                    // To look at metadata we don't need read or write access
+                    0,
+                    FileShare.ReadWrite,
+                    FileMode.Open,
+                    FileManagement.AllFileAttributeFlags.FILE_FLAG_BACKUP_SEMANTICS))
                 {
                     using (BackupReader reader = new BackupReader(fileHandle))
                     {

@@ -65,9 +65,9 @@ namespace XTask.Systems.File.Concrete
             return NativeMethods.VolumeManagement.GetVolumeInformation(rootPath);
         }
 
-        public IEnumerable<AlternateStreamInformation> GetAlternateStreams(string path)
+        public IEnumerable<AlternateStreamInformation> GetAlternateStreamInformation(string path)
         {
-            return NativeMethods.Backup.GetAlternateStreams(path);
+            return NativeMethods.Backup.GetAlternateStreamInformation(path);
         }
 
         public bool CanCreateSymbolicLinks()

@@ -49,6 +49,18 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
+        /// Attempts to add the specified attribute(s) on the given path.
+        /// </summary>
+        public static void AddAttributes(this IFileService fileService, string path, FileAttributes attributes)
+        {
+            FileAttributes currentAttributes = fileService.GetAttributes(path);
+            if ((currentAttributes & attributes) != attributes)
+            {
+                fileService.SetAttributes(path, currentAttributes |= attributes);
+            }
+        }
+
+        /// <summary>
         /// Attempts to make the given path writable if necessary.
         /// </summary>
         public static void MakeWritable(this IFileService fileService, string path)

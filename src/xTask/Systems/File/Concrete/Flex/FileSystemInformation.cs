@@ -54,7 +54,7 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             return NativeMethods.FileManagement.CreateFile(
                 path,
-                System.IO.FileAccess.Read,
+                0,
                 System.IO.FileShare.ReadWrite,
                 System.IO.FileMode.Open,
                 NativeMethods.FileManagement.AllFileAttributeFlags.FILE_ATTRIBUTE_NORMAL

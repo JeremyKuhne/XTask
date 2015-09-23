@@ -13,10 +13,6 @@ namespace XTask.Tests.FileSystem
     using FluentAssertions;
     using XTask.Systems.File;
     using Xunit;
-    using Interop;
-    using XTask.Systems.File.Concrete.Flex;
-    using DotNet = XTask.Systems.File.Concrete.DotNet;
-    using XTask.Interop;
 
     public class FlexDirectoryInfoTests
     {
@@ -25,13 +21,10 @@ namespace XTask.Tests.FileSystem
         {
             using (var cleaner = new TestFileCleaner())
             {
-                string directoryPath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
-                Directory.CreateDirectory(directoryPath);
-                string filePath = Paths.Combine(directoryPath, Path.GetRandomFileName());
-                File.WriteAllText(filePath, "DefaultEnumerate");
+                string directoryPath = cleaner.CreateTestDirectory();
+                string filePath = cleaner.CreateTestFile("DefaultEnumerate", directoryPath);
 
-                FileService fileService = new FileService();
-                var directoryInfo = fileService.GetPathInfo(directoryPath) as IDirectoryInformation;
+                var directoryInfo = cleaner.FileService.GetPathInfo(directoryPath) as IDirectoryInformation;
                 directoryInfo.Should().NotBeNull();
                 var files = directoryInfo.EnumerateChildren().ToArray();
                 files.Should().HaveCount(1);
@@ -44,14 +37,11 @@ namespace XTask.Tests.FileSystem
         {
             using (var cleaner = new TestFileCleaner())
             {
-                string directoryPath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
-                Directory.CreateDirectory(directoryPath);
-                string fileName = Path.GetRandomFileName();
-                string filePath = Paths.Combine(directoryPath, fileName);
-                File.WriteAllText(filePath, "DefaultEnumerate");
+                string directoryPath = cleaner.CreateTestDirectory();
+                string filePath = cleaner.CreateTestFile("DefaultEnumerate", directoryPath);
+                string fileName = Paths.GetFileOrDirectoryName(filePath);
 
-                FileService fileService = new FileService();
-                var directoryInfo = fileService.GetPathInfo(cleaner.TempFolder) as IDirectoryInformation;
+                var directoryInfo = cleaner.FileService.GetPathInfo(cleaner.TempFolder) as IDirectoryInformation;
                 directoryInfo.Should().NotBeNull();
                 var files = directoryInfo.EnumerateChildren(ChildType.File, fileName, SearchOption.AllDirectories).ToArray();
                 files.Should().HaveCount(1);
@@ -64,19 +54,17 @@ namespace XTask.Tests.FileSystem
         {
             using (var cleaner = new TestFileCleaner())
             {
-                string directoryPath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
-                var createdDirectory = Directory.CreateDirectory(directoryPath);
-                string fileName = Path.GetRandomFileName();
-                string filePath = Paths.Combine(directoryPath, fileName);
-                File.WriteAllText(filePath, "DefaultEnumerate");
-                createdDirectory.Attributes = createdDirectory.Attributes |= FileAttributes.Hidden;
+                string directoryPath = cleaner.CreateTestDirectory();
+                string filePath = cleaner.CreateTestFile("EnumerateNestedFilteredFile", directoryPath);
+                string fileName = Paths.GetFileOrDirectoryName(filePath);
 
-                FileService fileService = new FileService();
-                var directoryInfo = fileService.GetPathInfo(cleaner.TempFolder) as IDirectoryInformation;
+                cleaner.FileService.AddAttributes(directoryPath, FileAttributes.Hidden);
+
+                var directoryInfo = cleaner.FileService.GetPathInfo(cleaner.TempFolder) as IDirectoryInformation;
                 directoryInfo.Should().NotBeNull();
                 var files = directoryInfo.EnumerateChildren(ChildType.File, fileName, SearchOption.AllDirectories).ToArray();
                 files.Should().HaveCount(0);
-                createdDirectory.Attributes = createdDirectory.Attributes &= ~FileAttributes.Hidden;
+                cleaner.FileService.ClearAttributes(directoryPath, FileAttributes.Hidden);
             }
         }
     }

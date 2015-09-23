@@ -15,7 +15,7 @@ namespace XFile.Tasks
     {
         protected override ExitCode ExecuteFileTask()
         {
-            foreach (var stream in ExtendedFileService.GetAlternateStreams(GetFullTargetPath()))
+            foreach (var stream in ExtendedFileService.GetAlternateStreamInformation(GetFullTargetPath()))
             {
                 this.Loggers[LoggerType.Result].WriteLine($"Stream '{stream.Name}', Size {stream.Size}");
             }

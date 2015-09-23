@@ -44,7 +44,7 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LoadAsResourceFromLongPath()
         {
-            using (var cleaner = new TestFileCleaner(false))
+            using (var cleaner = new TestFileCleaner())
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
                 IFileService system = new FileService();
@@ -73,7 +73,7 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LoadStringFromLongPath()
         {
-            using (var cleaner = new TestFileCleaner(false))
+            using (var cleaner = new TestFileCleaner())
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
                 IFileService system = new FileService();
@@ -102,7 +102,7 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LoadAsBinaryFromLongPath()
         {
-            using (var cleaner = new TestFileCleaner(false))
+            using (var cleaner = new TestFileCleaner())
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
                 IFileService system = new FileService();
@@ -135,7 +135,7 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LoadFunctionFromLongPath()
         {
-            using (var cleaner = new TestFileCleaner(false))
+            using (var cleaner = new TestFileCleaner())
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
                 IFileService system = new FileService();

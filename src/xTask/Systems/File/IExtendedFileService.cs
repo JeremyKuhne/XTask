@@ -74,7 +74,7 @@ namespace XTask.Systems.File
         /// <summary>
         /// Returns alternate stream information for a file, if there is any.
         /// </summary>
-        IEnumerable<AlternateStreamInformation> GetAlternateStreams(string path);
+        IEnumerable<AlternateStreamInformation> GetAlternateStreamInformation(string path);
 
         /// <summary>
         /// Returns true if the current process is capable of creating symbolic links.

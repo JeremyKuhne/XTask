@@ -15,7 +15,6 @@ namespace XTask.Tests.Interop
     using XTask.Systems.File.Concrete.Flex;
     using XTask.Interop;
     using Xunit;
-    using static XTask.Interop.NativeMethods.FileManagement;
 
     public class FileManagementTests
     {
@@ -273,7 +272,7 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LongPathFileExistsTests()
         {
-            using (var cleaner = new TestFileCleaner(false))
+            using (var cleaner = new TestFileCleaner())
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
                 string filePath = Paths.Combine(longPath, Path.GetRandomFileName());
@@ -289,7 +288,7 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LongPathFileNotExistsTests()
         {
-            using (var cleaner = new TestFileCleaner(false))
+            using (var cleaner = new TestFileCleaner())
             {
                 string filePath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
                 NativeMethods.FileManagement.FileExists(filePath).Should().BeFalse();
@@ -430,7 +429,7 @@ namespace XTask.Tests.Interop
                         .Should().Be(extendedPath);
                 }
 
-                using (var handle = NativeMethods.FileManagement.CreateFile(symbolicLink.ToUpperInvariant(), FileAccess.Read, FileShare.ReadWrite, FileMode.Open, AllFileAttributeFlags.FILE_FLAG_OPEN_REPARSE_POINT))
+                using (var handle = NativeMethods.FileManagement.CreateFile(symbolicLink.ToUpperInvariant(), FileAccess.Read, FileShare.ReadWrite, FileMode.Open, NativeMethods.FileManagement.AllFileAttributeFlags.FILE_FLAG_OPEN_REPARSE_POINT))
                 {
                     handle.IsInvalid.Should().BeFalse();
                     NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED)

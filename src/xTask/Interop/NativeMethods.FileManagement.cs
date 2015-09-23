@@ -32,6 +32,11 @@ namespace XTask.Interop
                 // internal const uint FILE_ATTRIBUTE_VIRTUAL = 0x00010000;
                 // internal const uint FILE_ATTRIBUTE_HIDDEN = 0x00000002;
 
+                internal const uint GENERIC_READ = 0x80000000;
+                internal const uint GENERIC_WRITE = 0x40000000;
+                // internal const uint GENERIC_EXECUTE = 0x20000000;
+                // internal const uint GENERIC_ALL = 0x10000000;
+
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364944.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern FileAttributes GetFileAttributesW(
@@ -77,13 +82,13 @@ namespace XTask.Interop
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363858.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern SafeFileHandle CreateFileW(
-                    string fileName,
-                    [MarshalAs(UnmanagedType.U4)] FileAccess fileAccess,
-                    [MarshalAs(UnmanagedType.U4)] FileShare fileShare,
-                    IntPtr securityAttributes,
-                    [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-                    AllFileAttributeFlags flagsAndAttributes,
-                    IntPtr template);
+                    string lpFileName,
+                    uint dwDesiredAccess,
+                    [MarshalAs(UnmanagedType.U4)] FileShare dwShareMode,
+                    IntPtr lpSecurityAttributes,
+                    [MarshalAs(UnmanagedType.U4)] FileMode dwCreationDisposition,
+                    AllFileAttributeFlags dwFlagsAndAttributes,
+                    IntPtr hTemplateFile);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364419.aspx
                 [DllImport(Libraries.Kernel32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
@@ -395,7 +400,11 @@ namespace XTask.Interop
                 path = Paths.AddExtendedPrefix(path);
                 if (creationDisposition == FileMode.Append) creationDisposition = FileMode.OpenOrCreate;
 
-                SafeFileHandle handle = Private.CreateFileW(path, fileAccess, fileShare, IntPtr.Zero, creationDisposition, flagsAndAttributes, IntPtr.Zero);
+                uint dwDesiredAccess =
+                    ((fileAccess & FileAccess.Read) != 0 ? Private.GENERIC_READ : 0) |
+                    ((fileAccess & FileAccess.Write) != 0 ? Private.GENERIC_WRITE : 0);
+
+                SafeFileHandle handle = Private.CreateFileW(path, dwDesiredAccess, fileShare, IntPtr.Zero, creationDisposition, flagsAndAttributes, IntPtr.Zero);
                 if (handle.IsInvalid)
                 {
                     int error = Marshal.GetLastWin32Error();
@@ -421,14 +430,13 @@ namespace XTask.Interop
 
                 string finalPath = null;
 
-                using (SafeFileHandle file = Private.CreateFileW(
+                using (SafeFileHandle file = CreateFile(
                     lookupPath,
-                    FileAccess.Read,
+                    // To look at metadata we don't need read or write access
+                    0,
                     FileShare.ReadWrite,
-                    IntPtr.Zero,
                     FileMode.Open,
-                    createFileFlags,
-                    IntPtr.Zero))
+                    createFileFlags))
                 {
                     if (file.IsInvalid)
                     {

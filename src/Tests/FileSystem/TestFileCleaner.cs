@@ -7,6 +7,7 @@
 
 namespace XTask.Tests.FileSystem
 {
+    using System.IO;
     using XTask.Systems.File;
     using Concrete = XTask.Systems.File.Concrete;
 
@@ -27,6 +28,33 @@ namespace XTask.Tests.FileSystem
             if (!this.useDotNet)
             {
                 base.CleanOrphanedTempFolders();
+            }
+        }
+
+        public string GetTestPath(string basePath = null)
+        {
+            return Paths.Combine(basePath ?? this.TempFolder, Path.GetRandomFileName());
+        }
+
+        public string CreateTestFile(string content, string basePath = null)
+        {
+            string testFile = GetTestPath(basePath);
+            FileService.WriteAllText(testFile, content);
+            return testFile;
+        }
+
+        public string CreateTestDirectory(string basePath = null)
+        {
+            string testDirectory = GetTestPath(basePath);
+            FileService.CreateDirectory(testDirectory);
+            return testDirectory;
+        }
+
+        public IFileService FileService
+        {
+            get
+            {
+                return this.fileServiceProvider;
             }
         }
     }
