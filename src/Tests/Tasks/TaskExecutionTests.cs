@@ -108,19 +108,20 @@ namespace XTask.Tests.Tasks
             task.DisposeCount.Should().Be(1);
         }
 
-        public abstract class TestTaskExecution : TaskExecution
+        public class TestTaskExecution : TaskExecution
         {
-            public TestTaskExecution(IArgumentProvider argumentProvider, ITaskRegistry taskRegistry)
+            private ITaskInteraction interaction;
+
+            public TestTaskExecution(IArgumentProvider argumentProvider, ITaskRegistry taskRegistry, ITaskInteraction interaction)
                 : base(argumentProvider, taskRegistry, null)
             {
+                this.interaction = interaction;
             }
 
             protected override ITaskInteraction GetInteraction(ITask task)
             {
-                return this.TestGetInteraction();
+                return interaction;
             }
-
-            public abstract ITaskInteraction TestGetInteraction();
         }
 
         [Fact]
@@ -130,8 +131,7 @@ namespace XTask.Tests.Tasks
             ITaskRegistry taskRegistry = Substitute.For<ITaskRegistry>();
             TestTaskInteraction interaction = new TestTaskInteraction { Arguments = arguments };
 
-            TestTaskExecution execution = Substitute.ForPartsOf<TestTaskExecution>(arguments, taskRegistry);
-            execution.TestGetInteraction().Returns(interaction);
+            TestTaskExecution execution = new TestTaskExecution(arguments, taskRegistry, interaction);
             execution.ExecuteTask();
             interaction.DisposeCount.Should().Be(1);
         }
