@@ -275,10 +275,10 @@ namespace XTask.Tests.Interop
             using (var cleaner = new TestFileCleaner())
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
-                string filePath = Paths.Combine(longPath, Path.GetRandomFileName());
-                IFileService system = new FileService();
-                system.CreateDirectory(longPath);
-                system.WriteAllText(filePath, "FileExists");
+                cleaner.FileService.CreateDirectory(longPath);
+
+                string filePath = cleaner.CreateTestFile("FileExists", longPath);
+
                 NativeMethods.FileManagement.FileExists(filePath).Should().BeTrue();
                 NativeMethods.FileManagement.PathExists(filePath).Should().BeTrue();
                 NativeMethods.FileManagement.DirectoryExists(filePath).Should().BeFalse();
@@ -290,7 +290,9 @@ namespace XTask.Tests.Interop
         {
             using (var cleaner = new TestFileCleaner())
             {
-                string filePath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
+                string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
+                string filePath = cleaner.GetTestPath();
+
                 NativeMethods.FileManagement.FileExists(filePath).Should().BeFalse();
                 NativeMethods.FileManagement.PathExists(filePath).Should().BeFalse();
                 NativeMethods.FileManagement.DirectoryExists(filePath).Should().BeFalse();
@@ -302,8 +304,7 @@ namespace XTask.Tests.Interop
         {
             using (var cleaner = new TestFileCleaner())
             {
-                string directoryPath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
-                Directory.CreateDirectory(directoryPath);
+                string directoryPath = cleaner.CreateTestDirectory();
 
                 NativeMethods.FileManagement.FileExists(directoryPath).Should().BeFalse();
                 NativeMethods.FileManagement.PathExists(directoryPath).Should().BeTrue();
@@ -374,11 +375,41 @@ namespace XTask.Tests.Interop
         {
             using (var cleaner = new TestFileCleaner())
             {
-                string filePath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName());
-                IFileService system = new FileService();
-                system.WriteAllText(filePath, "FinalPathNameBehavior");
+                string filePath = cleaner.CreateTestFile("FinalPathNameBehavior");
 
                 using (var handle = NativeMethods.FileManagement.CreateFile(filePath.ToLower(), FileAccess.Read, FileShare.ReadWrite, FileMode.Open, 0))
+                {
+                    handle.IsInvalid.Should().BeFalse();
+
+                    string extendedPath = Paths.AddExtendedPrefix(filePath, addIfUnderLegacyMaxPath: true);
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED)
+                        .Should().Be(extendedPath);
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_OPENED)
+                        .Should().Be(extendedPath);
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_DOS)
+                        .Should().Be(extendedPath);
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_GUID)
+                        .Should().StartWith(@"\\?\Volume");
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_NT)
+                        .Should().StartWith(@"\Device\");
+                    NativeMethods.FileManagement.GetFinalPathName(handle, NativeMethods.FileManagement.FinalPathFlags.VOLUME_NAME_NONE)
+                        .Should().Be(filePath.Substring(2));
+                }
+            }
+        }
+
+        [Fact]
+        public void FinalPathNameVolumeNameBehavior()
+        {
+            // This test is asserting that the original volume name has nothing to do with the volume GetFinalPathNameByHandle returns
+            using (var cleaner = new TestFileCleaner())
+            {
+                string filePath = cleaner.CreateTestFile("FinalPathNameVolumeNameBehavior");
+
+                string canonicalRoot = cleaner.ExtendedFileService.GetCanonicalRoot(filePath);
+                string replacedPath = Paths.ReplaceRoot(canonicalRoot, filePath);
+
+                using (var handle = NativeMethods.FileManagement.CreateFile(replacedPath.ToLower(), FileAccess.Read, FileShare.ReadWrite, FileMode.Open, 0))
                 {
                     handle.IsInvalid.Should().BeFalse();
 
