@@ -205,10 +205,21 @@ namespace XTask.Tests.FileSystem
         {
             using (var cleaner = new TestFileCleaner())
             {
-                FileService fileService = new FileService();
-                string filePath = Paths.Combine(cleaner.TempFolder, Path.GetRandomFileName() + appendix);
-                Action action = () => fileService.CreateFileStream(filePath, FileMode.Open);
+                string filePath = cleaner.GetTestPath() + appendix;
+                Action action = () => new FileService().CreateFileStream(filePath, FileMode.Open);
                 action.ShouldThrow<FileNotFoundException>();
+            }
+        }
+
+        [Fact]
+        public void FileInfoHasCanonicalPaths()
+        {
+            using (var cleaner = new TestFileCleaner())
+            {
+                string filePath = cleaner.GetTestPath() + "UPPER";
+                cleaner.FileService.WriteAllText(filePath, "FileInfoHasCanonicalPaths");
+                var info = new FileService().GetPathInfo(filePath.ToLowerInvariant());
+                info.Path.Should().Be(filePath);
             }
         }
     }

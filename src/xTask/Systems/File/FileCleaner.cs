@@ -92,6 +92,11 @@ namespace XTask.Systems.File
             this.Dispose(disposing: true);
         }
 
+        protected virtual bool ThrowOnCleanSelf
+        {
+            get { return false; }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -108,6 +113,7 @@ namespace XTask.Systems.File
                     }
                     catch (Exception)
                     {
+                        if (ThrowOnCleanSelf) throw;
                     }
 
                     // Clean any loose files we're tracking
@@ -121,7 +127,7 @@ namespace XTask.Systems.File
                         }
                         catch (Exception)
                         {
-                            // Don't fail if we can't delete for any reason
+                            if (ThrowOnCleanSelf) throw;
                         }
                     }
 

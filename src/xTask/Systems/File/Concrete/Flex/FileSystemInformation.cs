@@ -54,7 +54,7 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             return NativeMethods.FileManagement.CreateFile(
                 path,
-                0,
+                0,                  // We don't care about read or write, we're just getting metadata with this handle
                 System.IO.FileShare.ReadWrite,
                 System.IO.FileMode.Open,
                 NativeMethods.FileManagement.AllFileAttributeFlags.FILE_ATTRIBUTE_NORMAL
@@ -97,9 +97,17 @@ namespace XTask.Systems.File.Concrete.Flex
 
         internal static IFileSystemInformation Create(string path, IFileService fileService)
         {
-            SafeFileHandle fileHandle = GetFileHandle(path);
-            NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info = NativeMethods.FileManagement.GetFileInformationByHandle(fileHandle);
-            return Create(path, fileHandle, info, fileService);
+            using (SafeFileHandle fileHandle = GetFileHandle(path))
+            {
+                string canonicalPath = NativeMethods.FileManagement.GetFinalPathName(fileHandle, 0);
+
+                // GetFinalPathNameByHandle will use the legacy drive for the volume (e.g. \\?\C:\). We may have started with C:\ or some other
+                // volume name format (\\?\Volume({GUID}), etc.) and we want to put the original volume specifier back.
+                canonicalPath = Paths.ReplaceRoot(path, canonicalPath);
+
+                NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info = NativeMethods.FileManagement.GetFileInformationByHandle(fileHandle);
+                return Create(canonicalPath, fileHandle, info, fileService);
+            }
         }
 
         internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info, IFileService fileService)

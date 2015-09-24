@@ -14,11 +14,13 @@ namespace XTask.Tests.FileSystem
     public class TestFileCleaner : FileCleaner
     {
         bool useDotNet;
+        string originalCurrentDirectory;
 
         public TestFileCleaner(bool useDotNet = false)
             : base ("XTaskTests", useDotNet ? (IFileService) new Concrete.DotNet.FileService() : new Concrete.Flex.FileService())
         {
             this.useDotNet = useDotNet;
+            this.originalCurrentDirectory = Directory.GetCurrentDirectory();
         }
 
         protected override void CleanOrphanedTempFolders()
@@ -29,6 +31,25 @@ namespace XTask.Tests.FileSystem
             {
                 base.CleanOrphanedTempFolders();
             }
+        }
+
+        protected override bool ThrowOnCleanSelf
+        {
+            get
+            {
+                // We want to catch dangling handles, etc.
+                return true;
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (Directory.GetCurrentDirectory() != originalCurrentDirectory)
+            {
+                Directory.SetCurrentDirectory(originalCurrentDirectory);
+            }
+
+            base.Dispose(disposing);
         }
 
         public string GetTestPath(string basePath = null)
