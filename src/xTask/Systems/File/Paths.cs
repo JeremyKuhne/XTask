@@ -513,21 +513,25 @@ namespace XTask.Systems.File
         /// <param name="addIfUnderLegacyMaxPath">If false, will not add the extended prefix unless needed.</param>
         public static string AddExtendedPrefix(string path, bool addIfUnderLegacyMaxPath = false)
         {
-            if (IsExtended(path))
-                return path;
-
-            if (!addIfUnderLegacyMaxPath && path.Length <= Paths.MaxPath)
+            if (IsExtended(path)
+                || (!addIfUnderLegacyMaxPath && path.Length <= Paths.MaxPath))
             {
                 return path;
             }
 
-            const string InsertExtendedUnc = @"?\UNC\";
+            if (!path.StartsWith(Paths.UncPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return Paths.ExtendedPathPrefix + path;
+            }
 
             // Given \\server\share in longpath becomes \\?\UNC\server\share
-            if (path.StartsWith(Paths.UncPrefix, StringComparison.OrdinalIgnoreCase))
-                return path.Insert(2, InsertExtendedUnc);
+            var sb = stringCache.Acquire();
 
-            return Paths.ExtendedPathPrefix + path;
+            // Ensure we have enough length for "\\?\UNC\" (we already have "\\")
+            sb.EnsureCapacity(path.Length + 6);
+            sb.Append(ExtendedUncPrefix);
+            sb.Append(path, 2, path.Length - 2);
+            return stringCache.ToStringAndRelease(sb);
         }
 
         /// <summary>
