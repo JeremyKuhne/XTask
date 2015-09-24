@@ -145,8 +145,6 @@ namespace XTask.Interop
             internal const string User32 = "user32.dll";
         }
 
-        private static StringBuilderCache stringCache = new StringBuilderCache(256);
-
         /// <summary>
         /// Uses the stringbuilder cache and increases the buffer size if needed. Handles path prepending as needed.
         /// </summary>
@@ -163,7 +161,7 @@ namespace XTask.Interop
                 addedExtendedPrefix = true;
             }
 
-            StringBuilder buffer = NativeMethods.stringCache.Acquire();
+            StringBuilder buffer = StringBuilderCache.Instance.Acquire();
             uint returnValue = invoker(path, buffer);
 
             while (returnValue > (uint)buffer.Capacity)
@@ -187,7 +185,7 @@ namespace XTask.Interop
                 buffer.Remove(0, Paths.ExtendedPathPrefix.Length);
             }
 
-            return NativeMethods.stringCache.ToStringAndRelease(buffer);
+            return StringBuilderCache.Instance.ToStringAndRelease(buffer);
         }
 
         /// <summary>
@@ -196,7 +194,7 @@ namespace XTask.Interop
         [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
         internal static string BufferInvoke(Func<StringBuilder, uint> invoker, string value = null, Func<int, bool> shouldThrow = null)
         {
-            StringBuilder buffer = NativeMethods.stringCache.Acquire();
+            StringBuilder buffer = StringBuilderCache.Instance.Acquire();
             uint returnValue = invoker(buffer);
 
             while (returnValue > (uint)buffer.Capacity)
@@ -218,7 +216,7 @@ namespace XTask.Interop
                 throw GetIoExceptionForError(error, value);
             }
 
-            return NativeMethods.stringCache.ToStringAndRelease(buffer);
+            return StringBuilderCache.Instance.ToStringAndRelease(buffer);
         }
 
         internal static void SetEnvironmentVariable(string name, string value)

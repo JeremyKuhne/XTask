@@ -22,8 +22,6 @@ namespace XTask.Systems.File
     /// </remarks>
     public static class Paths
     {
-        private static StringBuilderCache stringCache = new StringBuilderCache(256);
-
         /// <summary>
         /// Legacy maximum path length in Windows (without using extended syntax).
         /// </summary>
@@ -290,14 +288,14 @@ namespace XTask.Systems.File
                 || (targetRoot = GetRootLength(targetPath)) == -1)
                 return targetPath;
 
-            var sb = stringCache.Acquire();
+            var sb = StringBuilderCache.Instance.Acquire();
 
             // Try and keep the casing of the target path
             int keepLength = Strings.FindRightmostCommonCount(sourcePath, sourceRoot -1, targetPath, targetRoot - 1, StringComparison.OrdinalIgnoreCase);
 
             sb.Append(sourcePath, 0, sourceRoot - keepLength);
             sb.Append(targetPath, targetRoot - keepLength, targetPath.Length - targetRoot + keepLength);
-            return stringCache.ToStringAndRelease(sb);
+            return StringBuilderCache.Instance.ToStringAndRelease(sb);
         }
 
         /// <summary>
@@ -442,11 +440,38 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
+        /// Returns true if the path begins with a directory separator.
+        /// </summary>
+        public static bool BeginsWithDirectorySeparator(StringBuilder path)
+        {
+            if (path == null || path.Length == 0)
+            {
+                return false;
+            }
+
+            return Paths.IsDirectorySeparator(path[0]);
+        }
+
+        /// <summary>
         /// Returns true if the path ends in a directory separator.
         /// </summary>
         public static bool EndsInDirectorySeparator(string path)
         {
             if (String.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            char lastChar = path[path.Length - 1];
+            return Paths.IsDirectorySeparator(lastChar);
+        }
+
+        /// <summary>
+        /// Returns true if the path ends in a directory separator.
+        /// </summary>
+        public static bool EndsInDirectorySeparator(StringBuilder path)
+        {
+            if (path == null || path.Length == 0)
             {
                 return false;
             }
@@ -525,13 +550,13 @@ namespace XTask.Systems.File
             }
 
             // Given \\server\share in longpath becomes \\?\UNC\server\share
-            var sb = stringCache.Acquire();
+            var sb = StringBuilderCache.Instance.Acquire();
 
             // Ensure we have enough length for "\\?\UNC\" (we already have "\\")
             sb.EnsureCapacity(path.Length + 6);
             sb.Append(ExtendedUncPrefix);
             sb.Append(path, 2, path.Length - 2);
-            return stringCache.ToStringAndRelease(sb);
+            return StringBuilderCache.Instance.ToStringAndRelease(sb);
         }
 
         /// <summary>
@@ -546,7 +571,7 @@ namespace XTask.Systems.File
             // Add nothing to something is something
             if (String.IsNullOrEmpty(path2)) return path1;
 
-            StringBuilder sb = stringCache.Acquire();
+            StringBuilder sb = StringBuilderCache.Instance.Acquire();
             if (!EndsInDirectorySeparator(path1) && !BeginsWithDirectorySeparator(path2))
             {
                 sb.Append(path1);
@@ -559,7 +584,30 @@ namespace XTask.Systems.File
                 sb.Append(path2);
             }
 
-            return stringCache.ToStringAndRelease(sb);
+            return StringBuilderCache.Instance.ToStringAndRelease(sb);
+        }
+
+        /// <summary>
+        /// Combines two string builders into the first string builder, adding a directory separator between if needed.
+        /// Does not validate path characters.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="path1"/> is null.</exception>
+        public static void Combine(StringBuilder path1, string path2)
+        {
+            if (path1 == null) throw new ArgumentNullException(nameof(path1));
+
+            // Add nothing to something is something
+            if (path2 == null || path2.Length == 0) return;
+
+            if (!EndsInDirectorySeparator(path1) && !BeginsWithDirectorySeparator(path2))
+            {
+                path1.Append(DirectorySeparator);
+                path1.Append(path2);
+            }
+            else
+            {
+                path1.Append(path2);
+            }
         }
     }
 }

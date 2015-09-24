@@ -12,6 +12,7 @@ namespace XTask.Interop
     using System.Security;
     using System.Text;
     using XTask.Systems.File;
+    using Utility;
 
     internal static partial class NativeMethods
     {
@@ -81,18 +82,18 @@ namespace XTask.Interop
                     throw GetIoExceptionForError(error);
                 }
 
-                var sb = NativeMethods.stringCache.Acquire();
+                var sb = StringBuilderCache.Instance.Acquire();
                 sb.EnsureCapacity((int)result);
                 result = Private.GetCurrentDirectoryW((uint)sb.Capacity, sb);
 
                 if (result == 0)
                 {
                     int error = Marshal.GetLastWin32Error();
-                    NativeMethods.stringCache.Release(sb);
+                    StringBuilderCache.Instance.Release(sb);
                     throw GetIoExceptionForError(error);
                 }
 
-                return NativeMethods.stringCache.ToStringAndRelease(sb);
+                return StringBuilderCache.Instance.ToStringAndRelease(sb);
             }
 
             internal static void SetCurrentDirectory(string path)

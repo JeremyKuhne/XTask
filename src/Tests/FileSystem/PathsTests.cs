@@ -9,6 +9,7 @@ namespace XTask.Tests.FileSystem
 {
     using FluentAssertions;
     using System;
+    using System.Text;
     using XTask.Systems.File;
     using Xunit;
 
@@ -212,20 +213,47 @@ namespace XTask.Tests.FileSystem
         }
 
         [Theory,
-            InlineData(null, new string[0]),
-            InlineData(new[] { "" }, new string[0]),
-            InlineData(new[] { @"C:\Foo\Bar\", @"C:\Foo\" }, new[] { @"C:\Foo\" }),
-            InlineData(new[] { @"C:\", @"D:\Foo\Bar.txt" }, new[] { @"C:\", @"D:\Foo\" }),
+            InlineData(null, new string[0])
+            InlineData(new[] { "" }, new string[0])
+            InlineData(new[] { @"C:\Foo\Bar\", @"C:\Foo\" }, new[] { @"C:\Foo\" })
+            InlineData(new[] { @"C:\", @"D:\Foo\Bar.txt" }, new[] { @"C:\", @"D:\Foo\" })
             InlineData(new[] { @"C:\Bar\Bar.txt", @"C:\Foo\Car", @"C:\Foo\Bar.txt", @"\\LocalHost\Share", @"\\LocalHost\Share\", @"C:\Bar\", @"\\LocalHost\Share\Foo\Bar.txt", @"C:\Foo\Bar\Foo.txt", },
-                        new[] { @"C:\Bar\", @"C:\Foo\", @"\\LocalHost\Share\" }),
+                        new[] { @"C:\Bar\", @"C:\Foo\", @"\\LocalHost\Share\" })
             InlineData(new[] { @"C:\A\B\C.txt", @"C:\A\B\C\D.txt", @"C:\B\A", @"C:\B\A\", @"C:\C\A\B\A.txt", @"C:\C\A\B\C\C.txt", @"C:\A\B\C.txt", @"C:\D\A.txt" },
-                        new[] { @"C:\A\B\", @"C:\B\", @"C:\C\A\B\", @"C:\D\" }),
+                        new[] { @"C:\A\B\", @"C:\B\", @"C:\C\A\B\", @"C:\D\" })
             InlineData(new[] { @"C:\A\a", @"C:\A\b", @"C:\A\b", @"C:\B\a" },
-                        new[] { @"C:\A\", @"C:\B\" }),
-                    ]
+                        new[] { @"C:\A\", @"C:\B\" })
+            ]
         public void FindCommonPathRoots(string[] paths, string[] expected)
         {
             Paths.FindCommonRoots(paths).Should().BeEquivalentTo(expected);
         }
+
+        [Fact]
+        public void CombineThrowsOnNull()
+        {
+            Action action = () => Paths.Combine((string)null, null);
+            action.ShouldThrow<ArgumentNullException>("null string should throw");
+
+            action = () => Paths.Combine((StringBuilder)null, null);
+            action.ShouldThrow<ArgumentNullException>("null stringbuilder should throw");
+        }
+
+        [Theory
+            InlineData(@"a", null, @"a")
+            InlineData(@"a", @"", @"a")
+            InlineData(@"a", @"b", @"a\b")
+            InlineData(@"a\", @"b", @"a\b")
+            InlineData(@"a/", @"b", @"a/b")
+            ]
+        public void CombineTests(string first, string second, string expected)
+        {
+            Paths.Combine(first, second).Should().Be(expected);
+
+            StringBuilder sb = new StringBuilder(first);
+            Paths.Combine(sb, second);
+            sb.ToString().Should().Be(expected);
+        }
+
     }
 }

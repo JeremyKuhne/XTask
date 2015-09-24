@@ -454,6 +454,8 @@ namespace XTask.Interop
                     finalPath = NativeMethods.BufferInvoke((sb) => Private.GetFinalPathNameByHandleW(file, sb, (uint)sb.Capacity, finalPathFlags), path);
                 }
 
+                // GetFinalPathNameByHandle will use the legacy drive for the volume (e.g. \\?\C:\). We may have started with \\?\Volume({GUID}) or some
+                // other volume name format (C:\, etc.) we want to put it back.
                 return Paths.ReplaceRoot(path, finalPath);
             }
 

@@ -8,23 +8,28 @@
 namespace XTask.Utility
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Text;
-    using System.Threading;
 
     /// <summary>
     /// Allows limited reuse of StringBuilders to improve memory pressure
     /// </summary>
     public class StringBuilderCache : IDisposable
     {
-        private ThreadLocal<StringBuilder> stringBuilder;
-        private int minSize;
-        private int maxSize;
+        internal static StringBuilderCache Instance = new StringBuilderCache();
 
-        public StringBuilderCache(int minSize = 16, int maxSize = 1024)
+        private uint minSize;
+        private uint maxSize;
+        private uint maxBuilders;
+
+        private ConcurrentBag<StringBuilder> builders;
+
+        public StringBuilderCache(uint minSize = 16, uint maxSize = 1024, uint maxBuilders = 1024)
         {
             this.minSize = minSize;
             this.maxSize = maxSize;
-            this.stringBuilder = new ThreadLocal<StringBuilder>();
+            this.maxBuilders = maxBuilders;
+            this.builders = new ConcurrentBag<StringBuilder>();
         }
 
         /// <summary>
@@ -32,16 +37,16 @@ namespace XTask.Utility
         /// </summary>
         public StringBuilder Acquire()
         {
-            StringBuilder sb = this.stringBuilder.Value;
-            if (sb == null)
+            StringBuilder sb;
+            if (builders.TryTake(out sb))
             {
-                sb = new StringBuilder(this.minSize);
+                sb.Clear();
             }
             else
             {
-                sb.Clear();
-                this.stringBuilder.Value = null;
+                sb = new StringBuilder((int)this.minSize);
             }
+
             return sb;
         }
 
@@ -50,9 +55,9 @@ namespace XTask.Utility
         /// </summary>
         public void Release(StringBuilder sb)
         {
-            if (sb.MaxCapacity <= this.maxSize)
+            if (sb.MaxCapacity <= this.maxSize && this.builders.Count < maxBuilders)
             {
-                this.stringBuilder.Value = sb;
+                this.builders.Add(sb);
             }
         }
 
@@ -75,7 +80,9 @@ namespace XTask.Utility
         {
             if (disposing)
             {
-                this.stringBuilder.Dispose();
+                StringBuilder sb;
+                while (this.builders.TryTake(out sb));
+                this.builders = null;
             }
         }
     }
