@@ -472,6 +472,15 @@ namespace XTask.Tests.Interop
         }
 
         [Fact]
+        public void FinalPathNameFromPath()
+        {
+            string tempPath = Path.GetTempPath();
+            string lowerTempPath = tempPath.ToLowerInvariant();
+            tempPath.Should().NotBe(lowerTempPath);
+            NativeMethods.FileManagement.GetFinalPathName(lowerTempPath, 0, false).Should().Be(Paths.RemoveTrailingSeparators(tempPath));
+        }
+
+        [Fact]
         public void CreateSymbolicLinkToFile()
         {
             using (var cleaner = new TestFileCleaner())
@@ -531,6 +540,15 @@ namespace XTask.Tests.Interop
                     NativeMethods.FileManagement.GetFileType(testFile).Should().Be(NativeMethods.FileManagement.FileType.FILE_TYPE_DISK);
                 }
             }
+        }
+
+        [Theory
+            InlineData(@"C:\")
+            InlineData(@"\\?\C:\")
+            ]
+        public void FindFirstFileHandlesRoots(string path)
+        {
+            NativeMethods.FileManagement.FindFirstFile(path, directoriesOnly: false, getAlternateName: false, returnNullIfNotFound: true).Should().BeNull();
         }
     }
 }
