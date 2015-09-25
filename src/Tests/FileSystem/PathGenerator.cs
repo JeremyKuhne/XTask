@@ -9,7 +9,7 @@ namespace XTask.Tests.FileSystem
 {
     using System;
     using Systems.File;
-    using Utility;
+    using XTask.Utility;
 
     public static class PathGenerator
     {

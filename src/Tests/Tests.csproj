@@ -23,6 +23,7 @@
   <!-- Default configurations to help VS understand the options -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
   </PropertyGroup>
@@ -116,6 +117,7 @@
     <Compile Include="Collections\DictionaryExtensionsTests.cs" />
     <Compile Include="Collections\EnumerableExtensionsTests.cs" />
     <Compile Include="Utility\ConsoleHelperTests.cs" />
+    <Compile Include="Utility\EnumsTests.cs" />
     <Compile Include="Utility\ErrorHelperTests.cs" />
     <Compile Include="Utility\FileCleanerTests.cs" />
     <Compile Include="Utility\FilesTests.cs" />

@@ -5,7 +5,7 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace XTask.Tests.Core.Build
+namespace XTask.Tests.Build
 {
     using System;
     using System.Collections.Generic;
@@ -52,7 +52,7 @@ namespace XTask.Tests.Core.Build
             output[0].MetadataCount.Should().Be(2, "two metadata items");
             output[0].GetMetadata("foo").Should().Be("bar");
             output[0].GetMetadata("whiz").Should().Be("bang");
-            output[0].ItemSpec.Should().Be("XTask.Tests.Core.Build.BuildTaskBridgeTests+TestObjectWithView", "should be default ToString()");
+            output[0].ItemSpec.Should().Be("XTask.Tests.Build.BuildTaskBridgeTests+TestObjectWithView", "should be default ToString()");
         }
     }
 }

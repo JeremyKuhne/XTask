@@ -8,14 +8,13 @@
 namespace XTask.Tests.Tasks
 {
     using NSubstitute;
-    using Services;
-    using Settings;
     using System;
     using XTask.Tasks;
     using Xunit;
     using FluentAssertions;
     using System.Collections.Generic;
-    using Logging;
+    using XTask.Settings;
+    using XTask.Logging;
 
     public class TaskExecutionTests
     {

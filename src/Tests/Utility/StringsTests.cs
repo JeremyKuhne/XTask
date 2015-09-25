@@ -5,11 +5,10 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace XTask.Tests.Core.Utility
+namespace XTask.Tests.Utility
 {
-    using System;
-    using System.Linq;
     using FluentAssertions;
+    using System;
     using XTask.Utility;
     using Xunit;
 
@@ -161,6 +160,43 @@ namespace XTask.Tests.Core.Utility
         public void SplitCommandLineTests(string value, string[] expected)
         {
             Strings.SplitCommandLine(value).ShouldAllBeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void SplitThrowsForNullPointer()
+        {
+            Action action = () => Strings.Split(IntPtr.Zero, 0, ' ');
+            action.ShouldThrow<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void SplitThrowsForNegativeLength()
+        {
+            Action action = () => Strings.Split(new IntPtr(1), -1, ' ');
+            action.ShouldThrow<ArgumentOutOfRangeException>();
+        }
+
+        [Fact]
+        public void SplitHandlesNoSplitCharacters()
+        {
+            Strings.Split(new IntPtr(1), 1, null).Should().BeEmpty("null should have nothing to split");
+            Strings.Split(new IntPtr(1), 1, new char[0]).Should().BeEmpty("empty should have nothing to split");
+        }
+
+        [Theory
+            InlineData("foo bar", new char[] { ' ' })
+            InlineData("foobar", new char[] { ' ' })
+            InlineData("foo bar ", new char[] { ' ' })
+            InlineData("foobar ", new char[] { ' ' })
+            InlineData(" ", new char[] { ' ' })
+            InlineData("", new char[] { ' ' })
+            ]
+        unsafe public void SplitTestCases(string input, char[] splitChars)
+        {
+            fixed (void* start = input)
+            {
+                Strings.Split(new IntPtr(start), input.Length, splitChars).ShouldAllBeEquivalentTo(input.Split(splitChars));
+            }
         }
     }
 }

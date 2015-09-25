@@ -7,13 +7,12 @@
 
 namespace XTask.Tests.Tasks
 {
-    using System;
-    using NSubstitute;
-    using Utility;
-    using XTask.Tasks;
-    using Xunit;
     using FluentAssertions;
-    using Logging;
+    using NSubstitute;
+    using XTask.Logging;
+    using XTask.Tasks;
+    using XTask.Utility;
+    using Xunit;
 
     public class HelpTaskTests
     {

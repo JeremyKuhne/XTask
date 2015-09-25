@@ -264,10 +264,13 @@ namespace XTask.Utility
         /// </summary>
         /// <param name="pointer">Pointer to an buffer of Unicode (UTF-16/WCHAR) characters</param>
         /// <param name="length">Length of the buffer in characters</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name=nameof(pointer)/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name=nameof(length)/> is less than zero.</exception>
         unsafe internal static IEnumerable<string> Split(IntPtr pointer, int length, params char[] splitCharacters)
         {
             if (pointer == IntPtr.Zero) throw new ArgumentNullException(nameof(pointer));
             if (length < 0) throw new ArgumentOutOfRangeException(nameof(length));
+            if (splitCharacters == null || splitCharacters.Length == 0) return Enumerable.Empty<string>();
 
             var strings = new List<string>();
             char* start = (char*)pointer;

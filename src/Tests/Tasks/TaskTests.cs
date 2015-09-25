@@ -8,8 +8,8 @@
 namespace XTask.Tests.Tasks
 {
     using NSubstitute;
-    using Utility;
     using XTask.Tasks;
+    using XTask.Utility;
     using Xunit;
 
     public class TaskTests
