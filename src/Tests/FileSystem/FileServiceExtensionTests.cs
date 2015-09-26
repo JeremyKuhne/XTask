@@ -57,5 +57,22 @@ namespace XTask.Tests.Interop
             Action action = () => service.GetDirectoryInfo("Foo");
             action.ShouldThrow<FileExistsException>();
         }
+
+        [Fact]
+        public void PathExistsCatchesErrors()
+        {
+            IFileService service = Substitute.For<IFileService>();
+            service.GetAttributes("").ReturnsForAnyArgs(x => { throw new ArgumentException(); });
+            service.PathExists("foo").Should().BeFalse();
+        }
+
+        [Fact]
+        public void PathExistsSurfacesUnauthorizeAccess()
+        {
+            IFileService service = Substitute.For<IFileService>();
+            service.GetAttributes("").ReturnsForAnyArgs(x => { throw new UnauthorizedAccessException(); });
+            Action action = () => service.PathExists("foo");
+            action.ShouldThrow<UnauthorizedAccessException>();
+        }
     }
 }

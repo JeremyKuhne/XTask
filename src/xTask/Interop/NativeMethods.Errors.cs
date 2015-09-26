@@ -69,7 +69,7 @@ namespace XTask.Interop
                 case WinError.ERROR_INVALID_DRIVE:
                     return new DriveNotFoundException($"{errorText} : '{path}'");
                 case WinError.ERROR_OPERATION_ABORTED:
-                    return new OperationCanceledException();
+                    return new OperationCanceledException(path);
                 case WinError.ERROR_ALREADY_EXISTS:
                 case WinError.ERROR_SHARING_VIOLATION:
                 case WinError.ERROR_FILE_EXISTS:

@@ -199,32 +199,6 @@ namespace XTask.Systems.File.Concrete.Flex
             }
         }
 
-        public bool IsReadOnly(string path)
-        {
-            if (path == null) throw new ArgumentNullException(nameof(path));
-
-            System.IO.FileAttributes attributes;
-            if (NativeMethods.FileManagement.TryGetFileAttributes(path, out attributes))
-            {
-                return attributes.HasFlag(System.IO.FileAttributes.ReadOnly);
-            }
-            return false;
-        }
-
-        public void MakeWritable(string path)
-        {
-            if (path == null) throw new ArgumentNullException(nameof(path));
-
-            System.IO.FileAttributes attributes;
-            if (NativeMethods.FileManagement.TryGetFileAttributes(path, out attributes))
-            {
-                if (attributes.HasFlag(System.IO.FileAttributes.ReadOnly))
-                {
-                    NativeMethods.FileManagement.TrySetFileAttributes(path, attributes & ~System.IO.FileAttributes.ReadOnly);
-                }
-            }
-        }
-
         public IFileSystemInformation GetPathInfo(string path)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
