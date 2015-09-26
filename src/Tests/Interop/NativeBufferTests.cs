@@ -15,6 +15,8 @@ namespace XTask.Tests.Interop
 
     public class NativeBufferTests
     {
+        const string testString = "The quick brown fox jumped over the lazy dog.";
+
         [Fact]
         public void EmptyBufferHasZeroLength()
         {
@@ -255,6 +257,40 @@ namespace XTask.Tests.Interop
             {
                 Action action = () => buffer.Read(new byte[0], 0, 1);
                 action.ShouldThrow<ArgumentException>();
+            }
+        }
+
+        [Fact]
+        public void StreamWriterOnEmptyBuffer()
+        {
+            using (NativeBuffer buffer = new NativeBuffer())
+            {
+                using (StreamWriter writer = new StreamWriter(buffer))
+                using (StreamReader reader = new StreamReader(buffer))
+                {
+                    writer.AutoFlush = true;
+                    writer.WriteLine(testString);
+                    reader.BaseStream.Position = 0;
+                    reader.ReadLine().Should().Be(testString);
+                }
+            }
+        }
+
+        [Fact]
+        public void StreamWriterSetLengthToZero()
+        {
+            using (NativeBuffer buffer = new NativeBuffer())
+            {
+                using (StreamWriter writer = new StreamWriter(buffer))
+                using (StreamReader reader = new StreamReader(buffer))
+                {
+                    writer.AutoFlush = true;
+                    writer.WriteLine(testString);
+                    reader.BaseStream.Position = 0;
+                    reader.ReadLine().Should().Be(testString);
+                    writer.BaseStream.SetLength(0);
+                    reader.ReadLine().Should().BeNull();
+                }
             }
         }
     }

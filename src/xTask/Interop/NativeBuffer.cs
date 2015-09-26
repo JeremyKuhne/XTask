@@ -114,7 +114,7 @@ namespace XTask.Interop
 
         public void EnsureLength(long value)
         {
-            if (this.Length < value)
+            if (this.Length < value  || this.stream == null)
             {
                 this.Resize(value);
             }
@@ -144,7 +144,12 @@ namespace XTask.Interop
             }
 
             this.handle = newHandle;
-            this.stream = new UnmanagedMemoryStream((byte*)this.Handle.ToPointer(), size);
+            this.stream = new UnmanagedMemoryStream(
+                pointer: (byte*)this.Handle.ToPointer(),
+                length: size,
+                capacity: size,
+                access: FileAccess.ReadWrite);
+
             return this.Handle;
         }
 
@@ -153,9 +158,11 @@ namespace XTask.Interop
         {
             disposed = true;
             this.handle?.Dispose();
+
             if (disposing)
             {
                 this.stream?.Dispose();
+                this.stream = null;
             }
         }
 
@@ -193,16 +200,17 @@ namespace XTask.Interop
 
         public override void Write(byte[] buffer, int offset, int count)
         {
+            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+            if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
+            if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
+
             if (this.stream == null)
             {
                 // Mimic UnmanagedMemoryStream with a 0 length buffer
-                if (buffer == null) throw new ArgumentNullException(nameof(buffer));
-                if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
-                if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
-                if (offset != 0 || count != 0) throw new ArgumentException();
-                return;
+                if (offset != 0) throw new ArgumentException();
             }
 
+            this.EnsureLength(count + offset);
             this.stream.Write(buffer, offset, count);
         }
 
