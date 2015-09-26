@@ -239,6 +239,7 @@ namespace XTask.Tests.Interop
                 using (var handle = NativeMethods.FileManagement.CreateFile(filePath, FileAccess.ReadWrite, FileShare.ReadWrite, FileMode.Create, 0))
                 {
                     handle.IsInvalid.Should().BeFalse();
+                    NativeMethods.FileManagement.FlushFileBuffers(handle);
                     NativeMethods.FileManagement.FileExists(filePath).Should().BeTrue();
                 }
             }

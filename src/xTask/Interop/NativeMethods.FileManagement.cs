@@ -161,6 +161,12 @@ namespace XTask.Interop
                 [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
                 internal static extern FileType GetFileType(
                     SafeFileHandle hFile);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364439.aspx
+                [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                internal static extern bool FlushFileBuffers(
+                    SafeFileHandle hFile);
             }
 
             internal const FileAttributes InvalidFileAttributes = unchecked((FileAttributes)Private.INVALID_FILE_ATTRIBUTES);
@@ -812,6 +818,15 @@ namespace XTask.Interop
                 }
 
                 return fileType;
+            }
+
+            internal static void FlushFileBuffers(SafeFileHandle fileHandle)
+            {
+                if (!Private.FlushFileBuffers(fileHandle))
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    throw GetIoExceptionForError(error);
+                }
             }
         }
     }
