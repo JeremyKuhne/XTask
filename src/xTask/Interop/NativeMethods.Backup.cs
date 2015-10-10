@@ -161,8 +161,8 @@ namespace XTask.Interop
 
                 private IntPtr context = IntPtr.Zero;
                 private SafeFileHandle fileHandle;
-                NativeBuffer buffer = new NativeBuffer(4096);
-                uint structureSize = (uint)Marshal.SizeOf(typeof(WIN32_STREAM_ID));
+                private NativeBuffer buffer = new NativeBuffer(4096);
+                private uint structureSize = (uint)Marshal.SizeOf(typeof(WIN32_STREAM_ID));
 
                 public BackupReader(SafeFileHandle fileHandle)
                 {
@@ -192,7 +192,7 @@ namespace XTask.Interop
                     string name = null;
                     if (streamId.dwStreamNameSize > 0)
                     {
-                        buffer.EnsureLength(streamId.dwStreamNameSize);
+                        buffer.EnsureCapacity(streamId.dwStreamNameSize);
                         if (!BackupRead(
                             hFile: fileHandle,
                             lpBuffer: buffer,

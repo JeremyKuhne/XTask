@@ -15,7 +15,6 @@ namespace XTask.Interop
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Security;
-    using System.Text;
     using System.Threading;
     using XTask.Systems.File;
     using ComTypes = System.Runtime.InteropServices.ComTypes;
@@ -54,14 +53,14 @@ namespace XTask.Interop
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern uint GetLongPathNameW(
                     string lpszShortPath,
-                    StringBuilder lpszLongPath,
+                    IntPtr lpszLongPath,
                     uint cchBuffer);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364989.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern uint GetShortPathNameW(
                     string lpszLongPath,
-                    StringBuilder lpszShortPath,
+                    IntPtr lpszShortPath,
                     uint cchBuffer);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364963.aspx
@@ -69,14 +68,14 @@ namespace XTask.Interop
                 internal static extern uint GetFullPathNameW(
                     string lpFileName,
                     uint nBufferLength,
-                    StringBuilder lpBuffer,
+                    IntPtr lpBuffer,
                     IntPtr lpFilePart);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364962.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern uint GetFinalPathNameByHandleW(
                     SafeFileHandle hFile,
-                    StringBuilder lpszFilePath,
+                    IntPtr lpszFilePath,
                     uint cchFilePath,
                     FinalPathFlags dwFlags);
 
@@ -303,12 +302,12 @@ namespace XTask.Interop
 
             internal static string GetLongPathName(string path)
             {
-                return NativeMethods.BufferPathInvoke(path, (value, sb) => Private.GetLongPathNameW(value, sb, (uint)sb.Capacity));
+                return NativeMethods.BufferPathInvoke(path, (value, buffer) => Private.GetLongPathNameW(value, buffer, (uint)buffer.Capacity));
             }
 
             internal static string GetShortPathName(string path)
             {
-                return NativeMethods.BufferPathInvoke(path, (value, sb) => Private.GetShortPathNameW(value, sb, (uint)sb.Capacity));
+                return NativeMethods.BufferPathInvoke(path, (value, buffer) => Private.GetShortPathNameW(value, buffer, (uint)buffer.Capacity));
             }
 
             /// <summary>
@@ -318,7 +317,7 @@ namespace XTask.Interop
             /// </summary>
             internal static string GetFullPathName(string path)
             {
-                return NativeMethods.BufferPathInvoke(path, (value, sb) => Private.GetFullPathNameW(value, (uint)sb.Capacity, sb, IntPtr.Zero), utilizeExtendedSyntax: false);
+                return NativeMethods.BufferPathInvoke(path, (value, buffer) => Private.GetFullPathNameW(value, (uint)buffer.Capacity, buffer, IntPtr.Zero), utilizeExtendedSyntax: false);
             }
 
             [Flags]
@@ -428,7 +427,7 @@ namespace XTask.Interop
 
             internal static string GetFinalPathName(SafeFileHandle fileHandle, FinalPathFlags finalPathFlags)
             {
-                return NativeMethods.BufferInvoke((sb) => Private.GetFinalPathNameByHandleW(fileHandle, sb, (uint)sb.Capacity, finalPathFlags));
+                return NativeMethods.BufferInvoke((buffer) => Private.GetFinalPathNameByHandleW(fileHandle, buffer, (uint)buffer.Capacity, finalPathFlags));
             }
 
             [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
@@ -457,7 +456,7 @@ namespace XTask.Interop
                         throw GetIoExceptionForError(error, path);
                     }
 
-                    finalPath = NativeMethods.BufferInvoke((sb) => Private.GetFinalPathNameByHandleW(file, sb, (uint)sb.Capacity, finalPathFlags), path);
+                    finalPath = NativeMethods.BufferInvoke((buffer) => Private.GetFinalPathNameByHandleW(file, buffer, (uint)buffer.Capacity, finalPathFlags), path);
                 }
 
                 // GetFinalPathNameByHandle will use the legacy drive for the volume (e.g. \\?\C:\). We may have started with \\?\Volume({GUID}) or some

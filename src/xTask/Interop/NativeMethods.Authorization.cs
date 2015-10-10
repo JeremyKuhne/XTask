@@ -239,7 +239,7 @@ namespace XTask.Interop
                 }
 
                 // Initialize the buffer and get the data
-                NativeBuffer buffer = new NativeBuffer(bytesNeeded);
+                var buffer = new StreamBuffer(bytesNeeded);
                 if (!Private.GetTokenInformation(
                     token.DangerousGetHandle(),
                     TOKEN_INFORMATION_CLASS.TokenPrivileges,

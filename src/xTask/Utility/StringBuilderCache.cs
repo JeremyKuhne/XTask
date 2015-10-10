@@ -24,11 +24,11 @@ namespace XTask.Utility
 
         private ConcurrentBag<StringBuilder> builders;
 
-        public StringBuilderCache(uint minSize = 16, uint maxSize = 1024, uint maxBuilders = 1024)
+        public StringBuilderCache(uint minSize = 16, uint maxSize = 1024, uint maxBuilders = 0)
         {
             this.minSize = minSize;
             this.maxSize = maxSize;
-            this.maxBuilders = maxBuilders;
+            this.maxBuilders = maxBuilders > 1 ? maxBuilders : (uint)Environment.ProcessorCount * 4;
             this.builders = new ConcurrentBag<StringBuilder>();
         }
 
@@ -62,7 +62,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Give a StringBuilder back for potential reuse
+        /// Give a StringBuilder back for potential reuse and return it's contents as a string
         /// </summary>
         public string ToStringAndRelease(StringBuilder sb)
         {

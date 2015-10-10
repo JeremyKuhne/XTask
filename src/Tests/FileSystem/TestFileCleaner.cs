@@ -46,7 +46,8 @@ namespace XTask.Tests.FileSystem
         {
             if (Directory.GetCurrentDirectory() != originalCurrentDirectory)
             {
-                Directory.SetCurrentDirectory(originalCurrentDirectory);
+                if (Directory.Exists(originalCurrentDirectory))
+                    Directory.SetCurrentDirectory(originalCurrentDirectory);
             }
 
             base.Dispose(disposing);

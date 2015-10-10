@@ -154,7 +154,7 @@ namespace XTask.Tests.FileSystem
             InlineData("")
             InlineData(":MyStream:$DATA")
             InlineData("::$DATA")]
-        public void WriteAndReadtStream(string appendix)
+        public void WriteAndReadStream(string appendix)
         {
             using (var cleaner = new TestFileCleaner())
             {

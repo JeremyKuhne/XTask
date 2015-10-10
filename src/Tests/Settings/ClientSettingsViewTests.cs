@@ -33,8 +33,8 @@ namespace XTask.Tests.Settings
 
             public static IFileService TestFileService
             {
-                get { return ClientSettingsView.FileService; }
-                set { ClientSettingsView.FileService = value; }
+                get { return ClientSettingsView.FileService.Value; }
+                set { ClientSettingsView.FileService = new Lazy<IFileService>(() => value); }
             }
 
             public static IConfiguration TestGetConfiguration(ConfigurationUserLevel userLevel)

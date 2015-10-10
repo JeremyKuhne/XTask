@@ -38,7 +38,7 @@ namespace XTask.Tests.Utility
             {
                 if (String.Equals(path, this.path, StringComparison.OrdinalIgnoreCase))
                 {
-                    return this.stream;;
+                    return this.stream;
                 }
                 else
                 {
@@ -54,14 +54,14 @@ namespace XTask.Tests.Utility
                 }
             }
 
-            public bool FileExists(string path)
+            public FileAttributes GetAttributes(string path)
             {
-                return String.Equals(path, this.path, StringComparison.OrdinalIgnoreCase);
-            }
+                if (String.Equals(path, this.path, StringComparison.OrdinalIgnoreCase))
+                {
+                    return FileAttributes.Normal;
+                }
 
-            public bool PathExists(string path)
-            {
-                return String.Equals(path, this.path, StringComparison.OrdinalIgnoreCase);
+                throw new IOException();
             }
 
             public string GetFullPath(string path, string basePath = null)
@@ -69,15 +69,13 @@ namespace XTask.Tests.Utility
                 return path;
             }
 
-            public abstract void CreateDirectory(string path);
-            public abstract bool DirectoryExists(string path);
-            public abstract void DeleteFile(string path);
-            public abstract void DeleteDirectory(string path, bool deleteChildren);
             public abstract IFileSystemInformation GetPathInfo(string path);
-            public abstract FileAttributes GetAttributes(string path);
             public abstract void SetAttributes(string path, FileAttributes attributes);
-            public abstract void CopyFile(string existingPath, string newPath, bool overwrite = false);
             public abstract string CurrentDirectory { get; set; }
+            public abstract void CopyFile(string existingPath, string newPath, bool overwrite = false);
+            public abstract void CreateDirectory(string path);
+            public abstract void DeleteDirectory(string path, bool deleteChildren = false);
+            public abstract void DeleteFile(string path);
         }
     }
 }

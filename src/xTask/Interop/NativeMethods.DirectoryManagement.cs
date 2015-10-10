@@ -10,9 +10,7 @@ namespace XTask.Interop
     using System;
     using System.Runtime.InteropServices;
     using System.Security;
-    using System.Text;
     using XTask.Systems.File;
-    using Utility;
 
     internal static partial class NativeMethods
     {
@@ -40,7 +38,7 @@ namespace XTask.Interop
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern uint GetCurrentDirectoryW(
                     uint nBufferLength,
-                    StringBuilder lpBuffer);
+                    IntPtr lpBuffer);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365530.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
@@ -74,26 +72,7 @@ namespace XTask.Interop
 
             internal static string GetCurrentDirectory()
             {
-                // Call to get the needed size
-                uint result = Private.GetCurrentDirectoryW(0, null);
-                if (result == 0)
-                {
-                    int error = Marshal.GetLastWin32Error();
-                    throw GetIoExceptionForError(error);
-                }
-
-                var sb = StringBuilderCache.Instance.Acquire();
-                sb.EnsureCapacity((int)result);
-                result = Private.GetCurrentDirectoryW((uint)sb.Capacity, sb);
-
-                if (result == 0)
-                {
-                    int error = Marshal.GetLastWin32Error();
-                    StringBuilderCache.Instance.Release(sb);
-                    throw GetIoExceptionForError(error);
-                }
-
-                return StringBuilderCache.Instance.ToStringAndRelease(sb);
+                return BufferInvoke((buffer) => Private.GetCurrentDirectoryW((uint)buffer.Capacity, buffer));
             }
 
             internal static void SetCurrentDirectory(string path)

@@ -145,7 +145,7 @@ namespace XTask.Tests.Interop
             InlineData(@"C:/..", @"C:\")
             InlineData(@"//Server/Share", @"\\Server\Share")
             InlineData(@"//Server/Share/..", @"\\Server\Share")
-            InlineData(@"//?/", @"")
+            InlineData(@"//?/", @"\\?\")
 
             // Device behavior
             InlineData(@"CON", @"\\.\CON")

@@ -11,8 +11,6 @@ namespace XTask.Interop
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using System.Security;
-    using System.Text;
-    using Utility;
     using XTask.Systems.File;
 
     internal static partial class NativeMethods
@@ -61,11 +59,35 @@ namespace XTask.Interop
         // The CLR will use CoTaskMemFree by default to free strings that are passed as [Out] or SysStringFree for strings that are marked
         // as BSTR.
         //
-        // (StringBuilder - ILWSTRBufferMarshaler)
-        // By default it is passed as [In, Out]. ALWAYS specify the capacity in advance and ensure it is large enough for API in question.
+        // (StringBuilder - ILWSTRBufferMarshaler) [AVOID]
+        // StringBuilder marshalling *always* creates a native buffer copy. As such it can be extremely inefficient. Take the typical
+        // scenario of calling a Windows API that takes a string:
+        //
+        //      1. Create a SB of the desired capacity (allocates managed capacity) {1}
+        //      2. Invoke
+        //          2a. Allocates a native buffer {2}
+        //          2b. Copies the contents if [In] (default)
+        //          2c. Copies the native buffer into a newly allocated managed array if [Out] (default) {3}
+        //      3. ToString allocates yet another managed array {4}
+        //
+        // That is {4} allocations to get a string out of native code. The best you can do to limit this is to reuse the StringBuilder
+        // in another call, but this still only saves *1* allocation. It is much better to use and cache a native buffer- you can then
+        // get down to just the allocation for the ToString() on subsequent calls. So {4 -> 3} versus {2 -> 1} allocations.
+        //
+        // By default it is passed as [In, Out]. If explicitly specified as out it will not copy the contents to the native buffer before
+        // calling the native method.
         //
         // StringBuilder is guaranteed to have a null that is not counted in the capacity. As such the count of characters when using as a
         // character buffer is Capacity + 1.
+
+        // For most APIs with an output buffer:
+        //
+        // The passed in character count must include the null. If the returned value is less than the passed in character count the call
+        // has succeeded and the value is the number of characters *without* the trailing null. Otherwise the count is the required size
+        // of the buffer *including* the null character.
+        //
+        // Pass in 5, get 4-> The string is 4 characters long with a trailing null.
+        // Pass in 5, get 6-> The string is 5 characters long, need a 6 character buffer to hold the null.
 
         // Useful Interop Links
         // ====================
@@ -89,7 +111,7 @@ namespace XTask.Interop
             [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
             internal static extern uint GetEnvironmentVariableW(
                 string lpName,
-                StringBuilder lpBuffer,
+                IntPtr lpBuffer,
                 uint nSize);
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms686206.aspx
@@ -146,62 +168,81 @@ namespace XTask.Interop
         }
 
         /// <summary>
-        /// Uses the stringbuilder cache and increases the buffer size if needed. Handles path prepending as needed.
+        /// Uses the native string buffer cache and increases the buffer size if needed. Handles path prepending as needed.
         /// </summary>
         [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
-        private static string BufferPathInvoke(string path, Func<string, StringBuilder, uint> invoker, bool utilizeExtendedSyntax = true)
+        internal static string BufferPathInvoke(string path, Func<string, StringBuffer, uint> invoker, bool utilizeExtendedSyntax = true)
         {
             if (path == null) return null;
+            string originalPath = path;
 
-            bool hadExtendedPrefix = path.StartsWith(Paths.ExtendedPathPrefix, StringComparison.Ordinal);
+            bool hadExtendedPrefix = Paths.IsExtended(path);
             bool addedExtendedPrefix = false;
             if (utilizeExtendedSyntax && !hadExtendedPrefix && (path.Length > Paths.MaxPath))
             {
-                path = Paths.ExtendedPathPrefix + path;
+                path = Paths.AddExtendedPrefix(path);
                 addedExtendedPrefix = true;
             }
 
-            StringBuilder buffer = StringBuilderCache.Instance.Acquire();
-            uint returnValue = invoker(path, buffer);
+            var buffer = StringBufferCache.Instance.Acquire();
+            uint returnValue = 0;
 
-            while (returnValue > (uint)buffer.Capacity)
+            while ((returnValue = invoker(path, buffer)) > (uint)buffer.Capacity)
             {
                 // Need more room for the output string
-                buffer.EnsureCapacity((int)returnValue);
-                returnValue = invoker(path, buffer);
+                buffer.Capacity = returnValue;
             }
 
             if (returnValue == 0)
             {
                 // Failed
                 int error = Marshal.GetLastWin32Error();
-                throw GetIoExceptionForError(error, path);
+                throw GetIoExceptionForError(error, originalPath);
             }
 
-            bool nowHasExtendedPrefix = buffer.StartsWithOrdinal(Paths.ExtendedPathPrefix);
-            if (addedExtendedPrefix || (!hadExtendedPrefix && nowHasExtendedPrefix))
+            buffer.Length = (int)returnValue;
+
+            int startIndex = 0;
+            if (addedExtendedPrefix && buffer.StartsWithOrdinal(Paths.ExtendedPathPrefix))
             {
                 // Remove the prefix
-                buffer.Remove(0, Paths.ExtendedPathPrefix.Length);
+                if (buffer.StartsWithOrdinal(Paths.ExtendedUncPrefix))
+                {
+                    // UNC, need to convert from \\?\UNC\ to \\.
+                    startIndex = Paths.ExtendedUncPrefix.Length - 2;
+                    buffer[startIndex] = Paths.DirectorySeparator;
+                }
+                else
+                {
+                    startIndex = Paths.ExtendedPathPrefix.Length;
+                }
             }
 
-            return StringBuilderCache.Instance.ToStringAndRelease(buffer);
+            // If the string did not change, return the original (to cut back on identical string pressure)
+            if (buffer.SubStringEquals(originalPath, startIndex: startIndex))
+            {
+                StringBufferCache.Instance.Release(buffer);
+                return originalPath;
+            }
+            else
+            {
+                return StringBufferCache.Instance.ToStringAndRelease(buffer, startIndex: startIndex);
+            }
         }
 
         /// <summary>
         /// Uses the stringbuilder cache and increases the buffer size if needed.
         /// </summary>
         [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
-        internal static string BufferInvoke(Func<StringBuilder, uint> invoker, string value = null, Func<int, bool> shouldThrow = null)
+        internal static string BufferInvoke(Func<StringBuffer, uint> invoker, string value = null, Func<int, bool> shouldThrow = null)
         {
-            StringBuilder buffer = StringBuilderCache.Instance.Acquire();
-            uint returnValue = invoker(buffer);
+            var buffer = StringBufferCache.Instance.Acquire();
+            uint returnValue = 0;
 
-            while (returnValue > (uint)buffer.Capacity)
+            while ((returnValue = invoker(buffer)) > (uint)buffer.Capacity)
             {
                 // Need more room for the output string
-                buffer.EnsureCapacity((int)returnValue);
-                returnValue = invoker(buffer);
+                buffer.Capacity = returnValue;
             }
 
             if (returnValue == 0)
@@ -216,7 +257,8 @@ namespace XTask.Interop
                 throw GetIoExceptionForError(error, value);
             }
 
-            return StringBuilderCache.Instance.ToStringAndRelease(buffer);
+            buffer.Length = (int)returnValue;
+            return StringBufferCache.Instance.ToStringAndRelease(buffer);
         }
 
         internal static void SetEnvironmentVariable(string name, string value)
@@ -231,7 +273,7 @@ namespace XTask.Interop
         internal static string GetEnvironmentVariable(string name)
         {
             return BufferInvoke(
-                sb => Private.GetEnvironmentVariableW(name, sb, (uint)sb.Capacity + 1),
+                buffer => Private.GetEnvironmentVariableW(name, buffer, (uint)buffer.Capacity),
                 name,
                 error => error != WinError.ERROR_ENVVAR_NOT_FOUND);
         }

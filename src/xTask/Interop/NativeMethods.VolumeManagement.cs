@@ -12,7 +12,6 @@ namespace XTask.Interop
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using System.Security;
-    using System.Text;
     using Utility;
     using XTask.Systems.File;
 
@@ -42,7 +41,7 @@ namespace XTask.Interop
                 [return: MarshalAs(UnmanagedType.Bool)]
                 internal static extern bool GetVolumePathNameW(
                     string lpszFileName,
-                    StringBuilder lpszVolumePathName,
+                    IntPtr lpszVolumePathName,
                     uint cchBufferLength);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364998.aspx
@@ -59,20 +58,20 @@ namespace XTask.Interop
                 [return: MarshalAs(UnmanagedType.Bool)]
                 internal static extern bool GetVolumeNameForVolumeMountPointW(
                     string lpszVolumeMountPoint,
-                    StringBuilder lpszVolumeName,
+                    IntPtr lpszVolumeName,
                     uint cchBufferLength);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364993.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern bool GetVolumeInformationW(
                    string lpRootPathName,
-                   StringBuilder lpVolumeNameBuffer,
-                   int nVolumeNameSize,
+                   IntPtr lpVolumeNameBuffer,
+                   uint nVolumeNameSize,
                    out uint lpVolumeSerialNumber,
                    out uint lpMaximumComponentLength,
                    out FileSystemFeature lpFileSystemFlags,
-                   StringBuilder lpFileSystemNameBuffer,
-                   int nFileSystemNameSize);
+                   IntPtr lpFileSystemNameBuffer,
+                   uint nFileSystemNameSize);
             }
 
             [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
@@ -81,56 +80,57 @@ namespace XTask.Interop
                 if (deviceName != null) deviceName = Paths.RemoveTrailingSeparators(deviceName);
 
                 // Null will return everything defined- this list is quite large so set a higher initial allocation
-                using (NativeBuffer buffer = new NativeBuffer(deviceName == null ? (uint)8192 : 256))
+                using (var buffer = new StringBuffer(deviceName == null ? (int)8192 : 256))
                 {
                     uint result = 0;
 
                     // QueryDosDevicePrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while ((result = Private.QueryDosDeviceW(deviceName, buffer, (uint)(buffer.Length / 2) - 1)) == 0)
+                    while ((result = Private.QueryDosDeviceW(deviceName, buffer, (uint)buffer.Capacity)) == 0)
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         switch (lastError)
                         {
                             case WinError.ERROR_INSUFFICIENT_BUFFER:
-                                buffer.SetLength(buffer.Length * 2);
+                                buffer.Capacity *= 2;
                                 break;
                             default:
                                 throw GetIoExceptionForError(lastError, deviceName);
                         }
                     }
 
-                    return Strings.Split(buffer, (int)result - 2, '\0');
+                    buffer.Length = (int)result;
+                    return buffer.Split('\0');
                 }
             }
 
             [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static IEnumerable<string> GetLogicalDriveStrings()
             {
-                using (NativeBuffer buffer = new NativeBuffer())
+                var buffer = StringBufferCache.Instance.Acquire();
+                uint result = 0;
+
+                // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
+                while ((result = Private.GetLogicalDriveStringsW((uint)buffer.Capacity, buffer)) > (uint)buffer.Capacity)
                 {
-                    uint result = 0;
-
-                    // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while ((result = Private.GetLogicalDriveStringsW((uint)buffer.Length / 2, buffer)) > (uint)buffer.Length / 2)
-                    {
-                        buffer.SetLength(result * 2);
-                    }
-
-                    if (result == 0)
-                    {
-                        int lastError = Marshal.GetLastWin32Error();
-                        throw GetIoExceptionForError(lastError);
-                    }
-
-                    return Strings.Split(buffer, (int)result - 1, '\0');
+                    buffer.Capacity = result;
                 }
+
+                if (result == 0)
+                {
+                    int lastError = Marshal.GetLastWin32Error();
+                    throw GetIoExceptionForError(lastError);
+                }
+
+                buffer.Length = (int)result;
+
+                return StringBufferCache.Instance.ToStringsAndRelease(buffer);
             }
 
             [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static string GetVolumePathName(string path)
             {
                 // Most paths are mounted at the root, 50 should handle the canonical (guid) root
-                StringBuilder volumePathName = new StringBuilder(50);
+                var volumePathName = StringBufferCache.Instance.Acquire();
 
                 while (!Private.GetVolumePathNameW(path, volumePathName, (uint)volumePathName.Capacity))
                 {
@@ -138,39 +138,40 @@ namespace XTask.Interop
                     switch (lastError)
                     {
                         case WinError.ERROR_FILENAME_EXCED_RANGE:
-                            volumePathName.EnsureCapacity(volumePathName.Capacity * 2);
+                            volumePathName.Capacity *= 2;
                             break;
                         default:
                             throw GetIoExceptionForError(lastError, path);
                     }
                 }
 
-                return volumePathName.ToString();
+                volumePathName.SetLengthToFirstNull();
+                return StringBufferCache.Instance.ToStringAndRelease(volumePathName);
             }
 
             [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static IEnumerable<string> GetVolumePathNamesForVolumeName(string volumeName)
             {
-                using (NativeBuffer buffer = new NativeBuffer())
+                var buffer = StringBufferCache.Instance.Acquire();
+
+                uint returnLength = 0;
+
+                // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
+                while (!Private.GetVolumePathNamesForVolumeNameW(volumeName, buffer, (uint)buffer.Capacity, ref returnLength))
                 {
-                    uint returnLength = 0;
-
-                    // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while (!Private.GetVolumePathNamesForVolumeNameW(volumeName, buffer, (uint)buffer.Length / 2, ref returnLength))
+                    int lastError = Marshal.GetLastWin32Error();
+                    switch (lastError)
                     {
-                        int lastError = Marshal.GetLastWin32Error();
-                        switch (lastError)
-                        {
-                            case WinError.ERROR_MORE_DATA:
-                                buffer.SetLength(returnLength * 2);
-                                break;
-                            default:
-                                throw GetIoExceptionForError(lastError, volumeName);
-                        }
+                        case WinError.ERROR_MORE_DATA:
+                            buffer.Capacity *= 2;
+                            break;
+                        default:
+                            throw GetIoExceptionForError(lastError, volumeName);
                     }
-
-                    return Strings.Split(buffer, (int)returnLength - 2, '\0');
                 }
+
+                buffer.SetLengthToFirstNull();
+                return StringBufferCache.Instance.ToStringsAndRelease(buffer);
             }
 
             internal static string GetVolumeNameForVolumeMountPoint(string volumeMountPoint)
@@ -178,38 +179,44 @@ namespace XTask.Interop
                 volumeMountPoint = Paths.AddTrailingSeparator(volumeMountPoint);
 
                 // MSDN claims 50 is "reasonable", let's go double.
-                StringBuilder volumeName = new StringBuilder(100);
+                var volumeName = StringBufferCache.Instance.Acquire(minCapacity: 100);
+
                 if (!Private.GetVolumeNameForVolumeMountPointW(volumeMountPoint, volumeName, (uint)volumeName.Capacity))
                 {
                     int lastError = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(lastError, volumeMountPoint);
                 }
 
-                return volumeName.ToString();
+                volumeName.SetLengthToFirstNull();
+                return StringBufferCache.Instance.ToStringAndRelease(volumeName);
             }
 
             internal static VolumeInformation GetVolumeInformation(string rootPath)
             {
                 rootPath = Paths.AddTrailingSeparator(rootPath);
 
-                StringBuilder volumeName = new StringBuilder(Paths.MaxPath + 1);
-                StringBuilder fileSystemName = new StringBuilder(Paths.MaxPath + 1);
+                var volumeName = StringBufferCache.Instance.Acquire(Paths.MaxPath + 1);
+                var fileSystemName = StringBufferCache.Instance.Acquire(Paths.MaxPath + 1);
+
                 uint serialNumber, maxComponentLength;
                 FileSystemFeature flags;
-                if (!Private.GetVolumeInformationW(rootPath, volumeName, volumeName.Capacity, out serialNumber, out maxComponentLength, out flags, fileSystemName, fileSystemName.Capacity))
+                if (!Private.GetVolumeInformationW(rootPath, volumeName, (uint)volumeName.Capacity, out serialNumber, out maxComponentLength, out flags, fileSystemName, (uint)fileSystemName.Capacity))
                 {
                     int lastError = Marshal.GetLastWin32Error();
                     throw GetIoExceptionForError(lastError, rootPath);
                 }
 
+                volumeName.SetLengthToFirstNull();
+                fileSystemName.SetLengthToFirstNull();
+
                 VolumeInformation info = new VolumeInformation
                 {
                     RootPathName = rootPath,
-                    VolumeName = volumeName.ToString(),
+                    VolumeName = StringBufferCache.Instance.ToStringAndRelease(volumeName),
                     VolumeSerialNumber = serialNumber,
                     MaximumComponentLength = maxComponentLength,
                     FileSystemFlags = flags,
-                    FileSystemName = fileSystemName.ToString()
+                    FileSystemName = StringBufferCache.Instance.ToStringAndRelease(fileSystemName)
                 };
 
                 return info;

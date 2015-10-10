@@ -29,12 +29,12 @@ namespace XTask.Settings
         private IConfiguration configuration;
         private ClientSettingsSection clientSettings;
         protected static IConfigurationManager ConfigurationManager{ get; set; }
-        protected static IFileService FileService { get; set; }
+        protected static Lazy<IFileService> FileService { get; set; }
 
         static ClientSettingsView()
         {
             ClientSettingsView.ConfigurationManager = new ConfigurationManagerWrapper();
-            ClientSettingsView.FileService = new FileService();
+            ClientSettingsView.FileService = new Lazy<IFileService>(() => new FileService());
         }
 
         protected ClientSettingsView(string settingsSection, SettingsLocation settingsLocation)
@@ -97,7 +97,7 @@ namespace XTask.Settings
 
             string assemblyConfig = codeBaseUri.LocalPath + ".config";
             if (!String.Equals(configuration.FilePath, assemblyConfig, StringComparison.OrdinalIgnoreCase)
-                && FileService.FileExists(assemblyConfig))
+                && FileService.Value.FileExists(assemblyConfig))
             {
                 // We don't match and exist, go ahead and try to create
                 return ConfigurationManager.OpenConfiguration(assemblyConfig);

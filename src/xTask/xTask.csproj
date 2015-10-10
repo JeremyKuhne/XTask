@@ -9,12 +9,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>XTask</RootNamespace>
     <AssemblyName>xtask</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <!-- Default configurations to help VS understand the options -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -63,7 +64,10 @@
     <Compile Include="Build\TaskItem.cs" />
     <Compile Include="Collections\ListExtensions.cs" />
     <Compile Include="Interop\LoadLibraryFlags.cs" />
+    <Compile Include="Interop\StringBufferCache.cs" />
+    <Compile Include="Interop\StreamBuffer.cs" />
     <Compile Include="Interop\NativeMethods.Backup.cs" />
+    <Compile Include="Interop\StringBuffer.cs" />
     <Compile Include="Interop\SafeHandleZeroIsInvalid.cs" />
     <Compile Include="Interop\SafeLibraryHandle.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationManagerWrapper.cs" />

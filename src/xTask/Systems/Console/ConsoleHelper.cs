@@ -85,7 +85,7 @@ namespace XTask.Systems.Console
         public static bool QueryYesNo(this IConsoleService console, string value)
         {
             string queryString = String.Format(CultureInfo.CurrentUICulture, XTaskStrings.YesNoQueryStringFormat, value) + "\n";
-            console.WriteLockedColor(Console.ForegroundColor, queryString);
+            console.WriteLockedColor(console.ForegroundColor, queryString);
             string answer = console.ReadLine().Trim();
             return String.Equals(answer, XTaskStrings.YesResponse, StringComparison.CurrentCultureIgnoreCase)
                 || String.Equals(answer, XTaskStrings.YesShortResponse, StringComparison.CurrentCultureIgnoreCase);

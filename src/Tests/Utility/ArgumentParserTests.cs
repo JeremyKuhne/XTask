@@ -11,6 +11,7 @@ namespace XTask.Tests.Utility
     using XTask.Systems.File;
     using XTask.Settings;
     using Xunit;
+    using System;
 
     public class ArgumentParserTests
     {
@@ -18,8 +19,8 @@ namespace XTask.Tests.Utility
         {
             public IFileService TestFileService
             {
-                get { return this.FileService; }
-                set { this.FileService = value; }
+                get { return this.FileService.Value; }
+                set { this.FileService = new Lazy<IFileService>(() => value); }
             }
         }
 
