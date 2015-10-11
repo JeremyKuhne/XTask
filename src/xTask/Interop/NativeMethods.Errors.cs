@@ -51,30 +51,29 @@ namespace XTask.Interop
         {
             // http://referencesource.microsoft.com/#mscorlib/system/io/__error.cs,142
 
-            string errorText = NativeErrorHelper.LastErrorToString(error);
-            path = path ?? XTaskStrings.NoValue;
+            string errorText = $"{NativeErrorHelper.LastErrorToString(error)} : '{path ?? XTaskStrings.NoValue}'";
 
             switch (error)
             {
                 case WinError.ERROR_FILE_NOT_FOUND:
                     return new FileNotFoundException(errorText, path);
                 case WinError.ERROR_PATH_NOT_FOUND:
-                    return new DirectoryNotFoundException($"{errorText} : '{path}'");
+                    return new DirectoryNotFoundException(errorText);
                 case WinError.ERROR_ACCESS_DENIED:
                 // Network access doesn't throw UnauthorizedAccess in .NET
                 case WinError.ERROR_NETWORK_ACCESS_DENIED:
-                    return new UnauthorizedAccessException($"{errorText} : '{path}'");
+                    return new UnauthorizedAccessException(errorText);
                 case WinError.ERROR_FILENAME_EXCED_RANGE:
-                    return new PathTooLongException($"{errorText} : '{path}'");
+                    return new PathTooLongException(errorText);
                 case WinError.ERROR_INVALID_DRIVE:
-                    return new DriveNotFoundException($"{errorText} : '{path}'");
+                    return new DriveNotFoundException(errorText);
                 case WinError.ERROR_OPERATION_ABORTED:
-                    return new OperationCanceledException(path);
+                    return new OperationCanceledException(errorText);
                 case WinError.ERROR_ALREADY_EXISTS:
                 case WinError.ERROR_SHARING_VIOLATION:
                 case WinError.ERROR_FILE_EXISTS:
                 default:
-                    return new IOException($"{errorText} : '{path}'", NativeErrorHelper.GetHResultForWindowsError(error));
+                    return new IOException(errorText, NativeErrorHelper.GetHResultForWindowsError(error));
                     
             }
         }
