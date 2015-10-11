@@ -68,6 +68,17 @@ namespace XTask.Tests.Interop
         }
 
         [Fact]
+        public void ReduceLength()
+        {
+            using (var buffer = new StringBuffer("Food"))
+            {
+                buffer.Length = 3;
+                buffer.ToString().Should().Be("Foo");
+                buffer.Capacity.Should().Be(5, "shouldn't reduce capacity when dropping length");
+            }
+        }
+
+        [Fact]
         public void OverIntCapacityThrowsArgumentOutOfRange()
         {
             using (var buffer = new StringBuffer())
@@ -123,7 +134,6 @@ namespace XTask.Tests.Interop
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
-
 
         [Theory
             InlineData(@"Foo", @"Foo", true)

@@ -22,6 +22,15 @@ namespace XTask.Interop
     /// </remarks>
     public class NativeBuffer : IDisposable
     {
+        //[Flags]
+        //protected enum HeapOptions : uint
+        //{
+        //    NoSerialize = NativeMethods.HEAP_NO_SERIALIZE,
+        //    GenerateExceptions = NativeMethods.HEAP_GENERATE_EXCEPTIONS,
+        //    ZeroMemory = NativeMethods.HEAP_ZERO_MEMORY,
+        //    ReallocInPlaceOnly = NativeMethods.HEAP_REALLOC_IN_PLACE_ONLY
+        //}
+
         [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
         private static class NativeMethods
         {
@@ -29,10 +38,10 @@ namespace XTask.Interop
             // --------------
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366711.aspx
 
-            // private static uint HEAP_NO_SERIALIZE = 0x00000001;
-            // private static uint HEAP_GENERATE_EXCEPTIONS = 0x00000004;
-            // private static uint HEAP_ZERO_MEMORY = 0x00000008;
-            // private static uint HEAP_REALLOC_IN_PLACE_ONLY = 0x00000010;
+            //internal const uint HEAP_NO_SERIALIZE = 0x00000001;
+            //internal const uint HEAP_GENERATE_EXCEPTIONS = 0x00000004;
+            //internal const uint HEAP_ZERO_MEMORY = 0x00000008;
+            //internal const uint HEAP_REALLOC_IN_PLACE_ONLY = 0x00000010;
 
             // HeapAlloc/Realloc take a SIZE_T for their count of bytes. This is ultimately an
             // unsigned __int3264 which is platform specific (uint on 32bit and ulong on 64bit).
@@ -145,12 +154,15 @@ namespace XTask.Interop
             }
         }
 
-        unsafe private IntPtr Resize(long size)
+        private unsafe void Resize(long size)
         {
+            Debug.Assert(size >= 0);
+
             if (size == 0)
             {
                 this.handle?.Dispose();
                 this.handle = null;
+                return;
             }
 
             HeapHandle newHandle = (this.Handle == IntPtr.Zero)
@@ -164,9 +176,7 @@ namespace XTask.Interop
 
             // Since we've reallocated, we don't need to free the existing handle
             this.handle?.SetHandleAsInvalid();
-
             this.handle = newHandle;
-            return this.Handle;
         }
 
         public void Dispose()

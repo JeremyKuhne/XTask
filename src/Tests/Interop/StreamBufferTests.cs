@@ -58,6 +58,15 @@ namespace XTask.Tests.Interop
         }
 
         [Fact]
+        public void NonEmptyBufferCanRead()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(1))
+            {
+                buffer.CanRead.Should().BeTrue();
+            }
+        }
+
+        [Fact]
         public void EmptyBufferCanRead()
         {
             using (StreamBuffer buffer = new StreamBuffer(0))
@@ -77,6 +86,15 @@ namespace XTask.Tests.Interop
         }
 
         [Fact]
+        public void NonEmptyBufferCanSeek()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(1))
+            {
+                buffer.CanSeek.Should().BeTrue();
+            }
+        }
+
+        [Fact]
         public void EmptyBufferCanSeek()
         {
             using (StreamBuffer buffer = new StreamBuffer(0))
@@ -93,6 +111,15 @@ namespace XTask.Tests.Interop
             {
             }
             buffer.CanSeek.Should().BeFalse();
+        }
+
+        [Fact]
+        public void NonEmptyBufferCanWrite()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(1))
+            {
+                buffer.CanWrite.Should().BeTrue();
+            }
         }
 
         [Fact]
@@ -221,11 +248,20 @@ namespace XTask.Tests.Interop
         }
 
         [Fact]
+        public void EmptyBufferDoesNotThrowOnPositiveOffsetWriteOfNoCharacters()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(0))
+            {
+                buffer.Write(new byte[0], 1, 0);
+            }
+        }
+
+        [Fact]
         public void EmptyBufferThrowsOnPositiveOffsetWrite()
         {
             using (StreamBuffer buffer = new StreamBuffer(0))
             {
-                Action action = () => buffer.Write(new byte[0], 1, 0);
+                Action action = () => buffer.Write(new byte[] { 7 }, 1, 1);
                 action.ShouldThrow<ArgumentException>();
             }
         }
@@ -251,12 +287,24 @@ namespace XTask.Tests.Interop
         }
 
         [Fact]
-        public void EmptyBufferThrowsOnPositiveCountRead()
+        public void EmptyBufferCanReadNoBytes()
         {
             using (StreamBuffer buffer = new StreamBuffer(0))
             {
-                Action action = () => buffer.Read(new byte[0], 0, 1);
-                action.ShouldThrow<ArgumentException>();
+                buffer.Read(new byte[0], 0, 1).Should().Be(0);
+            }
+        }
+
+        [Fact]
+        public void WriteToEmptyBuffer()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(0))
+            {
+                buffer.Length.Should().Be(0);
+                buffer.WriteByte(7);
+                buffer.Length.Should().Be(1);
+                buffer.Position = 0;
+                buffer.ReadByte().Should().Be(7);
             }
         }
 
@@ -291,6 +339,55 @@ namespace XTask.Tests.Interop
                     writer.BaseStream.SetLength(0);
                     reader.ReadLine().Should().BeNull();
                 }
+            }
+        }
+
+        [Fact]
+        public void SetNegativeLengthThrows()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(0))
+            {
+                Action action = () => buffer.SetLength(-1);
+                action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
+
+        [Fact]
+        public void NewBufferLengthShouldBeSpecified()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(1))
+            {
+                buffer.Length.Should().Be(1);
+            }
+        }
+
+        [Fact]
+        public void NewBufferCapacityShouldNotImpactLength()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(1, 10))
+            {
+                buffer.Length.Should().Be(1);
+            }
+        }
+
+        [Fact]
+        public void SeekSucceeds()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(0))
+            {
+                buffer.Length.Should().Be(0);
+                buffer.Write(new byte[] { 0xA, 0xB, 0xC }, 0, 3);
+                buffer.Length.Should().Be(3);
+                buffer.Seek(0, SeekOrigin.Begin);
+                buffer.ReadByte().Should().Be(0xA);
+                buffer.Seek(-1, SeekOrigin.Current);
+                buffer.ReadByte().Should().Be(0xA);
+                buffer.Seek(1, SeekOrigin.Current);
+                buffer.ReadByte().Should().Be(0xC);
+                buffer.Seek(1, SeekOrigin.Begin);
+                buffer.ReadByte().Should().Be(0xB);
+                buffer.Seek(-2, SeekOrigin.End);
+                buffer.ReadByte().Should().Be(0xB);
             }
         }
     }

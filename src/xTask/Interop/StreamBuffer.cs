@@ -8,6 +8,7 @@
 namespace XTask.Interop
 {
     using System;
+    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
 
@@ -20,19 +21,11 @@ namespace XTask.Interop
         private UnmanagedMemoryStream stream;
         private bool disposed;
 
-        public StreamBuffer(uint initialLength = 0)
+        public StreamBuffer(uint initialLength = 0, uint initialCapacity = 0)
         {
-            this.buffer = new NativeBuffer(initialLength);
-
-            if (initialLength != 0)
-            {
-                this.Resize(initialLength);
-            }
-        }
-
-        public IntPtr Handle
-        {
-            get { return this.buffer.Handle; }
+            if (initialCapacity < initialLength) initialCapacity = initialLength;
+            this.buffer = new NativeBuffer(initialCapacity);
+            this.SetLength(initialLength);
         }
 
         public override bool CanRead
@@ -71,33 +64,49 @@ namespace XTask.Interop
 
         public static implicit operator IntPtr(StreamBuffer buffer)
         {
-            return buffer.Handle;
+            return buffer.buffer?.Handle ?? IntPtr.Zero;
         }
 
         public void EnsureLength(long value)
         {
-            if (this.Length < value || this.stream == null)
+            if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+             if (this.Length < value)
             {
-                this.Resize(value);
+                this.SetLength(value);
             }
         }
 
         public override void SetLength(long value)
         {
             if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+            if (value == this.Length) return;
+
             this.Resize(value);
+            this.stream?.SetLength(value);
         }
 
-        unsafe private IntPtr Resize(long size)
+        private unsafe void Resize(long size)
         {
-            this.buffer.Capacity = size;
-            this.stream = new UnmanagedMemoryStream(
-                pointer: (byte*)this.Handle.ToPointer(),
-                length: size,
-                capacity: size,
-                access: FileAccess.ReadWrite);
+            Debug.Assert(size >= 0);
 
-            return this.Handle;
+            if (this.buffer.Capacity >= size) return;
+            this.buffer.EnsureCapacity(size);
+
+            long oldLength = this.Length;
+            this.stream?.Dispose();
+
+            if (size == 0)
+            {
+                this.stream = null;
+            }
+            else
+            {
+                this.stream = new UnmanagedMemoryStream(
+                    pointer: (byte*)this.buffer.Handle.ToPointer(),
+                    length: oldLength,
+                    capacity: size,
+                    access: FileAccess.ReadWrite);
+            }
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "stream")]
@@ -138,7 +147,7 @@ namespace XTask.Interop
                 if (buffer == null) throw new ArgumentNullException(nameof(buffer));
                 if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
                 if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
-                if (offset != 0 || count != 0) throw new ArgumentException();
+                if (offset != 0) throw new ArgumentException();
                 return 0;
             }
 
@@ -151,13 +160,15 @@ namespace XTask.Interop
             if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
             if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
 
+            if (count == 0) return;
+
             if (this.stream == null)
             {
                 // Mimic UnmanagedMemoryStream with a 0 length buffer
                 if (offset != 0) throw new ArgumentException();
             }
 
-            this.EnsureLength(count + offset);
+            this.EnsureLength(this.Length + count);
             this.stream.Write(buffer, offset, count);
         }
     }
