@@ -16,6 +16,8 @@ namespace XTask.Tests.Interop
 
     public class DirectoryManagementTests
     {
+        private object testLock = new object();
+
         [Fact]
         public void CreateDirectoryTest()
         {
@@ -34,8 +36,11 @@ namespace XTask.Tests.Interop
         {
             using (var cleaner = new TestFileCleaner())
             {
-                NativeMethods.DirectoryManagement.SetCurrentDirectory(cleaner.TempFolder);
-                Directory.GetCurrentDirectory().Should().Be(cleaner.TempFolder);
+                lock (testLock)
+                {
+                    NativeMethods.DirectoryManagement.SetCurrentDirectory(cleaner.TempFolder);
+                    Directory.GetCurrentDirectory().Should().Be(cleaner.TempFolder);
+                }
             }
         }
 
@@ -55,8 +60,11 @@ namespace XTask.Tests.Interop
         {
             using (var cleaner = new TestFileCleaner())
             {
-                Directory.SetCurrentDirectory(cleaner.TempFolder);
-                NativeMethods.DirectoryManagement.GetCurrentDirectory().Should().Be(cleaner.TempFolder);
+                lock (testLock)
+                {
+                    Directory.SetCurrentDirectory(cleaner.TempFolder);
+                    NativeMethods.DirectoryManagement.GetCurrentDirectory().Should().Be(cleaner.TempFolder);
+                }
             }
         }
     }

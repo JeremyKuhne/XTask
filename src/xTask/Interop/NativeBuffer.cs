@@ -9,6 +9,7 @@ namespace XTask.Interop
 {
     using System;
     using System.Diagnostics;
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using System.Security;
 
@@ -63,7 +64,7 @@ namespace XTask.Interop
         }
 
         private static IntPtr ProcessHeap = NativeMethods.GetProcessHeap();
-        protected HeapHandle handle;
+        private HeapHandle handle;
         private long capacity;
 
         public NativeBuffer(uint initialCapacity = 0)
@@ -79,6 +80,24 @@ namespace XTask.Interop
             get
             {
                 return this.handle?.DangerousGetHandle() ?? IntPtr.Zero;
+            }
+        }
+
+        protected unsafe void* VoidPointer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return this.handle == null ? null : this.handle.DangerousGetHandle().ToPointer();
+            }
+        }
+
+        protected unsafe byte* BytePointer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return (byte*)this.VoidPointer;
             }
         }
 
@@ -117,17 +136,23 @@ namespace XTask.Interop
             get
             {
                 if (index < 0 || index >= this.Capacity) throw new ArgumentOutOfRangeException();
-                return ((byte*)handle.DangerousGetHandle())[index];
+                return BytePointer[index];
             }
             set
             {
                 if (index < 0 || index >= this.Capacity) throw new ArgumentOutOfRangeException();
-                ((byte*)handle.DangerousGetHandle())[index] = value;
+                BytePointer[index] = value;
             }
         }
 
         unsafe private IntPtr Resize(long size)
         {
+            if (size == 0)
+            {
+                this.handle?.Dispose();
+                this.handle = null;
+            }
+
             HeapHandle newHandle = (this.Handle == IntPtr.Zero)
                 ? NativeMethods.HeapAlloc(ProcessHeap, 0, (UIntPtr)size)
                 : NativeMethods.HeapReAlloc(ProcessHeap, 0, this.Handle, (UIntPtr)size);
@@ -137,11 +162,8 @@ namespace XTask.Interop
                 throw new InvalidOperationException("Could not allocate requested memory.");
             }
 
-            if (this.handle != null)
-            {
-                // Since we've reallocated, we don't need to free the existing handle
-                this.handle.SetHandleAsInvalid();
-            }
+            // Since we've reallocated, we don't need to free the existing handle
+            this.handle?.SetHandleAsInvalid();
 
             this.handle = newHandle;
             return this.Handle;

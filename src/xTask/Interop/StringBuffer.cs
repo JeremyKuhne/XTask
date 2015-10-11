@@ -120,7 +120,7 @@ namespace XTask.Interop
             long capacity = Capacity;
             for (int i = 0; i < capacity; i++)
             {
-                if (*buffer == '\0')
+                if (buffer[i] == '\0')
                 {
                     this.length = i;
                     break;
@@ -131,7 +131,10 @@ namespace XTask.Interop
         private unsafe char* CharPointer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get { return ((char*)handle.DangerousGetHandle()); }
+            get
+            {
+                return (char*)VoidPointer;
+            }
         }
 
         /// <summary>
@@ -205,7 +208,7 @@ namespace XTask.Interop
             this.Length += count;
             fixed (void* content = value)
             {
-                Buffer.MemoryCopy(content, (void*)CharPointer, base.Capacity, count * sizeof(char));
+                Buffer.MemoryCopy(content, VoidPointer, base.Capacity, count * sizeof(char));
             }
         }
 
@@ -223,14 +226,12 @@ namespace XTask.Interop
 
             for (int i = 0; i < length; i++)
             {
-                if (splitCharacter == *current)
+                if (splitCharacter == *current++)
                 {
                     // Split
                     strings.Add(new string(start, stringStart, i - stringStart));
                     stringStart = i + 1;
                 }
-
-                current += 1;
             }
 
             if (stringStart <= length)
@@ -266,7 +267,7 @@ namespace XTask.Interop
                     stringStart = i + 1;
                 }
 
-                current += 1;
+                current++;
             }
 
             if (stringStart <= length)
@@ -287,7 +288,7 @@ namespace XTask.Interop
 
             for (int i = 0; i < length; i++)
             {
-                if (*start == value) return true;
+                if (*start++ == value) return true;
             }
 
             return false;
@@ -306,6 +307,7 @@ namespace XTask.Interop
             for (int i = 0; i < length; i++)
             {
                 if (ContainsChar(values, *start)) return true;
+                start++;
             }
 
             return false;

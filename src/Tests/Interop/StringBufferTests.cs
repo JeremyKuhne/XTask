@@ -274,5 +274,134 @@ namespace XTask.Tests.Interop
                 buffer.ToString(startIndex: startIndex, count: count).Should().Be(expected);
             }
         }
+
+        [Fact]
+        public unsafe void SetLengthToFirstNullNoNull()
+        {
+            using (var buffer = new StringBuffer("A"))
+            {
+                // Wipe out the last null
+                ((char*)buffer.Handle.ToPointer())[buffer.Length] = 'B';
+                buffer.SetLengthToFirstNull();
+                buffer.Length.Should().Be(1);
+            }
+        }
+
+        [Fact]
+        public unsafe void SetLengthToFirstNullEmptyBuffer()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                buffer.SetLengthToFirstNull();
+                buffer.Length.Should().Be(0);
+            }
+        }
+
+        [Theory
+            InlineData(@"", 0, 0)
+            InlineData(@"Foo", 3, 3)
+            InlineData("\0", 1, 0)
+            InlineData("Foo\0Bar", 7, 3)
+            ]
+        public unsafe void SetLengthToFirstNullTests(string content, int startLength, int endLength)
+        {
+            using (var buffer = new StringBuffer(content))
+            {
+                // With existing content
+                buffer.Length.Should().Be(startLength);
+                buffer.SetLengthToFirstNull();
+                buffer.Length.Should().Be(endLength);
+
+                // Clear the buffer & manually copy in
+                buffer.Length = 0;
+                fixed (char* contentPointer = content)
+                {
+                    Buffer.MemoryCopy(contentPointer, buffer.Handle.ToPointer(), buffer.Capacity * 2, content.Length * sizeof(char));
+                }
+
+                buffer.Length.Should().Be(0);
+                buffer.SetLengthToFirstNull();
+                buffer.Length.Should().Be(endLength);
+            }
+        }
+
+        [Theory
+            InlineData("foo bar", ' ')
+            InlineData("foo\0bar", '\0')
+            InlineData("foo\0bar", ' ')
+            InlineData("foobar", ' ')
+            InlineData("foo bar ", ' ')
+            InlineData("foobar ", ' ')
+            InlineData("foobar ", 'b')
+            InlineData(" ", ' ')
+            InlineData("", ' ')
+            InlineData(null, ' ')
+            ]
+        public void Split(string content, char splitChar)
+        {
+            // We want equivalence with built-in string behavior
+            using (var buffer = new StringBuffer(content))
+            {
+                buffer.Split(splitChar).ShouldAllBeEquivalentTo(content?.Split(splitChar) ?? new string[] { "" });
+            }
+        }
+
+        [Theory
+            InlineData("foo bar", new char[] { ' ' })
+            InlineData("foo bar", new char[] { })
+            InlineData("foo\0bar", new char[] { '\0' })
+            InlineData("foo\0bar", new char[] { ' ' })
+            InlineData("foobar", new char[] { ' ' })
+            InlineData("foo bar ", new char[] { ' ' })
+            InlineData("foobar ", new char[] { ' ' })
+            InlineData("foobar ", new char[] { ' ', 'b' })
+            InlineData(" ", new char[] { ' ' })
+            InlineData("", new char[] { ' ' })
+            InlineData(null, new char[] { ' ' })
+            ]
+        public void SplitParams(string content, char[] splitChars)
+        {
+            // We want equivalence with built-in string behavior
+            using (var buffer = new StringBuffer(content))
+            {
+                buffer.Split(splitChars).ShouldAllBeEquivalentTo(content?.Split(splitChars) ?? new string[] { "" });
+            }
+        }
+
+        [Theory
+            InlineData(null, ' ', false)
+            InlineData("", ' ', false)
+            InlineData("foo", 'F', false)
+            InlineData("foo", '\0', false)
+            InlineData("foo", 'f', true)
+            InlineData("foo", 'o', true)
+            InlineData("foo\0", '\0', true)
+            ]
+        public void ContainsTests(string content, char value, bool expected)
+        {
+            using (var buffer = new StringBuffer(content))
+            {
+                buffer.Contains(value).Should().Be(expected);
+            }
+        }
+
+        [Theory
+            InlineData(null, null, false)
+            InlineData(null, new char[0], false)
+            InlineData(null, new char[] { ' ' }, false)
+            InlineData("", new char[] { ' ' }, false)
+            InlineData("foo", new char[] { 'F' }, false)
+            InlineData("foo", new char[] { '\0' }, false)
+            InlineData("foo", new char[] { 'f' }, true)
+            InlineData("foo", new char[] { 'o' }, true)
+            InlineData("foo\0", new char[] { '\0' }, true)
+            ]
+        public void ContainsParamsTests(string content, char[] values, bool expected)
+        {
+            using (var buffer = new StringBuffer(content))
+            {
+                buffer.Contains(values).Should().Be(expected);
+            }
+        }
     }
 }
