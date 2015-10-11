@@ -16,6 +16,13 @@ namespace XTask.Tests.FileSystem
         bool useDotNet;
         string originalCurrentDirectory;
 
+        internal static object DirectorySetLock;
+
+        static TestFileCleaner()
+        {
+            DirectorySetLock = new object();
+        }
+
         public TestFileCleaner(bool useDotNet = false)
             : base ("XTaskTests", useDotNet ? (IFileService) new Concrete.DotNet.FileService() : new Concrete.Flex.FileService())
         {
@@ -46,10 +53,13 @@ namespace XTask.Tests.FileSystem
 
         protected override void Dispose(bool disposing)
         {
-            if (Directory.GetCurrentDirectory() != originalCurrentDirectory)
+            lock (DirectorySetLock)
             {
-                if (Directory.Exists(originalCurrentDirectory))
-                    Directory.SetCurrentDirectory(originalCurrentDirectory);
+                if (Directory.GetCurrentDirectory() != originalCurrentDirectory)
+                {
+                    if (Directory.Exists(originalCurrentDirectory))
+                        Directory.SetCurrentDirectory(originalCurrentDirectory);
+                }
             }
 
             base.Dispose(disposing);
