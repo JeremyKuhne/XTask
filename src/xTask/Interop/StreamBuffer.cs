@@ -13,7 +13,9 @@ namespace XTask.Interop
     using System.IO;
 
     /// <summary>
-    /// Stream wrapper for access to the native heap. Dispose to free the memory. Try to use with using statements.
+    /// Stream wrapper for access to the native heap that allows for automatic growth when writing.
+    /// Also provides implicit conversion to IntPtr for P/Invoke convenience.
+    /// Dispose to free the memory. Try to use with using statements.
     /// </summary>
     public class StreamBuffer : Stream
     {
@@ -64,16 +66,13 @@ namespace XTask.Interop
 
         public static implicit operator IntPtr(StreamBuffer buffer)
         {
-            return buffer.buffer?.Handle ?? IntPtr.Zero;
+            return buffer.buffer.Handle;
         }
 
         public void EnsureLength(long value)
         {
             if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
-             if (this.Length < value)
-            {
-                this.SetLength(value);
-            }
+            if (this.Length < value) this.SetLength(value);
         }
 
         public override void SetLength(long value)
@@ -82,31 +81,27 @@ namespace XTask.Interop
             if (value == this.Length) return;
 
             this.Resize(value);
-            this.stream?.SetLength(value);
+            this.stream.SetLength(value);
         }
 
         private unsafe void Resize(long size)
         {
             Debug.Assert(size >= 0);
 
-            if (this.buffer.Capacity >= size) return;
+            if (this.stream != null && this.buffer.Capacity >= size) return;
             this.buffer.EnsureCapacity(size);
 
             long oldLength = this.Length;
+            long oldPosition = this.Position;
             this.stream?.Dispose();
 
-            if (size == 0)
-            {
-                this.stream = null;
-            }
-            else
-            {
-                this.stream = new UnmanagedMemoryStream(
-                    pointer: (byte*)this.buffer.Handle.ToPointer(),
-                    length: oldLength,
-                    capacity: size,
-                    access: FileAccess.ReadWrite);
-            }
+            this.stream = new UnmanagedMemoryStream(
+                pointer: (byte*)this.buffer.Handle.ToPointer(),
+                length: oldLength,
+                capacity: size,
+                access: FileAccess.ReadWrite);
+
+            if (oldPosition <= size) { this.Position = oldPosition; }
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "stream")]

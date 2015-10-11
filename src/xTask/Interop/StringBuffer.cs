@@ -21,7 +21,7 @@ namespace XTask.Interop
     /// </remarks>
     public class StringBuffer : NativeBuffer
     {
-        // Interoping with string means anything over int isn't usefule
+        // Interoping with string means anything over int isn't useful
         private int length;
 
         /// <summary>

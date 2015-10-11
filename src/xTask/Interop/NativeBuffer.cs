@@ -78,10 +78,7 @@ namespace XTask.Interop
 
         public NativeBuffer(uint initialCapacity = 0)
         {
-            if (initialCapacity != 0)
-            {
-                this.Resize(initialCapacity);
-            }
+            this.Capacity = initialCapacity;
         }
 
         public IntPtr Handle

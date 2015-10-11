@@ -74,5 +74,15 @@ namespace XTask.Tests.Interop
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
+
+        [Fact]
+        public void CanGetSetBytes()
+        {
+            using (var buffer = new NativeBuffer(1))
+            {
+                buffer[0] = 0xA;
+                buffer[0].Should().Be(0xA);
+            }
+        }
     }
 }

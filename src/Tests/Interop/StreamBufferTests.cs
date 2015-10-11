@@ -390,5 +390,100 @@ namespace XTask.Tests.Interop
                 buffer.ReadByte().Should().Be(0xB);
             }
         }
+
+        [Fact]
+        public void EnsureLengthThrowsOnNegativeValue()
+        {
+            using (StreamBuffer buffer = new StreamBuffer())
+            {
+                Action action = () => buffer.EnsureLength(-1);
+                action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
+
+        [Fact]
+        public void SetLengthOnEmptyStream()
+        {
+            using (StreamBuffer buffer = new StreamBuffer())
+            {
+                buffer.Length.Should().Be(0);
+                buffer.SetLength(7);
+                buffer.Length.Should().Be(7);
+            }
+        }
+
+        [Fact]
+        public void SetLengthToZero()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(7))
+            {
+                buffer.Length.Should().Be(7);
+                buffer.SetLength(0);
+                buffer.Length.Should().Be(0);
+            }
+        }
+
+        [Fact]
+        public void EmptyIntPtrIsNull()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(0))
+            {
+                ((IntPtr)buffer).Should().Be(IntPtr.Zero);
+            }
+        }
+
+        [Fact]
+        public void AppendTwice()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(0))
+            {
+                buffer.Length.Should().Be(0);
+                buffer.Write(new byte[] { 0xA, 0xB, 0xC }, 0, 3);
+                buffer.Position.Should().Be(3);
+                buffer.Length.Should().Be(3);
+                buffer.Position = 0;
+                byte[] output = new byte[3];
+                buffer.Read(output, 0, 3);
+                buffer.Position.Should().Be(3);
+                output.ShouldAllBeEquivalentTo(new byte[] { 0xA, 0xB, 0xC });
+                buffer.Write(new byte[] { 0xD, 0xE, 0xF }, 0, 3);
+                buffer.Position.Should().Be(6);
+                buffer.Length.Should().Be(6);
+                buffer.Position = 0;
+                output = new byte[6];
+                buffer.Read(output, 0, 6);
+                output.ShouldAllBeEquivalentTo(new byte[] { 0xA, 0xB, 0xC, 0xD, 0xE, 0xF });
+            }
+        }
+
+        [Fact]
+        public void ShrinkPositionStaysAtEnd()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(0))
+            {
+                buffer.Write(new byte[] { 0xA, 0xB, 0xC }, 0, 3);
+                buffer.Position.Should().Be(3);
+                buffer.Length.Should().Be(3);
+                buffer.SetLength(2);
+                buffer.Position.Should().Be(2);
+                buffer.Length.Should().Be(2);
+            }
+        }
+
+        [Fact]
+        public void PositionTest()
+        {
+            using (StreamBuffer buffer = new StreamBuffer(0))
+            {
+                byte[] data = new byte[] { 0xA, 0xB, 0xC };
+                buffer.Write(data, 0, data.Length);
+                buffer.Position.Should().Be(data.Length);
+                for (int i = 0; i < data.Length; i++)
+                {
+                    buffer.Position = i;
+                    buffer.ReadByte().Should().Be(data[i]);
+                }
+            }
+        }
     }
 }
