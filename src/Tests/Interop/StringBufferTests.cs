@@ -84,6 +84,47 @@ namespace XTask.Tests.Interop
             action.ShouldThrow<ArgumentOutOfRangeException>();
         }
 
+        [Fact]
+        public void GetNegativeIndexThrowsArgumentOutOfRange()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => { char c = buffer[-1]; };
+                action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
+
+        [Fact]
+        public void GetOverIndexThrowsArgumentOutOfRange()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => { char c = buffer[0]; };
+                action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
+
+        [Fact]
+        public void SetNegativeIndexThrowsArgumentOutOfRange()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => { buffer[-1] = 'Q'; };
+                action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
+
+        [Fact]
+        public void SetOverIndexThrowsArgumentOutOfRange()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => { buffer[0] = 'Q'; };
+                action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
+
+
         [Theory
             InlineData(@"Foo", @"Foo", true)
             InlineData(@"Foo", @"foo", false)
@@ -154,6 +195,7 @@ namespace XTask.Tests.Interop
         }
 
         [Theory
+            InlineData(@"", null, 0, 0, false)
             InlineData(@"", @"", 0, 0, true)
             InlineData(@"", @"", 0, -1, true)
             InlineData(@"A", @"", 0, -1, false)
@@ -174,6 +216,56 @@ namespace XTask.Tests.Interop
             using (var buffer = new StringBuffer(source))
             {
                 buffer.SubStringEquals(value, startIndex: startIndex, count: count).Should().Be(expected);
+            }
+        }
+
+        [Theory
+            InlineData(@"", @"", 0, -1, @"")
+            InlineData(@"", @"", 0, 0, @"")
+            InlineData(@"", @"A", 0, -1, @"A")
+            InlineData(@"", @"A", 0, 0, @"")
+            InlineData(@"", @"Aa", 0, -1, @"Aa")
+            InlineData(@"", @"Aa", 0, 0, @"")
+            InlineData(@"", "Aa\0", 0, -1, "Aa\0")
+            InlineData(@"", "Aa\0", 0, 3, "Aa\0")
+            InlineData(@"", @"AB", 0, -1, @"AB")
+            InlineData(@"", @"AB", 0, 1, @"A")
+            InlineData(@"", @"AB", 1, 1, @"B")
+            InlineData(@"", @"AB", 1, -1, @"B")
+            InlineData(@"", @"ABC", 1, -1, @"BC")
+            InlineData(null, @"", 0, -1, @"")
+            InlineData(null, @"", 0, 0, @"")
+            InlineData(null, @"A", 0, -1, @"A")
+            InlineData(null, @"A", 0, 0, @"")
+            InlineData(null, @"Aa", 0, -1, @"Aa")
+            InlineData(null, @"Aa", 0, 0, @"")
+            InlineData(null, "Aa\0", 0, -1, "Aa\0")
+            InlineData(null, "Aa\0", 0, 3, "Aa\0")
+            InlineData(null, @"AB", 0, -1, @"AB")
+            InlineData(null, @"AB", 0, 1, @"A")
+            InlineData(null, @"AB", 1, 1, @"B")
+            InlineData(null, @"AB", 1, -1, @"B")
+            InlineData(null, @"ABC", 1, -1, @"BC")
+            InlineData(@"Q", @"", 0, -1, @"Q")
+            InlineData(@"Q", @"", 0, 0, @"Q")
+            InlineData(@"Q", @"A", 0, -1, @"QA")
+            InlineData(@"Q", @"A", 0, 0, @"Q")
+            InlineData(@"Q", @"Aa", 0, -1, @"QAa")
+            InlineData(@"Q", @"Aa", 0, 0, @"Q")
+            InlineData(@"Q", "Aa\0", 0, -1, "QAa\0")
+            InlineData(@"Q", "Aa\0", 0, 3, "QAa\0")
+            InlineData(@"Q", @"AB", 0, -1, @"QAB")
+            InlineData(@"Q", @"AB", 0, 1, @"QA")
+            InlineData(@"Q", @"AB", 1, 1, @"QB")
+            InlineData(@"Q", @"AB", 1, -1, @"QB")
+            InlineData(@"Q", @"ABC", 1, -1, @"QBC")
+            ]
+        public void AppendTests(string source, string value, int startIndex, int count, string expected)
+        {
+            using (var buffer = new StringBuffer(source))
+            {
+                buffer.Append(value, startIndex, count);
+                buffer.ToString().Should().Be(expected);
             }
         }
 
@@ -253,6 +345,26 @@ namespace XTask.Tests.Interop
             using (var buffer = new StringBuffer())
             {
                 Action action = () => buffer.ToString(startIndex: 1);
+                action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
+
+        [Fact]
+        public void ToStringNegativeCountThrows()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => buffer.ToString(startIndex: 0, count: -2);
+                action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
+
+        [Fact]
+        public void ToStringCountOverLengthThrows()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => buffer.ToString(startIndex: 0, count: 1);
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
@@ -348,7 +460,8 @@ namespace XTask.Tests.Interop
 
         [Theory
             InlineData("foo bar", new char[] { ' ' })
-            InlineData("foo bar", new char[] { })
+            InlineData("foo bar", new char[] {  })
+            InlineData("foo bar", null)
             InlineData("foo\0bar", new char[] { '\0' })
             InlineData("foo\0bar", new char[] { ' ' })
             InlineData("foobar", new char[] { ' ' })

@@ -205,10 +205,13 @@ namespace XTask.Interop
         {
             if (count == 0) return;
             if (count < 0) count = value.Length - startIndex;
+
+            int oldLength = this.Length;
             this.Length += count;
-            fixed (void* content = value)
+
+            fixed (char* content = value)
             {
-                Buffer.MemoryCopy(content, VoidPointer, base.Capacity, count * sizeof(char));
+                Buffer.MemoryCopy(content + startIndex, CharPointer + oldLength, base.Capacity, count * sizeof(char));
             }
         }
 
