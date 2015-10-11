@@ -20,6 +20,8 @@ namespace XTask.Tests.FileSystem
             : base ("XTaskTests", useDotNet ? (IFileService) new Concrete.DotNet.FileService() : new Concrete.Flex.FileService())
         {
             this.useDotNet = useDotNet;
+
+            // Try and restore the original current directory if a test fails
             this.originalCurrentDirectory = Directory.GetCurrentDirectory();
         }
 

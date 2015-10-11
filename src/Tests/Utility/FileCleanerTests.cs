@@ -39,7 +39,7 @@ namespace XTask.Tests.Utility
                 cleaner.TempFolder.Should().StartWith(Path.Combine(Path.GetTempPath(), "Test"));
                 fileServiceProvider.Received(1).CreateFileStream(
                     Path.Combine(cleaner.TempFolder, TestFileCleaner.TestFlagFileName),
-                    FileMode.OpenOrCreate,
+                    FileMode.CreateNew,
                     FileAccess.ReadWrite,
                     FileShare.None);
 
