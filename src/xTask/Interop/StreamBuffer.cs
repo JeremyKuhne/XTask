@@ -66,7 +66,7 @@ namespace XTask.Interop
 
         public static implicit operator IntPtr(StreamBuffer buffer)
         {
-            return buffer.buffer.Handle;
+            return buffer.buffer;
         }
 
         public void EnsureLength(long value)
@@ -96,7 +96,7 @@ namespace XTask.Interop
             this.stream?.Dispose();
 
             this.stream = new UnmanagedMemoryStream(
-                pointer: (byte*)this.buffer.Handle.ToPointer(),
+                pointer: (byte*)((IntPtr)this.buffer).ToPointer(),
                 length: oldLength,
                 capacity: size,
                 access: FileAccess.ReadWrite);

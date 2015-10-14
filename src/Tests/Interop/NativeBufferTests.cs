@@ -9,8 +9,10 @@ namespace XTask.Tests.Interop
 {
     using FluentAssertions;
     using System;
+    using System.Runtime.InteropServices;
     using XTask.Interop;
     using Xunit;
+    using static XTask.Interop.NativeMethods;
 
     public class NativeBufferTests
     {
@@ -19,9 +21,9 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new NativeBuffer(10))
             {
-                buffer.Handle.Should().NotBe(IntPtr.Zero);
+                ((IntPtr)buffer).Should().NotBe(IntPtr.Zero);
                 buffer.Capacity = 0;
-                buffer.Handle.Should().Be(IntPtr.Zero);
+                ((IntPtr)buffer).Should().Be(IntPtr.Zero);
             }
         }
 
@@ -84,5 +86,22 @@ namespace XTask.Tests.Interop
                 buffer[0].Should().Be(0xA);
             }
         }
-    }
+
+        [Fact]
+        public void NullSafePointerInTest()
+        {
+            using (var buffer = new NativeBuffer(0))
+            {
+                ((SafeHandle)buffer).IsInvalid.Should().BeTrue();
+                buffer.Capacity.Should().Be(0);
+                GetCurrentDirectorySafe((uint)buffer.Capacity, buffer);
+            }
+        }
+
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364934.aspx
+        [DllImport(Libraries.Kernel32, EntryPoint = "GetCurrentDirectoryW", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+        private static extern uint GetCurrentDirectorySafe(
+            uint nBufferLength,
+            SafeHandle lpBuffer);
+            }
 }

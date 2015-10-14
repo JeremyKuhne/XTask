@@ -15,10 +15,14 @@ namespace XTask.Interop
 
     /// <summary>
     /// Wrapper for access to the native heap. Dispose to free the memory. Try to use with using statements.
+    /// Does not allocate zero size buffers, and will free the existing native buffer if capacity is dropped to zero.
     /// </summary>
     /// <remarks>
-    /// Suggested use through P/Invoke: define DllImport arguments that take a byte buffer as IntPtr.
-    /// NativeBuffer has an implicit conversion to IntPtr.
+    /// Suggested use through P/Invoke: define DllImport arguments that take a byte buffer as SafeHandle or IntPtr.
+    /// NativeBuffer has an implicit conversion for both.
+    /// 
+    /// Using SafeHandle will ensure that the buffer will not get collected during a P/Invoke but introduces some overhead.
+    /// (Notably AddRef and ReleaseRef will be called by the interop layer.)
     /// </remarks>
     public class NativeBuffer : IDisposable
     {
@@ -64,8 +68,8 @@ namespace XTask.Interop
             internal static extern bool HeapFree(IntPtr hHeap, uint dwFlags, IntPtr lpMem);
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366700.aspx
-            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-            internal static extern bool HeapDestroy(IntPtr hHeap);
+            //[DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            //internal static extern bool HeapDestroy(IntPtr hHeap);
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366569.aspx
             [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
@@ -73,20 +77,13 @@ namespace XTask.Interop
         }
 
         private static IntPtr ProcessHeap = NativeMethods.GetProcessHeap();
+        private static HeapHandle EmptyHandle = new HeapHandle();
         private HeapHandle handle;
         private long capacity;
 
         public NativeBuffer(uint initialCapacity = 0)
         {
             this.Capacity = initialCapacity;
-        }
-
-        public IntPtr Handle
-        {
-            get
-            {
-                return this.handle?.DangerousGetHandle() ?? IntPtr.Zero;
-            }
         }
 
         protected unsafe void* VoidPointer
@@ -109,7 +106,13 @@ namespace XTask.Interop
 
         public static implicit operator IntPtr(NativeBuffer buffer)
         {
-            return buffer.Handle;
+            return buffer.handle?.DangerousGetHandle() ?? IntPtr.Zero;
+        }
+
+        public static implicit operator SafeHandle(NativeBuffer buffer)
+        {
+            // Marshalling code will throw on null for SafeHandle
+            return buffer.handle ?? EmptyHandle;
         }
 
         /// <summary>
@@ -162,9 +165,9 @@ namespace XTask.Interop
                 return;
             }
 
-            HeapHandle newHandle = (this.Handle == IntPtr.Zero)
+            HeapHandle newHandle = (this.handle == null)
                 ? NativeMethods.HeapAlloc(ProcessHeap, 0, (UIntPtr)size)
-                : NativeMethods.HeapReAlloc(ProcessHeap, 0, this.Handle, (UIntPtr)size);
+                : NativeMethods.HeapReAlloc(ProcessHeap, 0, this, (UIntPtr)size);
 
             if (newHandle.IsInvalid)
             {
@@ -188,7 +191,7 @@ namespace XTask.Interop
 
         protected class HeapHandle : SafeHandleZeroIsInvalid
         {
-            HeapHandle() : base (ownsHandle: true)
+            internal HeapHandle() : base (ownsHandle: true)
             {
             }
 

@@ -41,7 +41,7 @@ namespace XTask.Tests.Interop
                     buffer[i].Should().Be(testString[i]);
                 }
 
-                ((char*)buffer.Handle.ToPointer())[testString.Length].Should().Be('\0', "should be null terminated");
+                ((char*)((IntPtr)buffer).ToPointer())[testString.Length].Should().Be('\0', "should be null terminated");
 
                 buffer.ToString().Should().Be(testString);
             }
@@ -403,7 +403,7 @@ namespace XTask.Tests.Interop
             using (var buffer = new StringBuffer("A"))
             {
                 // Wipe out the last null
-                ((char*)buffer.Handle.ToPointer())[buffer.Length] = 'B';
+                ((char*)((IntPtr)buffer).ToPointer())[buffer.Length] = 'B';
                 buffer.SetLengthToFirstNull();
                 buffer.Length.Should().Be(1);
             }
@@ -438,7 +438,7 @@ namespace XTask.Tests.Interop
                 buffer.Length = 0;
                 fixed (char* contentPointer = content)
                 {
-                    Buffer.MemoryCopy(contentPointer, buffer.Handle.ToPointer(), buffer.Capacity * 2, content.Length * sizeof(char));
+                    Buffer.MemoryCopy(contentPointer, ((IntPtr)buffer).ToPointer(), buffer.Capacity * 2, content.Length * sizeof(char));
                 }
 
                 buffer.Length.Should().Be(0);
