@@ -64,8 +64,8 @@
     <Compile Include="Build\TaskItem.cs" />
     <Compile Include="Collections\ListExtensions.cs" />
     <Compile Include="Interop\HeapHandle.cs" />
+    <Compile Include="Interop\HeapHandleCache.cs" />
     <Compile Include="Interop\LoadLibraryFlags.cs" />
-    <Compile Include="Interop\StringBufferCache.cs" />
     <Compile Include="Interop\StreamBuffer.cs" />
     <Compile Include="Interop\NativeMethods.Backup.cs" />
     <Compile Include="Interop\StringBuffer.cs" />

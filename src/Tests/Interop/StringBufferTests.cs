@@ -91,7 +91,7 @@ namespace XTask.Tests.Interop
         [Fact]
         public void NegativeInitialCapacityThrowsArgumentOutOfRange()
         {
-            Action action = () => new StringBuffer(initialLength: -1);
+            Action action = () => new StringBuffer(initialCapacity: -1);
             action.ShouldThrow<ArgumentOutOfRangeException>();
         }
 

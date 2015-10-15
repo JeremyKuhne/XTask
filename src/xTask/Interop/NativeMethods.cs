@@ -184,49 +184,50 @@ namespace XTask.Interop
                 addedExtendedPrefix = true;
             }
 
-            var buffer = StringBufferCache.Instance.Acquire();
-            uint returnValue = 0;
-
-            while ((returnValue = invoker(path, buffer)) > (uint)buffer.Capacity)
+            using (var buffer = new StringBuffer())
             {
-                // Need more room for the output string
-                buffer.Capacity = returnValue;
-            }
+                uint returnValue = 0;
 
-            if (returnValue == 0)
-            {
-                // Failed
-                int error = Marshal.GetLastWin32Error();
-                throw GetIoExceptionForError(error, originalPath);
-            }
-
-            buffer.Length = (int)returnValue;
-
-            int startIndex = 0;
-            if (addedExtendedPrefix && buffer.StartsWithOrdinal(Paths.ExtendedPathPrefix))
-            {
-                // Remove the prefix
-                if (buffer.StartsWithOrdinal(Paths.ExtendedUncPrefix))
+                while ((returnValue = invoker(path, buffer)) > (uint)buffer.Capacity)
                 {
-                    // UNC, need to convert from \\?\UNC\ to \\.
-                    startIndex = Paths.ExtendedUncPrefix.Length - 2;
-                    buffer[startIndex] = Paths.DirectorySeparator;
+                    // Need more room for the output string
+                    buffer.Capacity = returnValue;
+                }
+
+                if (returnValue == 0)
+                {
+                    // Failed
+                    int error = Marshal.GetLastWin32Error();
+                    throw GetIoExceptionForError(error, originalPath);
+                }
+
+                buffer.Length = (int)returnValue;
+
+                int startIndex = 0;
+                if (addedExtendedPrefix && buffer.StartsWithOrdinal(Paths.ExtendedPathPrefix))
+                {
+                    // Remove the prefix
+                    if (buffer.StartsWithOrdinal(Paths.ExtendedUncPrefix))
+                    {
+                        // UNC, need to convert from \\?\UNC\ to \\.
+                        startIndex = Paths.ExtendedUncPrefix.Length - 2;
+                        buffer[startIndex] = Paths.DirectorySeparator;
+                    }
+                    else
+                    {
+                        startIndex = Paths.ExtendedPathPrefix.Length;
+                    }
+                }
+
+                // If the string did not change, return the original (to cut back on identical string pressure)
+                if (buffer.SubStringEquals(originalPath, startIndex: startIndex))
+                {
+                    return originalPath;
                 }
                 else
                 {
-                    startIndex = Paths.ExtendedPathPrefix.Length;
+                    return buffer.ToString(startIndex: startIndex);
                 }
-            }
-
-            // If the string did not change, return the original (to cut back on identical string pressure)
-            if (buffer.SubStringEquals(originalPath, startIndex: startIndex))
-            {
-                StringBufferCache.Instance.Release(buffer);
-                return originalPath;
-            }
-            else
-            {
-                return StringBufferCache.Instance.ToStringAndRelease(buffer, startIndex: startIndex);
             }
         }
 
@@ -236,29 +237,31 @@ namespace XTask.Interop
         [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
         internal static string BufferInvoke(Func<StringBuffer, uint> invoker, string value = null, Func<int, bool> shouldThrow = null)
         {
-            var buffer = StringBufferCache.Instance.Acquire();
-            uint returnValue = 0;
-
-            while ((returnValue = invoker(buffer)) > (uint)buffer.Capacity)
+            using (var buffer = new StringBuffer())
             {
-                // Need more room for the output string
-                buffer.Capacity = returnValue;
-            }
+                uint returnValue = 0;
 
-            if (returnValue == 0)
-            {
-                // Failed
-                int error = Marshal.GetLastWin32Error();
-
-                if (shouldThrow != null && !shouldThrow(error))
+                while ((returnValue = invoker(buffer)) > (uint)buffer.Capacity)
                 {
-                    return null;
+                    // Need more room for the output string
+                    buffer.Capacity = returnValue;
                 }
-                throw GetIoExceptionForError(error, value);
-            }
 
-            buffer.Length = (int)returnValue;
-            return StringBufferCache.Instance.ToStringAndRelease(buffer);
+                if (returnValue == 0)
+                {
+                    // Failed
+                    int error = Marshal.GetLastWin32Error();
+
+                    if (shouldThrow != null && !shouldThrow(error))
+                    {
+                        return null;
+                    }
+                    throw GetIoExceptionForError(error, value);
+                }
+
+                buffer.Length = (int)returnValue;
+                return buffer.ToString();
+            }
         }
 
         internal static void SetEnvironmentVariable(string name, string value)

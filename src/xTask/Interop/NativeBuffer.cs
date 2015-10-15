@@ -15,6 +15,8 @@ namespace XTask.Interop
     /// <summary>
     /// Wrapper for access to the native heap. Dispose to free the memory. Try to use with using statements.
     /// Does not allocate zero size buffers, and will free the existing native buffer if capacity is dropped to zero.
+    /// 
+    /// NativeBuffer utilizes a cache of heap buffers.
     /// </summary>
     /// <remarks>
     /// Suggested use through P/Invoke: define DllImport arguments that take a byte buffer as SafeHandle or IntPtr.
@@ -22,6 +24,9 @@ namespace XTask.Interop
     /// 
     /// Using SafeHandle will ensure that the buffer will not get collected during a P/Invoke but introduces some overhead.
     /// (Notably AddRef and ReleaseRef will be called by the interop layer.)
+    /// 
+    /// This class is not threadsafe, changing the capacity or disposing on multiple threads risks duplicate heap
+    /// handles or worse.
     /// </remarks>
     public class NativeBuffer : IDisposable
     {
@@ -108,18 +113,26 @@ namespace XTask.Interop
 
             if (size == 0)
             {
-                this.handle?.Dispose();
-                this.handle = null;
+                this.ReleaseHandle();
                 return;
             }
 
             if (this.handle == null)
             {
-                this.handle = new HeapHandle((UIntPtr)size);
+                this.handle = HeapHandleCache.Instance.Acquire((uint)size);
             }
             else
             {
                 this.handle.Resize((UIntPtr)size);
+            }
+        }
+
+        private void ReleaseHandle()
+        {
+            if (this.handle != null)
+            {
+                HeapHandleCache.Instance.Release(this.handle);
+                this.handle = null;
             }
         }
 
@@ -130,7 +143,8 @@ namespace XTask.Interop
 
         protected virtual void Dispose(bool disposing)
         {
-            this.handle?.Dispose();
+            if (disposing)
+                this.ReleaseHandle();
         }
 
         private class EmptySafeHandle : SafeHandle

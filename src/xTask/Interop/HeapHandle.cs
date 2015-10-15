@@ -97,6 +97,8 @@ namespace XTask.Interop
             this.Resize(size, zeroMemory);
         }
 
+        public UIntPtr Size { get; private set; }
+
         /// <summary>
         /// Resize the buffer to the given size and zero memory if requested.
         /// </summary>
@@ -124,6 +126,8 @@ namespace XTask.Interop
                 // Only real plausible answer
                 throw new OutOfMemoryException();
             }
+
+            this.Size = size;
         }
 
         protected override bool ReleaseHandle()
@@ -131,6 +135,7 @@ namespace XTask.Interop
             bool success = NativeMethods.HeapFree(ProcessHeap, 0, this.handle);
             Debug.Assert(success);
             this.handle = IntPtr.Zero;
+            this.Size = UIntPtr.Zero;
             return success;
         }
     }

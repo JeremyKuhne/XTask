@@ -28,12 +28,12 @@ namespace XTask.Interop
         /// Instantiate the buffer with capacity for the specified number of characters. Capacity
         /// includes the trailing null character.
         /// </summary>
-        public StringBuffer(int initialLength = 0)
+        public StringBuffer(int initialCapacity = 0)
             : base(0)
         {
             // We don't pass the count of bytes to the base constructor, setting capacity will
             // initialize to the correct size for the specified number of characters.
-            this.Capacity = initialLength;
+            this.Capacity = initialCapacity;
         }
 
         /// <summary>
