@@ -15,6 +15,14 @@ namespace XTask.Interop
     /// <summary>
     /// Handle for heap memory
     /// </summary>
+    /// <remarks>
+    /// Uses new Heap* methods instead of Local* methods, which are depreciated.  While both calls utilize the same underlying
+    /// heap allocation, Local* adds some overhead (*significant* overhead if LMEM_MOVEABLE is used). .NET forces LMEM_FIXED
+    /// with LocalAlloc for Marshal.AllocHGlobal so it doesn't hit the super slow path.
+    /// 
+    /// Windows attempts to grab space from the low fragmentation heap if the requested memory is below a platform specific
+    /// threshold and certain flags aren't in play (such as NO_SERIALIZE).
+    /// </remarks>
     public class HeapHandle : SafeHandleZeroIsInvalid
     {
         [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
@@ -49,16 +57,28 @@ namespace XTask.Interop
             [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
             internal static extern bool HeapFree(IntPtr hHeap, uint dwFlags, IntPtr lpMem);
 
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366706.aspx
+            //[DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            //internal static extern UIntPtr HeapSize(IntPtr hHeap, uint dwFlags, IntPtr lpMem);
+
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366700.aspx
             //[DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
             //internal static extern bool HeapDestroy(IntPtr hHeap);
 
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366598.aspx
+            //[DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            //internal static extern UIntPtr HeapCompact(IntPtr hHeap, uint dwFlags);
+
+            // This is safe to cache as it will never change for a process once started
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366569.aspx
             [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
             internal static extern IntPtr GetProcessHeap();
         }
 
-        protected static IntPtr ProcessHeap = NativeMethods.GetProcessHeap();
+        /// <summary>
+        /// The handle for the process heap.
+        /// </summary>
+        public static IntPtr ProcessHeap = NativeMethods.GetProcessHeap();
 
         /// <summary>
         /// Allocate a buffer of the given size and zero memory if requested.
@@ -93,7 +113,9 @@ namespace XTask.Interop
             }
             else
             {
-                // This may or may not be the same handle, Windows may realloc in place
+                // This may or may not be the same handle, Windows may realloc in place. If the
+                // handle changes Windows will deal with the old handle, trying to free it will
+                // cause an error.
                 this.handle = NativeMethods.HeapReAlloc(ProcessHeap, flags, this.handle, size);
             }
 
