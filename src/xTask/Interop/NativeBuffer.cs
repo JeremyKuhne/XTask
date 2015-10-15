@@ -11,7 +11,6 @@ namespace XTask.Interop
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
-    using System.Security;
 
     /// <summary>
     /// Wrapper for access to the native heap. Dispose to free the memory. Try to use with using statements.
@@ -26,58 +25,7 @@ namespace XTask.Interop
     /// </remarks>
     public class NativeBuffer : IDisposable
     {
-        //[Flags]
-        //protected enum HeapOptions : uint
-        //{
-        //    NoSerialize = NativeMethods.HEAP_NO_SERIALIZE,
-        //    GenerateExceptions = NativeMethods.HEAP_GENERATE_EXCEPTIONS,
-        //    ZeroMemory = NativeMethods.HEAP_ZERO_MEMORY,
-        //    ReallocInPlaceOnly = NativeMethods.HEAP_REALLOC_IN_PLACE_ONLY
-        //}
-
-        [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
-        private static class NativeMethods
-        {
-            // Heap Functions
-            // --------------
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366711.aspx
-
-            //internal const uint HEAP_NO_SERIALIZE = 0x00000001;
-            //internal const uint HEAP_GENERATE_EXCEPTIONS = 0x00000004;
-            //internal const uint HEAP_ZERO_MEMORY = 0x00000008;
-            //internal const uint HEAP_REALLOC_IN_PLACE_ONLY = 0x00000010;
-
-            // HeapAlloc/Realloc take a SIZE_T for their count of bytes. This is ultimately an
-            // unsigned __int3264 which is platform specific (uint on 32bit and ulong on 64bit).
-            // UIntPtr can encapsulate this as it wraps void* and has unsigned constructors.
-            // (IntPtr also wraps void*, but uses signed constructors.)
-            // 
-            // SIZE_T:
-            // https://msdn.microsoft.com/en-us/library/cc441980.aspx
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366597.aspx
-            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-            internal static extern HeapHandle HeapAlloc(IntPtr hHeap, uint dwFlags, UIntPtr dwBytes);
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366704.aspx
-            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-            internal static extern HeapHandle HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr lpMem, UIntPtr dwBytes);
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366701.aspx
-            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-            internal static extern bool HeapFree(IntPtr hHeap, uint dwFlags, IntPtr lpMem);
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366700.aspx
-            //[DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-            //internal static extern bool HeapDestroy(IntPtr hHeap);
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366569.aspx
-            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-            internal static extern IntPtr GetProcessHeap();
-        }
-
-        private static IntPtr ProcessHeap = NativeMethods.GetProcessHeap();
-        private static HeapHandle EmptyHandle = new HeapHandle();
+        private static SafeHandle EmptyHandle = new EmptySafeHandle();
         private HeapHandle handle;
         private long capacity;
 
@@ -165,18 +113,14 @@ namespace XTask.Interop
                 return;
             }
 
-            HeapHandle newHandle = (this.handle == null)
-                ? NativeMethods.HeapAlloc(ProcessHeap, 0, (UIntPtr)size)
-                : NativeMethods.HeapReAlloc(ProcessHeap, 0, this, (UIntPtr)size);
-
-            if (newHandle.IsInvalid)
+            if (this.handle == null)
             {
-                throw new InvalidOperationException("Could not allocate requested memory.");
+                this.handle = new HeapHandle((UIntPtr)size);
             }
-
-            // Since we've reallocated, we don't need to free the existing handle
-            this.handle?.SetHandleAsInvalid();
-            this.handle = newHandle;
+            else
+            {
+                this.handle.Resize((UIntPtr)size);
+            }
         }
 
         public void Dispose()
@@ -189,18 +133,18 @@ namespace XTask.Interop
             this.handle?.Dispose();
         }
 
-        protected class HeapHandle : SafeHandleZeroIsInvalid
+        private class EmptySafeHandle : SafeHandle
         {
-            internal HeapHandle() : base (ownsHandle: true)
+            public EmptySafeHandle() : base(IntPtr.Zero, true) { }
+
+            public override bool IsInvalid
             {
+                get { return true; }
             }
 
             protected override bool ReleaseHandle()
             {
-                bool success = NativeMethods.HeapFree(ProcessHeap, 0, this.handle);
-                Debug.Assert(success);
-                this.handle = IntPtr.Zero;
-                return success;
+                return true;
             }
         }
     }
