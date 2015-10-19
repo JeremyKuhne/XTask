@@ -17,33 +17,13 @@ namespace XTask.Tests.Interop
     public class NativeBufferTests
     {
         [Fact]
-        public void SetZeroCapacityFreesBuffer()
+        public void EnsureZeroCapacityDoesNotFreeBuffer()
         {
             using (var buffer = new NativeBuffer(10))
             {
                 ((IntPtr)buffer).Should().NotBe(IntPtr.Zero);
-                buffer.Capacity = 0;
-                ((IntPtr)buffer).Should().Be(IntPtr.Zero);
-            }
-        }
-
-        [Fact]
-        public void SetNegativeCapacityThrowsArgumentOutOfRange()
-        {
-            using (var buffer = new NativeBuffer())
-            {
-                Action action = () => { buffer.Capacity = -1; };
-                action.ShouldThrow<ArgumentOutOfRangeException>();
-            }
-        }
-
-        [Fact]
-        public void GetNegativeIndexThrowsArgumentOutOfRange()
-        {
-            using (var buffer = new NativeBuffer())
-            {
-                Action action = () => { byte c = buffer[-1]; };
-                action.ShouldThrow<ArgumentOutOfRangeException>();
+                buffer.EnsureCapacity(0);
+                ((IntPtr)buffer).Should().NotBe(IntPtr.Zero);
             }
         }
 
@@ -53,16 +33,6 @@ namespace XTask.Tests.Interop
             using (var buffer = new NativeBuffer())
             {
                 Action action = () => { byte c = buffer[0]; };
-                action.ShouldThrow<ArgumentOutOfRangeException>();
-            }
-        }
-
-        [Fact]
-        public void SetNegativeIndexThrowsArgumentOutOfRange()
-        {
-            using (var buffer = new NativeBuffer())
-            {
-                Action action = () => { buffer[-1] = 0; };
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }

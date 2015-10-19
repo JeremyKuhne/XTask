@@ -23,7 +23,7 @@ namespace XTask.Interop
     /// Windows attempts to grab space from the low fragmentation heap if the requested memory is below a platform specific
     /// threshold and certain flags aren't in play (such as NO_SERIALIZE).
     /// </remarks>
-    public class HeapHandle : SafeHandleZeroIsInvalid
+    public class HeapHandle : SafeBuffer
     {
         [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
         protected static class NativeMethods
@@ -83,27 +83,26 @@ namespace XTask.Interop
         /// <summary>
         /// Allocate a buffer of the given size and zero memory if requested.
         /// </summary>
+        /// <param name="byteLength">Required size in bytes. Must be less than UInt32.MaxValue for 32 bit or UInt64.MaxValue for 64 bit.</param>
         /// <exception cref="OutOfMemoryException">Thrown if the requested memory size cannot be allocated.</exception>
-        public HeapHandle(uint size, bool zeroMemory = false) : this((UIntPtr)size, zeroMemory)
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if size is greater than the maximum memory size.</exception>
+        public HeapHandle(ulong byteLength, bool zeroMemory = false) : base(ownsHandle: true)
         {
+            this.Resize(byteLength, zeroMemory);
         }
 
-        /// <summary>
-        /// Allocate a buffer of the given size and zero memory if requested.
-        /// </summary>
-        /// <exception cref="OutOfMemoryException">Thrown if the requested memory size cannot be allocated.</exception>
-        public HeapHandle(UIntPtr size, bool zeroMemory = false) : base(ownsHandle: true)
+        public override bool IsInvalid
         {
-            this.Resize(size, zeroMemory);
+            get { return this.handle == IntPtr.Zero; }
         }
-
-        public UIntPtr Size { get; private set; }
 
         /// <summary>
         /// Resize the buffer to the given size and zero memory if requested.
         /// </summary>
+        /// <param name="byteLength">Required size in bytes. Must be less than UInt32.MaxValue for 32 bit or UInt64.MaxValue for 64 bit.</param>
         /// <exception cref="OutOfMemoryException">Thrown if the requested memory size cannot be allocated.</exception>
-        public void Resize(UIntPtr size, bool zeroMemory = false)
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if size is greater than the maximum memory size.</exception>
+        public void Resize(ulong byteLength, bool zeroMemory = false)
         {
             if (this.IsClosed) throw new ObjectDisposedException("HeapHandle");
 
@@ -111,14 +110,14 @@ namespace XTask.Interop
 
             if (this.handle == IntPtr.Zero)
             {
-                this.handle = NativeMethods.HeapAlloc(ProcessHeap, flags, size);
+                this.handle = NativeMethods.HeapAlloc(ProcessHeap, flags, (UIntPtr)byteLength);
             }
             else
             {
                 // This may or may not be the same handle, Windows may realloc in place. If the
                 // handle changes Windows will deal with the old handle, trying to free it will
                 // cause an error.
-                this.handle = NativeMethods.HeapReAlloc(ProcessHeap, flags, this.handle, size);
+                this.handle = NativeMethods.HeapReAlloc(ProcessHeap, flags, this.handle, (UIntPtr)byteLength);
             }
 
             if (this.handle == IntPtr.Zero)
@@ -127,7 +126,7 @@ namespace XTask.Interop
                 throw new OutOfMemoryException();
             }
 
-            this.Size = size;
+            this.Initialize(byteLength);
         }
 
         protected override bool ReleaseHandle()
@@ -135,7 +134,6 @@ namespace XTask.Interop
             bool success = NativeMethods.HeapFree(ProcessHeap, 0, this.handle);
             Debug.Assert(success);
             this.handle = IntPtr.Zero;
-            this.Size = UIntPtr.Zero;
             return success;
         }
     }

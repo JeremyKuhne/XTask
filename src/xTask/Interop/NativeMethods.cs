@@ -191,7 +191,7 @@ namespace XTask.Interop
                 while ((returnValue = invoker(path, buffer)) > (uint)buffer.Capacity)
                 {
                     // Need more room for the output string
-                    buffer.Capacity = returnValue;
+                    buffer.EnsureCapacity(returnValue);
                 }
 
                 if (returnValue == 0)
@@ -201,21 +201,21 @@ namespace XTask.Interop
                     throw GetIoExceptionForError(error, originalPath);
                 }
 
-                buffer.Length = (int)returnValue;
+                buffer.Length = returnValue;
 
-                int startIndex = 0;
+                uint startIndex = 0;
                 if (addedExtendedPrefix && buffer.StartsWithOrdinal(Paths.ExtendedPathPrefix))
                 {
                     // Remove the prefix
                     if (buffer.StartsWithOrdinal(Paths.ExtendedUncPrefix))
                     {
                         // UNC, need to convert from \\?\UNC\ to \\.
-                        startIndex = Paths.ExtendedUncPrefix.Length - 2;
+                        startIndex = (uint)Paths.ExtendedUncPrefix.Length - 2;
                         buffer[startIndex] = Paths.DirectorySeparator;
                     }
                     else
                     {
-                        startIndex = Paths.ExtendedPathPrefix.Length;
+                        startIndex = (uint)Paths.ExtendedPathPrefix.Length;
                     }
                 }
 
@@ -226,7 +226,7 @@ namespace XTask.Interop
                 }
                 else
                 {
-                    return buffer.ToString(startIndex: startIndex);
+                    return buffer.SubString(startIndex: startIndex);
                 }
             }
         }
@@ -244,7 +244,7 @@ namespace XTask.Interop
                 while ((returnValue = invoker(buffer)) > (uint)buffer.Capacity)
                 {
                     // Need more room for the output string
-                    buffer.Capacity = returnValue;
+                    buffer.EnsureCapacity(returnValue);
                 }
 
                 if (returnValue == 0)
@@ -259,7 +259,7 @@ namespace XTask.Interop
                     throw GetIoExceptionForError(error, value);
                 }
 
-                buffer.Length = (int)returnValue;
+                buffer.Length = returnValue;
                 return buffer.ToString();
             }
         }

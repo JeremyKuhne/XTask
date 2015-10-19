@@ -18,15 +18,15 @@ namespace XTask.Interop
     {
         internal static HeapHandleCache Instance = new HeapHandleCache();
 
-        private int minSize;
-        private uint maxSize;
+        private ulong minSize;
+        private ulong maxSize;
         private uint maxBuilders;
 
         private ConcurrentBag<HeapHandle> buffers;
 
-        public HeapHandleCache(int minSize = 64, uint maxSize = 1024 * 4, uint maxBuilders = 0)
+        public HeapHandleCache(ulong minSize = 64, ulong maxSize = 1024 * 4, uint maxBuilders = 0)
         {
-            this.minSize = minSize < 0 ? 0 : minSize;
+            this.minSize = minSize;
             this.maxSize = maxSize;
             this.maxBuilders = maxBuilders > 1 ? maxBuilders : (uint)Environment.ProcessorCount * 4;
             this.buffers = new ConcurrentBag<HeapHandle>();
@@ -35,14 +35,14 @@ namespace XTask.Interop
         /// <summary>
         /// Get a HeapHandle
         /// </summary>
-        public HeapHandle Acquire(uint minCapacity = 0)
+        public HeapHandle Acquire(ulong minCapacity = 0)
         {
             HeapHandle buffer;
             if (buffers.TryTake(out buffer))
             {
-                if ((uint)buffer.Size < minCapacity)
+                if (buffer.ByteLength < minCapacity)
                 {
-                    buffer.Resize((UIntPtr)minCapacity);
+                    buffer.Resize(minCapacity);
                 }
             }
             else
@@ -58,7 +58,7 @@ namespace XTask.Interop
         /// </summary>
         public void Release(HeapHandle buffer)
         {
-            if ((uint)buffer.Size <= this.maxSize && this.buffers.Count < maxBuilders)
+            if (buffer.ByteLength <= this.maxSize && this.buffers.Count < maxBuilders)
             {
                 this.buffers.Add(buffer);
             }

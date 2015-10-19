@@ -33,12 +33,12 @@ namespace XTask.Tests.Interop
             string testString = "Test";
             using (var buffer = new StringBuffer(testString))
             {
-                buffer.Length.Should().Be(testString.Length);
-                buffer.Capacity.Should().Be(testString.Length + 1);
+                buffer.Length.Should().Be((ulong)testString.Length);
+                buffer.Capacity.Should().Be((ulong)testString.Length + 1);
 
                 for (int i = 0; i < testString.Length; i++)
                 {
-                    buffer[i].Should().Be(testString[i]);
+                    buffer[(ulong)i].Should().Be(testString[i]);
                 }
 
                 ((char*)((IntPtr)buffer).ToPointer())[testString.Length].Should().Be('\0', "should be null terminated");
@@ -48,30 +48,11 @@ namespace XTask.Tests.Interop
         }
 
         [Fact]
-        public void NegativeLengthThrowsArgumentOutOfRange()
-        {
-            using (var buffer = new StringBuffer())
-            {
-                Action action = () => buffer.Length = -1;
-                action.ShouldThrow<ArgumentOutOfRangeException>();
-            }
-        }
-
-        [Fact]
-        public void NegativeCapacityThrowsArgumentOutOfRange()
-        {
-            using (var buffer = new StringBuffer())
-            {
-                Action action = () => buffer.Capacity = -1;
-                action.ShouldThrow<ArgumentOutOfRangeException>();
-            }
-        }
-
-        [Fact]
         public void ReduceLength()
         {
             using (var buffer = new StringBuffer("Food"))
             {
+                buffer.Capacity.Should().Be(5);
                 buffer.Length = 3;
                 buffer.ToString().Should().Be("Foo");
                 buffer.Capacity.Should().Be(5, "shouldn't reduce capacity when dropping length");
@@ -79,28 +60,11 @@ namespace XTask.Tests.Interop
         }
 
         [Fact]
-        public void OverIntCapacityThrowsArgumentOutOfRange()
+        public void OverByteCapacityThrowsArgumentOutOfRange()
         {
             using (var buffer = new StringBuffer())
             {
-                Action action = () => buffer.Capacity = (long)int.MaxValue + 1;
-                action.ShouldThrow<ArgumentOutOfRangeException>();
-            }
-        }
-
-        [Fact]
-        public void NegativeInitialCapacityThrowsArgumentOutOfRange()
-        {
-            Action action = () => new StringBuffer(initialCapacity: -1);
-            action.ShouldThrow<ArgumentOutOfRangeException>();
-        }
-
-        [Fact]
-        public void GetNegativeIndexThrowsArgumentOutOfRange()
-        {
-            using (var buffer = new StringBuffer())
-            {
-                Action action = () => { char c = buffer[-1]; };
+                Action action = () => buffer.EnsureCapacity(ulong.MaxValue / 2 + 1);
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
@@ -111,16 +75,6 @@ namespace XTask.Tests.Interop
             using (var buffer = new StringBuffer())
             {
                 Action action = () => { char c = buffer[0]; };
-                action.ShouldThrow<ArgumentOutOfRangeException>();
-            }
-        }
-
-        [Fact]
-        public void SetNegativeIndexThrowsArgumentOutOfRange()
-        {
-            using (var buffer = new StringBuffer())
-            {
-                Action action = () => { buffer[-1] = 'Q'; };
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
@@ -161,16 +115,6 @@ namespace XTask.Tests.Interop
             {
                 Action action = () => buffer.StartsWithOrdinal(null);
                 action.ShouldThrow<ArgumentNullException>();
-            }
-        }
-
-        [Fact]
-        public void SubStringEqualsNegativeIndexThrows()
-        {
-            using (var buffer = new StringBuffer())
-            {
-                Action action = () => buffer.SubStringEquals("", startIndex: -1);
-                action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
 
@@ -225,7 +169,7 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new StringBuffer(source))
             {
-                buffer.SubStringEquals(value, startIndex: startIndex, count: count).Should().Be(expected);
+                buffer.SubStringEquals(value, startIndex: (ulong)startIndex, count: count).Should().Be(expected);
             }
         }
 
@@ -340,21 +284,11 @@ namespace XTask.Tests.Interop
         }
 
         [Fact]
-        public void ToStringNegativeIndexThrows()
-        {
-            using (var buffer = new StringBuffer())
-            {
-                Action action = () => buffer.ToString(startIndex: -1);
-                action.ShouldThrow<ArgumentOutOfRangeException>();
-            }
-        }
-
-        [Fact]
         public void ToStringIndexOverLengthThrows()
         {
             using (var buffer = new StringBuffer())
             {
-                Action action = () => buffer.ToString(startIndex: 1);
+                Action action = () => buffer.SubString(startIndex: 1);
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
@@ -364,7 +298,7 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new StringBuffer())
             {
-                Action action = () => buffer.ToString(startIndex: 0, count: -2);
+                Action action = () => buffer.SubString(startIndex: 0, count: -2);
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
@@ -374,7 +308,7 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new StringBuffer())
             {
-                Action action = () => buffer.ToString(startIndex: 0, count: 1);
+                Action action = () => buffer.SubString(startIndex: 0, count: 1);
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
@@ -393,7 +327,7 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new StringBuffer(source))
             {
-                buffer.ToString(startIndex: startIndex, count: count).Should().Be(expected);
+                buffer.SubString(startIndex: (ulong)startIndex, count: count).Should().Be(expected);
             }
         }
 
@@ -425,7 +359,7 @@ namespace XTask.Tests.Interop
             InlineData("\0", 1, 0)
             InlineData("Foo\0Bar", 7, 3)
             ]
-        public unsafe void SetLengthToFirstNullTests(string content, int startLength, int endLength)
+        public unsafe void SetLengthToFirstNullTests(string content, ulong startLength, ulong endLength)
         {
             using (var buffer = new StringBuffer(content))
             {
@@ -438,7 +372,7 @@ namespace XTask.Tests.Interop
                 buffer.Length = 0;
                 fixed (char* contentPointer = content)
                 {
-                    Buffer.MemoryCopy(contentPointer, ((IntPtr)buffer).ToPointer(), buffer.Capacity * 2, content.Length * sizeof(char));
+                    Buffer.MemoryCopy(contentPointer, ((IntPtr)buffer).ToPointer(), (long)buffer.Capacity * 2, content.Length * sizeof(char));
                 }
 
                 buffer.Length.Should().Be(0);

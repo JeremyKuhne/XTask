@@ -88,8 +88,8 @@ namespace XTask.Interop
         {
             Debug.Assert(size >= 0);
 
-            if (this.stream != null && this.buffer.Capacity >= size) return;
-            this.buffer.EnsureCapacity(size);
+            if (this.stream != null && this.buffer.Capacity >= (ulong)size) return;
+            this.buffer.EnsureCapacity((ulong)size);
 
             long oldLength = this.Length;
             long oldPosition = this.Position;

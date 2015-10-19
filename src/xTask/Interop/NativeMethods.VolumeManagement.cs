@@ -79,7 +79,7 @@ namespace XTask.Interop
                 if (deviceName != null) deviceName = Paths.RemoveTrailingSeparators(deviceName);
 
                 // Null will return everything defined- this list is quite large so set a higher initial allocation
-                using (var buffer = new StringBuffer(deviceName == null ? (int)8192 : 256))
+                using (var buffer = new StringBuffer(deviceName == null ? (ulong)8192 : 256))
                 {
                     uint result = 0;
 
@@ -90,14 +90,14 @@ namespace XTask.Interop
                         switch (lastError)
                         {
                             case WinError.ERROR_INSUFFICIENT_BUFFER:
-                                buffer.Capacity *= 2;
+                                buffer.EnsureCapacity(buffer.Capacity * 2);
                                 break;
                             default:
                                 throw GetIoExceptionForError(lastError, deviceName);
                         }
                     }
 
-                    buffer.Length = (int)result;
+                    buffer.Length = result;
                     return buffer.Split('\0');
                 }
             }
@@ -112,7 +112,7 @@ namespace XTask.Interop
                     // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
                     while ((result = Private.GetLogicalDriveStringsW((uint)buffer.Capacity, buffer)) > (uint)buffer.Capacity)
                     {
-                        buffer.Capacity = result;
+                        buffer.EnsureCapacity(result);
                     }
 
                     if (result == 0)
@@ -121,7 +121,7 @@ namespace XTask.Interop
                         throw GetIoExceptionForError(lastError);
                     }
 
-                    buffer.Length = (int)result;
+                    buffer.Length = result;
                     return buffer.Split('\0');
                 }
             }
@@ -138,7 +138,7 @@ namespace XTask.Interop
                         switch (lastError)
                         {
                             case WinError.ERROR_FILENAME_EXCED_RANGE:
-                                volumePathName.Capacity *= 2;
+                                volumePathName.EnsureCapacity(volumePathName.Capacity * 2);
                                 break;
                             default:
                                 throw GetIoExceptionForError(lastError, path);
@@ -164,14 +164,14 @@ namespace XTask.Interop
                         switch (lastError)
                         {
                             case WinError.ERROR_MORE_DATA:
-                                buffer.Capacity = returnLength;
+                                buffer.EnsureCapacity(returnLength);
                                 break;
                             default:
                                 throw GetIoExceptionForError(lastError, volumeName);
                         }
                     }
 
-                    buffer.Length = (int)returnLength;
+                    buffer.Length = returnLength;
                     return buffer.Split('\0');
                 }
             }

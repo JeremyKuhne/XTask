@@ -8,7 +8,6 @@
 namespace XTask.Interop
 {
     using System;
-    using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
 
@@ -32,11 +31,14 @@ namespace XTask.Interop
     {
         private static SafeHandle EmptyHandle = new EmptySafeHandle();
         private HeapHandle handle;
-        private long capacity;
+        private ulong capacity;
 
-        public NativeBuffer(uint initialCapacity = 0)
+        /// <summary>
+        /// Create a buffer with at least the specified initial capacity in bytes.
+        /// </summary>
+        public NativeBuffer(ulong initialMinCapacity = 0)
         {
-            this.Capacity = initialCapacity;
+            this.EnsureCapacity(initialMinCapacity);
         }
 
         protected unsafe void* VoidPointer
@@ -71,47 +73,42 @@ namespace XTask.Interop
         /// <summary>
         /// The capacity of the buffer in bytes.
         /// </summary>
-        public virtual long Capacity
+        public virtual ulong Capacity
         {
             get { return this.capacity; }
-            set
-            {
-                if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
-                this.Resize(value);
-                this.capacity = value;
-            }
         }
 
         /// <summary>
-        /// Ensure the buffer has at least the specified capacity.
+        /// Ensure capacity in bytes is at least the given minimum.
         /// </summary>
-        public void EnsureCapacity(long capacity)
+        /// <exception cref="OutOfMemoryException">Thrown if unable to allocate memory when setting.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(minCapacity)"/> to a value that is larger than the maximum addressable memory.</exception>
+        public virtual void EnsureCapacity(ulong minCapacity)
         {
-            if (this.Capacity < capacity)
+            if (this.capacity < minCapacity)
             {
-                this.Capacity = capacity;
+                this.Resize(minCapacity);
+                this.capacity = minCapacity;
             }
         }
 
-        public unsafe byte this[long index]
+        public unsafe byte this[ulong index]
         {
             get
             {
-                if (index < 0 || index >= this.Capacity) throw new ArgumentOutOfRangeException();
+                if (index >= this.capacity) throw new ArgumentOutOfRangeException();
                 return BytePointer[index];
             }
             set
             {
-                if (index < 0 || index >= this.Capacity) throw new ArgumentOutOfRangeException();
+                if (index >= this.capacity) throw new ArgumentOutOfRangeException();
                 BytePointer[index] = value;
             }
         }
 
-        private unsafe void Resize(long size)
+        private unsafe void Resize(ulong byteLength)
         {
-            Debug.Assert(size >= 0);
-
-            if (size == 0)
+            if (byteLength == 0)
             {
                 this.ReleaseHandle();
                 return;
@@ -119,11 +116,11 @@ namespace XTask.Interop
 
             if (this.handle == null)
             {
-                this.handle = HeapHandleCache.Instance.Acquire((uint)size);
+                this.handle = HeapHandleCache.Instance.Acquire(byteLength);
             }
             else
             {
-                this.handle.Resize((UIntPtr)size);
+                this.handle.Resize(byteLength);
             }
         }
 
