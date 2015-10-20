@@ -425,6 +425,26 @@ namespace XTask.Tests.Interop
         }
 
         [Theory
+            InlineData("foo", new char[] {  }, "foo")
+            InlineData("foo", null, "foo")
+            InlineData("foo", new char[] { 'b' }, "foo")
+            InlineData("", new char[] { }, "")
+            InlineData("", null, "")
+            InlineData("", new char[] { 'b' }, "")
+            InlineData("foo", new char[] { 'o' }, "f")
+            InlineData("foo", new char[] { 'o', 'f' }, "")
+            ]
+        public void TrimEnd(string content, char[] trimChars, string expected)
+        {
+            // We want equivalence with built-in string behavior
+            using (var buffer = new StringBuffer(content))
+            {
+                buffer.TrimEnd(trimChars);
+                buffer.ToString().Should().Be(expected);
+            }
+        }
+
+        [Theory
             InlineData("foo bar", new char[] { ' ' })
             InlineData("foo bar", new char[] {  })
             InlineData("foo bar", null)
@@ -482,5 +502,40 @@ namespace XTask.Tests.Interop
                 buffer.Contains(values).Should().Be(expected);
             }
         }
+
+        [Theory
+            InlineData(@"Foo", @"Bar", 0, 0, 3, "Bar")
+            InlineData(@"Foo", @"Bar", 0, 0, -1, "Bar")
+            InlineData(@"Foo", @"Bar", 3, 0, 3, "FooBar")
+            InlineData(@"", @"Bar", 0, 0, 3, "Bar")
+            InlineData(@"Foo", @"Bar", 1, 0, 3, "FBar")
+            InlineData(@"Foo", @"Bar", 1, 1, 2, "Far")
+            ]
+        public void CopyFromString(string content, string source, ulong bufferIndex, int sourceIndex, int count, string expected)
+        {
+            using (var buffer = new StringBuffer(content))
+            {
+                buffer.CopyFrom(bufferIndex, source, sourceIndex, count);
+                buffer.ToString().Should().Be(expected);
+            }
+        }
+
+        [Theory
+            InlineData(@"Foo", @"Bar", 0, 0, 3, "Bar")
+            InlineData(@"Foo", @"Bar", 3, 0, 3, "FooBar")
+            InlineData(@"", @"Bar", 0, 0, 3, "Bar")
+            InlineData(@"Foo", @"Bar", 1, 0, 3, "FBar")
+            InlineData(@"Foo", @"Bar", 1, 1, 2, "Far")
+            ]
+        public void CopyToBufferString(string destination, string content, ulong destinationIndex, ulong bufferIndex, ulong count, string expected)
+        {
+            using (var buffer = new StringBuffer(content))
+            using (var destinationBuffer = new StringBuffer(destination))
+            {
+                buffer.CopyTo(bufferIndex, destinationBuffer, destinationIndex, count);
+                destinationBuffer.ToString().Should().Be(expected);
+            }
+        }
+
     }
 }

@@ -213,9 +213,9 @@ namespace XTask.Interop
         /// </exception>
         public unsafe void Append(string value, int startIndex = 0, int count = -1)
         {
+            if (value == null) throw new ArgumentNullException(nameof(value));
             if (count == -1) count = value.Length - startIndex;
             if (count == 0) return;
-            if (value == null) throw new ArgumentNullException(nameof(value));
             if (startIndex < 0 || startIndex >= value.Length) throw new ArgumentOutOfRangeException(nameof(startIndex));
             if (count < 0 || count > value.Length - startIndex) throw new ArgumentOutOfRangeException(nameof(count));
 
@@ -293,9 +293,12 @@ namespace XTask.Interop
         public unsafe void CopyTo(ulong bufferIndex, StringBuffer destination, ulong destinationIndex, ulong count)
         {
             if (destination == null) throw new ArgumentNullException(nameof(destination));
-            if (destination.Length < destinationIndex + count || this.Length < bufferIndex + count) throw new ArgumentOutOfRangeException(nameof(count));
+            if (destinationIndex > destination.length) throw new ArgumentOutOfRangeException(nameof(destinationIndex));
+            if (this.Length < bufferIndex + count) throw new ArgumentOutOfRangeException(nameof(count));
 
             if (count == 0) return;
+            ulong lastIndex = destinationIndex + (ulong)count;
+            if (destination.Length < lastIndex) destination.Length = lastIndex;
 
             Buffer.MemoryCopy(
                 source: this.CharPointer + bufferIndex,
@@ -310,10 +313,13 @@ namespace XTask.Interop
         public unsafe void CopyFrom(ulong bufferIndex, string source, int sourceIndex = 0, int count = -1)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
+            if (bufferIndex > this.Length) throw new ArgumentOutOfRangeException(nameof(bufferIndex));
             if (count < 0) count = source.Length;
-            if (source.Length < sourceIndex + count || this.Length < (ulong)(sourceIndex + count)) throw new ArgumentOutOfRangeException(nameof(count));
+            if (source.Length < sourceIndex + count) throw new ArgumentOutOfRangeException(nameof(count));
 
             if (count == 0) return;
+            ulong lastIndex = bufferIndex + (ulong)count;
+            if (this.Length < lastIndex) this.Length = lastIndex;
 
             fixed (char* content = source)
             {
@@ -420,6 +426,22 @@ namespace XTask.Interop
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Trim the specified values from the end of the buffer.
+        /// </summary>
+        public unsafe void TrimEnd(params char[] values)
+        {
+            if (values == null || values.Length == 0 || this.Length == 0) return;
+
+            char* end = CharPointer + Length - 1;
+
+            while (ContainsChar(values, *end))
+            {
+                Length--;
+                end--;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
