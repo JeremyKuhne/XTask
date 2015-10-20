@@ -46,11 +46,11 @@ namespace XTask.Interop
             // https://msdn.microsoft.com/en-us/library/cc441980.aspx
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366597.aspx
-            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = false, ExactSpelling = true)]
             internal static extern IntPtr HeapAlloc(IntPtr hHeap, uint dwFlags, UIntPtr dwBytes);
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366704.aspx
-            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
+            [DllImport(Interop.NativeMethods.Libraries.Kernel32, SetLastError = false, ExactSpelling = true)]
             internal static extern IntPtr HeapReAlloc(IntPtr hHeap, uint dwFlags, IntPtr lpMem, UIntPtr dwBytes);
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa366701.aspx

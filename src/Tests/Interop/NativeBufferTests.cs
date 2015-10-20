@@ -63,8 +63,8 @@ namespace XTask.Tests.Interop
             using (var buffer = new NativeBuffer(0))
             {
                 ((SafeHandle)buffer).IsInvalid.Should().BeTrue();
-                buffer.Capacity.Should().Be(0);
-                GetCurrentDirectorySafe((uint)buffer.Capacity, buffer);
+                buffer.ByteCapacity.Should().Be(0);
+                GetCurrentDirectorySafe((uint)buffer.ByteCapacity, buffer);
             }
         }
 

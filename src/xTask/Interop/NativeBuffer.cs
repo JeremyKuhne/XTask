@@ -73,7 +73,7 @@ namespace XTask.Interop
         /// <summary>
         /// The capacity of the buffer in bytes.
         /// </summary>
-        public virtual ulong Capacity
+        public ulong ByteCapacity
         {
             get { return this.capacity; }
         }

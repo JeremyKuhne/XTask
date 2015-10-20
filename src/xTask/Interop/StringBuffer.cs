@@ -44,7 +44,10 @@ namespace XTask.Interop
             // initialize to the correct size for the specified initial contents.
             if (initialContents != null)
             {
-                this.AppendInternal(initialContents, startIndex: 0, count: initialContents.Length);
+                fixed (char* content = initialContents)
+                {
+                    this.AppendInternal(content, count: (ulong)initialContents.Length);
+                }
             }
         }
 
@@ -67,13 +70,31 @@ namespace XTask.Interop
         }
 
         /// <summary>
-        /// Character capacity of the buffer. Includes the count for the trailing null character.
+        /// Get/set the character at the given index.
         /// </summary>
-        public override ulong Capacity
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to index outside of the buffer length.</exception>
+        public unsafe char this[uint index]
         {
             get
             {
-                ulong byteCapacity = base.Capacity;
+                if (index >= this.Length) throw new ArgumentOutOfRangeException(nameof(index));
+                return CharPointer[index];
+            }
+            set
+            {
+                if (index >= this.Length) throw new ArgumentOutOfRangeException(nameof(index));
+                CharPointer[index] = value;
+            }
+        }
+
+        /// <summary>
+        /// Character capacity of the buffer. Includes the count for the trailing null character.
+        /// </summary>
+        public ulong CharCapacity
+        {
+            get
+            {
+                ulong byteCapacity = this.ByteCapacity;
                 return byteCapacity == 0 ? 0 : byteCapacity / sizeof(char);
             }
         }
@@ -115,7 +136,7 @@ namespace XTask.Interop
         public unsafe void SetLengthToFirstNull()
         {
             char* buffer = CharPointer;
-            ulong capacity = Capacity;
+            ulong capacity = CharCapacity;
             for (ulong i = 0; i < capacity; i++)
             {
                 if (buffer[i] == '\0')
@@ -182,38 +203,124 @@ namespace XTask.Interop
         /// <summary>
         /// Append the given string.
         /// </summary>
-        /// <param name="value">The string to append.</param>
-        /// <param name="startIndex">The index in the input string to start appending from.</param>
-        /// <param name="count">The count of characters to copy from the input string, or -1 for all remaining.</param>
+        /// <param name="nameof(value)">The string to append.</param>
+        /// <param name="nameof(startIndex)">The index in the input string to start appending from.</param>
+        /// <param name="nameof(count)">The count of characters to copy from the input string, or -1 for all remaining.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="nameof(value)"/> is null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
         /// Thrown if <paramref name="nameof(startIndex)"/> or <paramref name="nameof(count)"/> are outside the range
         /// of <paramref name="nameof(value)"/> characters.
         /// </exception>
-        public void Append(string value, int startIndex = 0, int count = -1)
+        public unsafe void Append(string value, int startIndex = 0, int count = -1)
         {
-            if (value == null) throw new ArgumentNullException(value);
-            if (startIndex < 0) throw new ArgumentOutOfRangeException(nameof(startIndex));
             if (count == -1) count = value.Length - startIndex;
-            if (count < 0 || startIndex + count > value.Length) throw new ArgumentOutOfRangeException(nameof(count));
+            if (count == 0) return;
+            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (startIndex < 0 || startIndex >= value.Length) throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0 || count > value.Length - startIndex) throw new ArgumentOutOfRangeException(nameof(count));
 
-            this.AppendInternal(value, startIndex, count);
+            fixed (char* content = value)
+            {
+                this.AppendInternal(content + startIndex, (ulong)count);
+            }
+        }
+
+        /// <summary>
+        /// Append the given buffer.
+        /// </summary>
+        /// <param name="nameof(value)">The buffer to append.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="nameof(value)"/> is null.</exception>
+        public unsafe void Append(StringBuffer value)
+        {
+            if (value == null) throw new ArgumentNullException(nameof(value));
+            this.Append(value, 0, value.Length);
+        }
+
+        /// <summary>
+        /// Append the given buffer.
+        /// </summary>
+        /// <param name="nameof(value)">The buffer to append.</param>
+        /// <param name="nameof(startIndex)">The index in the input buffer to start appending from.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="nameof(value)"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown if <paramref name="startIndex"/> is outside the range of <paramref name="value"/> characters.
+        /// </exception>
+        public unsafe void Append(StringBuffer value, ulong startIndex = 0)
+        {
+            if (value == null) throw new ArgumentNullException(nameof(value));
+            this.Append(value, startIndex, value.Length - startIndex);
+        }
+
+        /// <summary>
+        /// Append the given buffer.
+        /// </summary>
+        /// <param name="nameof(value)">The buffer to append.</param>
+        /// <param name="nameof(startIndex)">The index in the input buffer to start appending from.</param>
+        /// <param name="nameof(count)">The count of characters to copy from the buffer.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="nameof(value)"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown if <paramref name="startIndex"/> or <paramref name="nameof(count)"/> are outside the range
+        /// of <paramref name="value"/> characters.
+        /// </exception>
+        public unsafe void Append(StringBuffer value, ulong startIndex = 0, ulong count = 0)
+        {
+            if (count == 0) return;
+            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (startIndex < 0 || startIndex >= value.Length) throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0 || count > value.Length - startIndex) throw new ArgumentOutOfRangeException("count");
+
+            this.AppendInternal(value.CharPointer + startIndex, count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void AppendInternal(string value, int startIndex, int count)
+        private unsafe void AppendInternal(char* content, ulong count)
         {
             if (count == 0) return;
 
             ulong oldLength = this.Length;
             this.Length += (ulong)count;
 
-            fixed (char* content = value)
+            Buffer.MemoryCopy(
+                source: content,
+                destination: (CharPointer + oldLength),
+                destinationSizeInBytes: checked((long)this.ByteCapacity),
+                sourceBytesToCopy: checked((long)count * sizeof(char)));
+        }
+
+        /// <summary>
+        /// Copy contents to the specified buffer.
+        /// </summary>
+        public unsafe void CopyTo(ulong bufferIndex, StringBuffer destination, ulong destinationIndex, ulong count)
+        {
+            if (destination == null) throw new ArgumentNullException(nameof(destination));
+            if (destination.Length < destinationIndex + count || this.Length < bufferIndex + count) throw new ArgumentOutOfRangeException(nameof(count));
+
+            if (count == 0) return;
+
+            Buffer.MemoryCopy(
+                source: this.CharPointer + bufferIndex,
+                destination: destination.CharPointer + destinationIndex,
+                destinationSizeInBytes: checked((long)destination.CharCapacity * sizeof(char)),
+                sourceBytesToCopy: checked((long)count * sizeof(char)));
+        }
+
+        /// <summary>
+        /// Copy contents from the specified string into the buffer at the given index.
+        /// </summary>
+        public unsafe void CopyFrom(ulong bufferIndex, string source, int sourceIndex = 0, int count = -1)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (count < 0) count = source.Length;
+            if (source.Length < sourceIndex + count || this.Length < (ulong)(sourceIndex + count)) throw new ArgumentOutOfRangeException(nameof(count));
+
+            if (count == 0) return;
+
+            fixed (char* content = source)
             {
                 Buffer.MemoryCopy(
-                    source: content + startIndex,
-                    destination: CharPointer + oldLength,
-                    destinationSizeInBytes: (long)base.Capacity,
+                    source: content + sourceIndex,
+                    destination: CharPointer + bufferIndex,
+                    destinationSizeInBytes: checked((long)this.ByteCapacity),
                     sourceBytesToCopy: count * sizeof(char));
             }
         }

@@ -34,7 +34,7 @@ namespace XTask.Tests.Interop
             using (var buffer = new StringBuffer(testString))
             {
                 buffer.Length.Should().Be((ulong)testString.Length);
-                buffer.Capacity.Should().Be((ulong)testString.Length + 1);
+                buffer.CharCapacity.Should().Be((ulong)testString.Length + 1);
 
                 for (int i = 0; i < testString.Length; i++)
                 {
@@ -52,10 +52,10 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new StringBuffer("Food"))
             {
-                buffer.Capacity.Should().Be(5);
+                buffer.CharCapacity.Should().Be(5);
                 buffer.Length = 3;
                 buffer.ToString().Should().Be("Foo");
-                buffer.Capacity.Should().Be(5, "shouldn't reduce capacity when dropping length");
+                buffer.CharCapacity.Should().Be(5, "shouldn't reduce capacity when dropping length");
             }
         }
 
@@ -216,19 +216,41 @@ namespace XTask.Tests.Interop
             ]
         public void AppendTests(string source, string value, int startIndex, int count, string expected)
         {
+            // From string
             using (var buffer = new StringBuffer(source))
             {
                 buffer.Append(value, startIndex, count);
                 buffer.ToString().Should().Be(expected);
             }
+
+            // From buffer
+            using (var buffer = new StringBuffer(source))
+            using (var valueBuffer = new StringBuffer(value))
+            {
+                if (count == -1)
+                    buffer.Append(valueBuffer, (ulong)startIndex);
+                else
+                    buffer.Append(valueBuffer, (ulong)startIndex, (ulong)count);
+                buffer.ToString().Should().Be(expected);
+            }
         }
 
         [Fact]
-        public void AppendNullThrows()
+        public void AppendNullStringThrows()
         {
             using (var buffer = new StringBuffer())
             {
-                Action action = () => buffer.Append(null);
+                Action action = () => buffer.Append((string)null);
+                action.ShouldThrow<ArgumentNullException>();
+            }
+        }
+
+        [Fact]
+        public void AppendNullStringBufferThrows()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => buffer.Append((StringBuffer)null);
                 action.ShouldThrow<ArgumentNullException>();
             }
         }
@@ -372,7 +394,7 @@ namespace XTask.Tests.Interop
                 buffer.Length = 0;
                 fixed (char* contentPointer = content)
                 {
-                    Buffer.MemoryCopy(contentPointer, ((IntPtr)buffer).ToPointer(), (long)buffer.Capacity * 2, content.Length * sizeof(char));
+                    Buffer.MemoryCopy(contentPointer, ((IntPtr)buffer).ToPointer(), (long)buffer.CharCapacity * 2, content.Length * sizeof(char));
                 }
 
                 buffer.Length.Should().Be(0);

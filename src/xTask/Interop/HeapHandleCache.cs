@@ -35,19 +35,21 @@ namespace XTask.Interop
         /// <summary>
         /// Get a HeapHandle
         /// </summary>
-        public HeapHandle Acquire(ulong minCapacity = 0)
+        public HeapHandle Acquire(ulong minSize = 0)
         {
+            if (minSize < this.minSize) minSize = this.minSize;
+
             HeapHandle buffer;
             if (buffers.TryTake(out buffer))
             {
-                if (buffer.ByteLength < minCapacity)
+                if (buffer.ByteLength < minSize)
                 {
-                    buffer.Resize(minCapacity);
+                    buffer.Resize(minSize);
                 }
             }
             else
             {
-                buffer = new HeapHandle(minCapacity);
+                buffer = new HeapHandle(minSize);
             }
 
             return buffer;
@@ -74,7 +76,7 @@ namespace XTask.Interop
             if (disposing)
             {
                 HeapHandle buffer;
-                while (this.buffers.TryTake(out buffer)) ;
+                while (this.buffers.TryTake(out buffer)) buffer.Dispose();
                 this.buffers = null;
             }
         }

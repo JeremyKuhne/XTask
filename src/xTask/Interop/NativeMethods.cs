@@ -188,7 +188,7 @@ namespace XTask.Interop
             {
                 uint returnValue = 0;
 
-                while ((returnValue = invoker(path, buffer)) > (uint)buffer.Capacity)
+                while ((returnValue = invoker(path, buffer)) > (uint)buffer.CharCapacity)
                 {
                     // Need more room for the output string
                     buffer.EnsureCapacity(returnValue);
@@ -241,7 +241,7 @@ namespace XTask.Interop
             {
                 uint returnValue = 0;
 
-                while ((returnValue = invoker(buffer)) > (uint)buffer.Capacity)
+                while ((returnValue = invoker(buffer)) > (uint)buffer.CharCapacity)
                 {
                     // Need more room for the output string
                     buffer.EnsureCapacity(returnValue);
@@ -276,7 +276,7 @@ namespace XTask.Interop
         internal static string GetEnvironmentVariable(string name)
         {
             return BufferInvoke(
-                buffer => Private.GetEnvironmentVariableW(name, buffer, (uint)buffer.Capacity),
+                buffer => Private.GetEnvironmentVariableW(name, buffer, (uint)buffer.CharCapacity),
                 name,
                 error => error != WinError.ERROR_ENVVAR_NOT_FOUND);
         }

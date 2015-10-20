@@ -72,7 +72,7 @@ namespace XTask.Interop
 
             internal static string GetCurrentDirectory()
             {
-                return BufferInvoke((buffer) => Private.GetCurrentDirectoryW((uint)buffer.Capacity, buffer));
+                return BufferInvoke((buffer) => Private.GetCurrentDirectoryW((uint)buffer.CharCapacity, buffer));
             }
 
             internal static void SetCurrentDirectory(string path)
