@@ -260,7 +260,7 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new StringBuffer())
             {
-                Action action = () => buffer.Append("", startIndex: -1);
+                Action action = () => buffer.Append("a", startIndex: -1);
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
@@ -271,16 +271,6 @@ namespace XTask.Tests.Interop
             using (var buffer = new StringBuffer())
             {
                 Action action = () => buffer.Append("", startIndex: 1);
-                action.ShouldThrow<ArgumentOutOfRangeException>();
-            }
-        }
-
-        [Fact]
-        public void AppendNegativeCountThrows()
-        {
-            using (var buffer = new StringBuffer())
-            {
-                Action action = () => buffer.Append("", startIndex: 0, count: -2);
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
@@ -520,6 +510,43 @@ namespace XTask.Tests.Interop
             }
         }
 
+        [Fact]
+        public void CopyFromStringThrowsOnNull()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => { buffer.CopyFrom(0, null); };
+                action.ShouldThrow<ArgumentNullException>();
+            }
+        }
+
+        [Fact]
+        public void CopyFromStringThrowsIndexingBeyondBufferLength()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => { buffer.CopyFrom(1, ""); };
+                action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
+
+        [Theory
+            InlineData("", 0, 1)
+            InlineData("", 1, 0)
+            InlineData("", 1, -1)
+            InlineData("", 2, 0)
+            InlineData("Foo", 3, 1)
+            InlineData("Foo", 4, 0)
+            ]
+        public void CopyFromStringThrowsIndexingBeyondStringLength(string value, int index, int count)
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => { buffer.CopyFrom(0, value, index, count); };
+                action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
+
         [Theory
             InlineData(@"Foo", @"Bar", 0, 0, 3, "Bar")
             InlineData(@"Foo", @"Bar", 3, 0, 3, "FooBar")
@@ -537,5 +564,31 @@ namespace XTask.Tests.Interop
             }
         }
 
+        [Fact]
+        public void CopyToBufferThrowsOnNull()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => { buffer.CopyTo(0, null, 0, 0); };
+                action.ShouldThrow<ArgumentNullException>();
+            }
+        }
+
+        [Theory
+            InlineData("", 0, 1)
+            InlineData("", 1, 0)
+            InlineData("", 2, 0)
+            InlineData("Foo", 3, 1)
+            InlineData("Foo", 4, 0)
+            ]
+        public void CopyToBufferThrowsIndexingBeyondSourceBufferLength(string source, ulong index, ulong count)
+        {
+            using (var buffer = new StringBuffer(source))
+            using (var targetBuffer = new StringBuffer())
+            {
+                Action action = () => { buffer.CopyTo(index, targetBuffer, 0, count); };
+                action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
     }
 }
