@@ -53,14 +53,14 @@ namespace XTask.Interop
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern uint GetLongPathNameW(
                     string lpszShortPath,
-                    IntPtr lpszLongPath,
+                    SafeHandle lpszLongPath,
                     uint cchBuffer);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364989.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern uint GetShortPathNameW(
                     string lpszLongPath,
-                    IntPtr lpszShortPath,
+                    SafeHandle lpszShortPath,
                     uint cchBuffer);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364963.aspx
@@ -68,14 +68,14 @@ namespace XTask.Interop
                 internal static extern uint GetFullPathNameW(
                     string lpFileName,
                     uint nBufferLength,
-                    IntPtr lpBuffer,
+                    SafeHandle lpBuffer,
                     IntPtr lpFilePart);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364962.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern uint GetFinalPathNameByHandleW(
                     SafeFileHandle hFile,
-                    IntPtr lpszFilePath,
+                    SafeHandle lpszFilePath,
                     uint cchFilePath,
                     FinalPathFlags dwFlags);
 

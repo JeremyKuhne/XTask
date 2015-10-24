@@ -101,10 +101,10 @@ namespace XTask.Interop
         /// </summary>
         /// <exception cref="OutOfMemoryException">Thrown if unable to allocate memory when setting.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(Capacity)"/> to a value that is larger than the maximum addressable memory.</exception>
-        public override void EnsureCapacity(ulong minCapacity)
+        public void EnsureCharCapacity(ulong minCapacity)
         {
             if (minCapacity > (ulong.MaxValue / sizeof(char))) throw new ArgumentOutOfRangeException(nameof(minCapacity));
-            base.EnsureCapacity(minCapacity * sizeof(char));
+            this.EnsureByteCapacity(minCapacity * sizeof(char));
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace XTask.Interop
             set
             {
                 // Null terminate
-                this.EnsureCapacity(value + 1);
+                this.EnsureCharCapacity(value + 1);
                 CharPointer[value] = '\0';
 
                 this.length = value;
@@ -144,7 +144,7 @@ namespace XTask.Interop
             }
         }
 
-        private unsafe char* CharPointer
+        internal unsafe char* CharPointer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
@@ -282,7 +282,7 @@ namespace XTask.Interop
             Buffer.MemoryCopy(
                 source: this.CharPointer + bufferIndex,
                 destination: destination.CharPointer + destinationIndex,
-                destinationSizeInBytes: checked((long)destination.CharCapacity * sizeof(char)),
+                destinationSizeInBytes: checked((long)(destination.ByteCapacity + destinationIndex * sizeof(char))),
                 sourceBytesToCopy: checked((long)count * sizeof(char)));
         }
 
@@ -307,7 +307,7 @@ namespace XTask.Interop
                 Buffer.MemoryCopy(
                     source: content + sourceIndex,
                     destination: CharPointer + bufferIndex,
-                    destinationSizeInBytes: checked((long)this.ByteCapacity),
+                    destinationSizeInBytes: checked((long)(this.ByteCapacity + bufferIndex * sizeof(char))),
                     sourceBytesToCopy: count * sizeof(char));
             }
         }

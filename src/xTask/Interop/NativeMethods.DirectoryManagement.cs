@@ -38,7 +38,7 @@ namespace XTask.Interop
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern uint GetCurrentDirectoryW(
                     uint nBufferLength,
-                    IntPtr lpBuffer);
+                    SafeHandle lpBuffer);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365530.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]

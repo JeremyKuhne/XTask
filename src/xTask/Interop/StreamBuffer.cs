@@ -11,6 +11,7 @@ namespace XTask.Interop
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Runtime.InteropServices;
 
     /// <summary>
     /// Stream wrapper for access to the native heap that allows for automatic growth when writing.
@@ -64,7 +65,7 @@ namespace XTask.Interop
             }
         }
 
-        public static implicit operator IntPtr(StreamBuffer buffer)
+        public static implicit operator SafeHandle(StreamBuffer buffer)
         {
             return buffer.buffer;
         }
@@ -89,14 +90,14 @@ namespace XTask.Interop
             Debug.Assert(size >= 0);
 
             if (this.stream != null && this.buffer.ByteCapacity >= (ulong)size) return;
-            this.buffer.EnsureCapacity((ulong)size);
+            this.buffer.EnsureByteCapacity((ulong)size);
 
             long oldLength = this.Length;
             long oldPosition = this.Position;
             this.stream?.Dispose();
 
             this.stream = new UnmanagedMemoryStream(
-                pointer: (byte*)((IntPtr)this.buffer).ToPointer(),
+                pointer: (byte*)this.buffer.DangerousGetHandle().ToPointer(),
                 length: oldLength,
                 capacity: size,
                 access: FileAccess.ReadWrite);

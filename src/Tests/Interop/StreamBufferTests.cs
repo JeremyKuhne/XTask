@@ -10,6 +10,7 @@ namespace XTask.Tests.Interop
     using FluentAssertions;
     using System;
     using System.IO;
+    using System.Runtime.InteropServices;
     using XTask.Interop;
     using Xunit;
 
@@ -428,7 +429,7 @@ namespace XTask.Tests.Interop
         {
             using (StreamBuffer buffer = new StreamBuffer(0))
             {
-                ((IntPtr)buffer).Should().Be(IntPtr.Zero);
+                ((SafeHandle)buffer).DangerousGetHandle().Should().Be(IntPtr.Zero);
             }
         }
 

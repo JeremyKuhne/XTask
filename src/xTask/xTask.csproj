@@ -63,6 +63,7 @@
     <Compile Include="Build\BuildTaskInteraction.cs" />
     <Compile Include="Build\TaskItem.cs" />
     <Compile Include="Collections\ListExtensions.cs" />
+    <Compile Include="Interop\EmptySafeHandle.cs" />
     <Compile Include="Interop\HeapHandle.cs" />
     <Compile Include="Interop\HeapHandleCache.cs" />
     <Compile Include="Interop\LoadLibraryFlags.cs" />

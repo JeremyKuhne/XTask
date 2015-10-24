@@ -41,7 +41,7 @@ namespace XTask.Tests.Interop
                     buffer[(ulong)i].Should().Be(testString[i]);
                 }
 
-                ((char*)((IntPtr)buffer).ToPointer())[testString.Length].Should().Be('\0', "should be null terminated");
+                buffer.CharPointer[testString.Length].Should().Be('\0', "should be null terminated");
 
                 buffer.ToString().Should().Be(testString);
             }
@@ -64,7 +64,7 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new StringBuffer())
             {
-                Action action = () => buffer.EnsureCapacity(ulong.MaxValue / 2 + 1);
+                Action action = () => buffer.EnsureCharCapacity(ulong.MaxValue / 2 + 1);
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
@@ -349,7 +349,7 @@ namespace XTask.Tests.Interop
             using (var buffer = new StringBuffer("A"))
             {
                 // Wipe out the last null
-                ((char*)((IntPtr)buffer).ToPointer())[buffer.Length] = 'B';
+                buffer.CharPointer[buffer.Length] = 'B';
                 buffer.SetLengthToFirstNull();
                 buffer.Length.Should().Be(1);
             }
@@ -384,7 +384,7 @@ namespace XTask.Tests.Interop
                 buffer.Length = 0;
                 fixed (char* contentPointer = content)
                 {
-                    Buffer.MemoryCopy(contentPointer, ((IntPtr)buffer).ToPointer(), (long)buffer.CharCapacity * 2, content.Length * sizeof(char));
+                    Buffer.MemoryCopy(contentPointer, buffer.CharPointer, (long)buffer.CharCapacity * 2, content.Length * sizeof(char));
                 }
 
                 buffer.Length.Should().Be(0);

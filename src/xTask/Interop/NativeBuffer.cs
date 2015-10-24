@@ -18,18 +18,16 @@ namespace XTask.Interop
     /// NativeBuffer utilizes a cache of heap buffers.
     /// </summary>
     /// <remarks>
-    /// Suggested use through P/Invoke: define DllImport arguments that take a byte buffer as SafeHandle or IntPtr.
-    /// NativeBuffer has an implicit conversion for both.
+    /// Suggested use through P/Invoke: define DllImport arguments that take a byte buffer as SafeHandle.
     /// 
-    /// Using SafeHandle will ensure that the buffer will not get collected during a P/Invoke but introduces some overhead.
-    /// (Notably AddRef and ReleaseRef will be called by the interop layer.)
+    /// Using SafeHandle will ensure that the buffer will not get collected during a P/Invoke but introduces very slight
+    /// overhead. (Notably AddRef and ReleaseRef will be called by the interop layer.)
     /// 
     /// This class is not threadsafe, changing the capacity or disposing on multiple threads risks duplicate heap
     /// handles or worse.
     /// </remarks>
     public class NativeBuffer : IDisposable
     {
-        private static SafeHandle EmptyHandle = new EmptySafeHandle();
         private HeapHandle handle;
         private ulong capacity;
 
@@ -38,7 +36,7 @@ namespace XTask.Interop
         /// </summary>
         public NativeBuffer(ulong initialMinCapacity = 0)
         {
-            this.EnsureCapacity(initialMinCapacity);
+            this.EnsureByteCapacity(initialMinCapacity);
         }
 
         protected unsafe void* VoidPointer
@@ -46,7 +44,7 @@ namespace XTask.Interop
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return this.handle == null ? null : this.handle.DangerousGetHandle().ToPointer();
+                return this.InternalDangerousGetHandle().ToPointer();
             }
         }
 
@@ -59,15 +57,22 @@ namespace XTask.Interop
             }
         }
 
-        public static implicit operator IntPtr(NativeBuffer buffer)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IntPtr InternalDangerousGetHandle()
         {
-            return buffer.handle?.DangerousGetHandle() ?? IntPtr.Zero;
+            SafeHandle handle = this.handle;
+            return handle == null ? IntPtr.Zero : handle.DangerousGetHandle();
+        }
+
+        public IntPtr DangerousGetHandle()
+        {
+            return InternalDangerousGetHandle();
         }
 
         public static implicit operator SafeHandle(NativeBuffer buffer)
         {
             // Marshalling code will throw on null for SafeHandle
-            return buffer.handle ?? EmptyHandle;
+            return buffer.handle ?? EmptySafeHandle.Instance;
         }
 
         /// <summary>
@@ -83,7 +88,7 @@ namespace XTask.Interop
         /// </summary>
         /// <exception cref="OutOfMemoryException">Thrown if unable to allocate memory when setting.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(minCapacity)"/> to a value that is larger than the maximum addressable memory.</exception>
-        public virtual void EnsureCapacity(ulong minCapacity)
+        public void EnsureByteCapacity(ulong minCapacity)
         {
             if (this.capacity < minCapacity)
             {
@@ -142,21 +147,6 @@ namespace XTask.Interop
         {
             if (disposing)
                 this.ReleaseHandle();
-        }
-
-        private class EmptySafeHandle : SafeHandle
-        {
-            public EmptySafeHandle() : base(IntPtr.Zero, true) { }
-
-            public override bool IsInvalid
-            {
-                get { return true; }
-            }
-
-            protected override bool ReleaseHandle()
-            {
-                return true;
-            }
         }
     }
 }

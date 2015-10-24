@@ -26,21 +26,21 @@ namespace XTask.Interop
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern uint QueryDosDeviceW(
                     string lpDeviceName,
-                    IntPtr lpTargetPath,
+                    SafeHandle lpTargetPath,
                     uint ucchMax);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364975.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern uint GetLogicalDriveStringsW(
                     uint nBufferLength,
-                    IntPtr lpBuffer);
+                    SafeHandle lpBuffer);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364996.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 [return: MarshalAs(UnmanagedType.Bool)]
                 internal static extern bool GetVolumePathNameW(
                     string lpszFileName,
-                    IntPtr lpszVolumePathName,
+                    SafeHandle lpszVolumePathName,
                     uint cchBufferLength);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364998.aspx
@@ -48,7 +48,7 @@ namespace XTask.Interop
                 [return: MarshalAs(UnmanagedType.Bool)]
                 internal static extern bool GetVolumePathNamesForVolumeNameW(
                     string lpszVolumeName,
-                    IntPtr lpszVolumePathNames,
+                    SafeHandle lpszVolumePathNames,
                     uint cchBuferLength,
                     ref uint lpcchReturnLength);
 
@@ -57,19 +57,19 @@ namespace XTask.Interop
                 [return: MarshalAs(UnmanagedType.Bool)]
                 internal static extern bool GetVolumeNameForVolumeMountPointW(
                     string lpszVolumeMountPoint,
-                    IntPtr lpszVolumeName,
+                    SafeHandle lpszVolumeName,
                     uint cchBufferLength);
 
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364993.aspx
                 [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
                 internal static extern bool GetVolumeInformationW(
                    string lpRootPathName,
-                   IntPtr lpVolumeNameBuffer,
+                   SafeHandle lpVolumeNameBuffer,
                    uint nVolumeNameSize,
                    out uint lpVolumeSerialNumber,
                    out uint lpMaximumComponentLength,
                    out FileSystemFeature lpFileSystemFlags,
-                   IntPtr lpFileSystemNameBuffer,
+                   SafeHandle lpFileSystemNameBuffer,
                    uint nFileSystemNameSize);
             }
 
@@ -90,7 +90,7 @@ namespace XTask.Interop
                         switch (lastError)
                         {
                             case WinError.ERROR_INSUFFICIENT_BUFFER:
-                                buffer.EnsureCapacity(buffer.CharCapacity * 2);
+                                buffer.EnsureCharCapacity(buffer.CharCapacity * 2);
                                 break;
                             default:
                                 throw GetIoExceptionForError(lastError, deviceName);
@@ -112,7 +112,7 @@ namespace XTask.Interop
                     // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
                     while ((result = Private.GetLogicalDriveStringsW((uint)buffer.CharCapacity, buffer)) > (uint)buffer.CharCapacity)
                     {
-                        buffer.EnsureCapacity(result);
+                        buffer.EnsureCharCapacity(result);
                     }
 
                     if (result == 0)
@@ -138,7 +138,7 @@ namespace XTask.Interop
                         switch (lastError)
                         {
                             case WinError.ERROR_FILENAME_EXCED_RANGE:
-                                volumePathName.EnsureCapacity(volumePathName.CharCapacity * 2);
+                                volumePathName.EnsureCharCapacity(volumePathName.CharCapacity * 2);
                                 break;
                             default:
                                 throw GetIoExceptionForError(lastError, path);
@@ -164,7 +164,7 @@ namespace XTask.Interop
                         switch (lastError)
                         {
                             case WinError.ERROR_MORE_DATA:
-                                buffer.EnsureCapacity(returnLength);
+                                buffer.EnsureCharCapacity(returnLength);
                                 break;
                             default:
                                 throw GetIoExceptionForError(lastError, volumeName);

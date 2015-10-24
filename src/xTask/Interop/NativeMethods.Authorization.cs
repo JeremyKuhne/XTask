@@ -42,7 +42,7 @@ namespace XTask.Interop
                 internal static extern bool GetTokenInformation(
                     IntPtr TokenHandle,
                     TOKEN_INFORMATION_CLASS TokenInformationClass,
-                    IntPtr TokenInformation,
+                    SafeHandle TokenInformation,
                     uint TokenInformationLength,
                     out uint ReturnLength);
 
@@ -224,7 +224,7 @@ namespace XTask.Interop
                 if (!Private.GetTokenInformation(
                     token.DangerousGetHandle(),
                     TOKEN_INFORMATION_CLASS.TokenPrivileges,
-                    IntPtr.Zero,
+                    EmptySafeHandle.Instance,
                     0,
                     out bytesNeeded))
                 {

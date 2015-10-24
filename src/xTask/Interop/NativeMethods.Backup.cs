@@ -93,7 +93,7 @@ namespace XTask.Interop
                 [return: MarshalAs(UnmanagedType.Bool)]
                 private static extern bool BackupRead(
                     SafeFileHandle hFile,
-                    IntPtr lpBuffer,
+                    SafeHandle lpBuffer,
                     uint nNumberOfBytesToRead,
                     out uint lpNumberOfBytesRead,
                     [MarshalAs(UnmanagedType.Bool)] bool bAbort,
@@ -129,7 +129,15 @@ namespace XTask.Interop
                 {
                     public BackupStreamType dwStreamId;
                     public BackupStreamAttributes dwStreamAttributes;
+
+                    /// <summary>
+                    /// Data size in bytes
+                    /// </summary>
                     public ulong Size;
+
+                    /// <summary>
+                    /// Length of the stream name in bytes
+                    /// </summary>
                     public uint dwStreamNameSize;
                 }
 
@@ -188,11 +196,11 @@ namespace XTask.Interop
                     // Exit if at the end
                     if (bytesRead == 0) return null;
 
-                    WIN32_STREAM_ID streamId = (WIN32_STREAM_ID)Marshal.PtrToStructure(buffer, typeof(WIN32_STREAM_ID));
+                    WIN32_STREAM_ID streamId = (WIN32_STREAM_ID)Marshal.PtrToStructure(buffer.DangerousGetHandle(), typeof(WIN32_STREAM_ID));
                     string name = null;
                     if (streamId.dwStreamNameSize > 0)
                     {
-                        buffer.EnsureCapacity(streamId.dwStreamNameSize);
+                        buffer.EnsureByteCapacity(streamId.dwStreamNameSize);
                         if (!BackupRead(
                             hFile: fileHandle,
                             lpBuffer: buffer,
@@ -205,7 +213,7 @@ namespace XTask.Interop
                             int error = Marshal.GetLastWin32Error();
                             throw GetIoExceptionForError(error);
                         }
-                        name = Marshal.PtrToStringUni(buffer, (int)bytesRead / 2);
+                        name = Marshal.PtrToStringUni(buffer.DangerousGetHandle(), (int)bytesRead / 2);
                     }
 
                     if (streamId.Size > 0)
@@ -252,7 +260,7 @@ namespace XTask.Interop
                         uint bytesRead;
                         if (!BackupRead(
                             hFile: fileHandle,
-                            lpBuffer: IntPtr.Zero,
+                            lpBuffer: EmptySafeHandle.Instance,
                             nNumberOfBytesToRead: 0,
                             lpNumberOfBytesRead: out bytesRead,
                             bAbort: true,

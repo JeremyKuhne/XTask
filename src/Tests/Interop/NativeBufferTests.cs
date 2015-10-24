@@ -21,9 +21,9 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new NativeBuffer(10))
             {
-                ((IntPtr)buffer).Should().NotBe(IntPtr.Zero);
-                buffer.EnsureCapacity(0);
-                ((IntPtr)buffer).Should().NotBe(IntPtr.Zero);
+                buffer.DangerousGetHandle().Should().NotBe(IntPtr.Zero);
+                buffer.EnsureByteCapacity(0);
+                buffer.DangerousGetHandle().Should().NotBe(IntPtr.Zero);
             }
         }
 

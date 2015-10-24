@@ -83,7 +83,7 @@ namespace XTask.Interop
         /// <summary>
         /// Allocate a buffer of the given size and zero memory if requested.
         /// </summary>
-        /// <param name="byteLength">Required size in bytes. Must be less than UInt32.MaxValue for 32 bit or UInt64.MaxValue for 64 bit.</param>
+        /// <param name="nameof(byteLength)">Required size in bytes. Must be less than UInt32.MaxValue for 32 bit or UInt64.MaxValue for 64 bit.</param>
         /// <exception cref="OutOfMemoryException">Thrown if the requested memory size cannot be allocated.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if size is greater than the maximum memory size.</exception>
         public HeapHandle(ulong byteLength, bool zeroMemory = false) : base(ownsHandle: true)
@@ -99,7 +99,7 @@ namespace XTask.Interop
         /// <summary>
         /// Resize the buffer to the given size and zero memory if requested.
         /// </summary>
-        /// <param name="byteLength">Required size in bytes. Must be less than UInt32.MaxValue for 32 bit or UInt64.MaxValue for 64 bit.</param>
+        /// <param name="nameof(byteLength)">Required size in bytes. Must be less than UInt32.MaxValue for 32 bit or UInt64.MaxValue for 64 bit.</param>
         /// <exception cref="OutOfMemoryException">Thrown if the requested memory size cannot be allocated.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if size is greater than the maximum memory size.</exception>
         public void Resize(ulong byteLength, bool zeroMemory = false)

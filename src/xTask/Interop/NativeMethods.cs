@@ -111,7 +111,7 @@ namespace XTask.Interop
             [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
             internal static extern uint GetEnvironmentVariableW(
                 string lpName,
-                IntPtr lpBuffer,
+                SafeHandle lpBuffer,
                 uint nSize);
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms686206.aspx
@@ -191,7 +191,7 @@ namespace XTask.Interop
                 while ((returnValue = invoker(path, buffer)) > (uint)buffer.CharCapacity)
                 {
                     // Need more room for the output string
-                    buffer.EnsureCapacity(returnValue);
+                    buffer.EnsureCharCapacity(returnValue);
                 }
 
                 if (returnValue == 0)
@@ -244,7 +244,7 @@ namespace XTask.Interop
                 while ((returnValue = invoker(buffer)) > (uint)buffer.CharCapacity)
                 {
                     // Need more room for the output string
-                    buffer.EnsureCapacity(returnValue);
+                    buffer.EnsureCharCapacity(returnValue);
                 }
 
                 if (returnValue == 0)
