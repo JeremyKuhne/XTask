@@ -7,78 +7,49 @@
 
 namespace XTask.Interop
 {
-    using System;
-    using System.Collections.Concurrent;
+    using Collections;
 
     /// <summary>
     /// Allows limited reuse of heap buffers to improve memory pressure. This cache does not ensure
     /// that multiple copies of handles are not released back into the cache.
     /// </summary>
-    public class HeapHandleCache : IDisposable
+    public sealed class HeapHandleCache : Cache<HeapHandle>
     {
-        internal static HeapHandleCache Instance = new HeapHandleCache();
-
         private ulong minSize;
         private ulong maxSize;
-        private uint maxBuilders;
 
-        private ConcurrentBag<HeapHandle> buffers;
+        private static readonly HeapHandleCache instance = new HeapHandleCache();
 
-        public HeapHandleCache(ulong minSize = 64, ulong maxSize = 1024 * 4, uint maxBuilders = 0)
+        public HeapHandleCache(ulong minSize = 64, ulong maxSize = 1024 * 2, int maxBuilders = 0)
+            : base (cacheSpace: maxBuilders)
         {
             this.minSize = minSize;
             this.maxSize = maxSize;
-            this.maxBuilders = maxBuilders > 1 ? maxBuilders : (uint)Environment.ProcessorCount * 4;
-            this.buffers = new ConcurrentBag<HeapHandle>();
+        }
+
+        public static HeapHandleCache Instance
+        {
+            get { return instance; }
         }
 
         /// <summary>
         /// Get a HeapHandle
         /// </summary>
-        public HeapHandle Acquire(ulong minSize = 0)
+        public HeapHandle Acquire(ulong minSize)
         {
+            HeapHandle handle = this.Acquire();
             if (minSize < this.minSize) minSize = this.minSize;
-
-            HeapHandle buffer;
-            if (buffers.TryTake(out buffer))
+            if (handle.ByteLength < minSize)
             {
-                if (buffer.ByteLength < minSize)
-                {
-                    buffer.Resize(minSize);
-                }
-            }
-            else
-            {
-                buffer = new HeapHandle(minSize);
+                handle.Resize(minSize);
             }
 
-            return buffer;
+            return handle;
         }
 
-        /// <summary>
-        /// Give a HeapHandle back for potential reuse
-        /// </summary>
-        public void Release(HeapHandle buffer)
+        protected override bool ShouldAttemptCache(HeapHandle item)
         {
-            if (buffer.ByteLength <= this.maxSize && this.buffers.Count < maxBuilders)
-            {
-                this.buffers.Add(buffer);
-            }
-        }
-
-        public void Dispose()
-        {
-            this.Dispose(disposing: true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                HeapHandle buffer;
-                while (this.buffers.TryTake(out buffer)) buffer.Dispose();
-                this.buffers = null;
-            }
+            return item.ByteLength <= this.maxSize;
         }
     }
 }

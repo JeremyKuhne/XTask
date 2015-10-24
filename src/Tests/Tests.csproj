@@ -74,6 +74,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\CacheTests.cs" />
     <Compile Include="FileSystem\FileSystemInformationExtensions.cs" />
     <Compile Include="Interop\BufferPathInvokeTests.cs" />
     <Compile Include="Interop\ErrorsTests.cs" />

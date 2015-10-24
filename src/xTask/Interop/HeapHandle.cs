@@ -81,6 +81,11 @@ namespace XTask.Interop
         public static IntPtr ProcessHeap = NativeMethods.GetProcessHeap();
 
         /// <summary>
+        /// Create an empty heap handle
+        /// </summary>
+        public HeapHandle() : this(0) { }
+
+        /// <summary>
         /// Allocate a buffer of the given size and zero memory if requested.
         /// </summary>
         /// <param name="nameof(byteLength)">Required size in bytes. Must be less than UInt32.MaxValue for 32 bit or UInt64.MaxValue for 64 bit.</param>
@@ -88,7 +93,14 @@ namespace XTask.Interop
         /// <exception cref="ArgumentOutOfRangeException">Thrown if size is greater than the maximum memory size.</exception>
         public HeapHandle(ulong byteLength, bool zeroMemory = false) : base(ownsHandle: true)
         {
-            this.Resize(byteLength, zeroMemory);
+            if (byteLength > 0)
+            {
+                this.Resize(byteLength, zeroMemory);
+            }
+            else
+            {
+                this.Initialize(0);
+            }
         }
 
         public override bool IsInvalid
