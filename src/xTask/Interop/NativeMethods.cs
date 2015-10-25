@@ -184,7 +184,7 @@ namespace XTask.Interop
                 addedExtendedPrefix = true;
             }
 
-            using (var buffer = new StringBuffer())
+            using (var buffer = StringBuffer.GetCachedBuffer())
             {
                 uint returnValue = 0;
 
@@ -237,7 +237,7 @@ namespace XTask.Interop
         [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
         internal static string BufferInvoke(Func<StringBuffer, uint> invoker, string value = null, Func<int, bool> shouldThrow = null)
         {
-            using (var buffer = new StringBuffer())
+            using (var buffer = StringBuffer.GetCachedBuffer())
             {
                 uint returnValue = 0;
 

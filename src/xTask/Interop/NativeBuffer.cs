@@ -138,6 +138,14 @@ namespace XTask.Interop
             }
         }
 
+        /// <summary>
+        /// Free the space used by the buffer. Sets capacity to 0.
+        /// </summary>
+        public virtual void Free()
+        {
+            this.ReleaseHandle();
+        }
+
         public void Dispose()
         {
             this.Dispose(disposing: true);
@@ -146,7 +154,7 @@ namespace XTask.Interop
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
-                this.ReleaseHandle();
+                this.Free();
         }
     }
 }

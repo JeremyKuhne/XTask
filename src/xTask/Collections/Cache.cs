@@ -11,12 +11,12 @@ namespace XTask.Collections
     using System.Collections.Concurrent;
     using System.Threading;
 
-    public abstract class Cache<T> : IDisposable where T : IDisposable, new() 
+    public class Cache<T> : IDisposable where T : IDisposable, new() 
     {
         private int cacheSpace;
         private ConcurrentStack<T> itemsCache = new ConcurrentStack<T>();
 
-        protected Cache(int cacheSpace)
+        public Cache(int cacheSpace)
         {
             if (cacheSpace < 1) cacheSpace = Environment.ProcessorCount * 4;
             this.cacheSpace = cacheSpace;

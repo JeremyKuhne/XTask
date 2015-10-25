@@ -10,6 +10,7 @@ namespace XTask.Interop
     using System;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
+    using Collections;
 
     /// <summary>
     /// Native buffer that deals in char size increments. Dispose to free memory. Allows buffers larger
@@ -26,11 +27,19 @@ namespace XTask.Interop
         private ulong length;
 
         /// <summary>
+        /// Create and empty StringBuffer.
+        /// </summary>
+        public StringBuffer()
+            : this(initialMinCapacity: 0)
+        {
+        }
+
+        /// <summary>
         /// Instantiate the buffer with capacity for at least the specified number of characters. Capacity
         /// includes the trailing null character.
         /// </summary>
-        public StringBuffer(ulong initialCapacity = 0)
-            : base(initialCapacity)
+        public StringBuffer(ulong initialMinCapacity)
+            : base(initialMinCapacity)
         {
         }
 
@@ -46,6 +55,16 @@ namespace XTask.Interop
             {
                 this.Append(initialContents);
             }
+        }
+
+        /// <summary>
+        /// Get a buffer with at least the specified capacity from the global cache.
+        /// </summary>
+        public static StringBuffer GetCachedBuffer(ulong initialMinCapacity = 0)
+        {
+            var buffer = StringBufferCache.Instance.Acquire();
+            buffer.EnsureCharCapacity(initialMinCapacity);
+            return buffer;
         }
 
         /// <summary>
@@ -462,6 +481,12 @@ namespace XTask.Interop
             if (realCount == 0) return String.Empty;
 
             return new string(value: CharPointer + startIndex, startIndex: 0, length: checked((int)realCount));
+        }
+
+        public override void Free()
+        {
+            this.length = 0;
+            base.Free();
         }
     }
 }

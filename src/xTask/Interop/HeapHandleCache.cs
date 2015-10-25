@@ -20,8 +20,8 @@ namespace XTask.Interop
 
         private static readonly HeapHandleCache instance = new HeapHandleCache();
 
-        public HeapHandleCache(ulong minSize = 64, ulong maxSize = 1024 * 2, int maxBuilders = 0)
-            : base (cacheSpace: maxBuilders)
+        public HeapHandleCache(ulong minSize = 64, ulong maxSize = 1024 * 2, int maxHandles = 0)
+            : base (cacheSpace: maxHandles)
         {
             this.minSize = minSize;
             this.maxSize = maxSize;

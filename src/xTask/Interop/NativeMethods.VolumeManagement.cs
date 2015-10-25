@@ -79,7 +79,7 @@ namespace XTask.Interop
                 if (deviceName != null) deviceName = Paths.RemoveTrailingSeparators(deviceName);
 
                 // Null will return everything defined- this list is quite large so set a higher initial allocation
-                using (var buffer = new StringBuffer(deviceName == null ? (ulong)8192 : 256))
+                using (var buffer = deviceName == null ? new StringBuffer(initialMinCapacity: 8192) : StringBuffer.GetCachedBuffer(initialMinCapacity: 256))
                 {
                     uint result = 0;
 
@@ -105,7 +105,7 @@ namespace XTask.Interop
             [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static IEnumerable<string> GetLogicalDriveStrings()
             {
-                using (var buffer = new StringBuffer())
+                using (var buffer = StringBuffer.GetCachedBuffer())
                 {
                     uint result = 0;
 
@@ -130,7 +130,7 @@ namespace XTask.Interop
             internal static string GetVolumePathName(string path)
             {
                 // Most paths are mounted at the root, 50 should handle the canonical (guid) root
-                using (var volumePathName = new StringBuffer(initialCapacity: 50))
+                using (var volumePathName = StringBuffer.GetCachedBuffer(initialMinCapacity: 50))
                 {
                     while (!Private.GetVolumePathNameW(path, volumePathName, (uint)volumePathName.CharCapacity))
                     {
@@ -153,7 +153,7 @@ namespace XTask.Interop
             [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static IEnumerable<string> GetVolumePathNamesForVolumeName(string volumeName)
             {
-                using (var buffer = new StringBuffer())
+                using (var buffer = StringBuffer.GetCachedBuffer())
                 {
                     uint returnLength = 0;
 
@@ -181,7 +181,7 @@ namespace XTask.Interop
                 volumeMountPoint = Paths.AddTrailingSeparator(volumeMountPoint);
 
                 // MSDN claims 50 is "reasonable", let's go double.
-                using (var volumeName = new StringBuffer(initialCapacity: 100))
+                using (var volumeName = StringBuffer.GetCachedBuffer(initialMinCapacity: 100))
                 {
                     if (!Private.GetVolumeNameForVolumeMountPointW(volumeMountPoint, volumeName, (uint)volumeName.CharCapacity))
                     {
@@ -198,8 +198,8 @@ namespace XTask.Interop
             {
                 rootPath = Paths.AddTrailingSeparator(rootPath);
 
-                using (var volumeName = new StringBuffer(initialCapacity: Paths.MaxPath + 1))
-                using (var fileSystemName = new StringBuffer(initialCapacity: Paths.MaxPath + 1))
+                using (var volumeName = StringBuffer.GetCachedBuffer(initialMinCapacity: Paths.MaxPath + 1))
+                using (var fileSystemName = StringBuffer.GetCachedBuffer(initialMinCapacity: Paths.MaxPath + 1))
                 {
                     uint serialNumber, maxComponentLength;
                     FileSystemFeature flags;

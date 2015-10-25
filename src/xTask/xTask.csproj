@@ -73,6 +73,7 @@
     <Compile Include="Interop\StringBuffer.cs" />
     <Compile Include="Interop\SafeHandleZeroIsInvalid.cs" />
     <Compile Include="Interop\SafeLibraryHandle.cs" />
+    <Compile Include="Interop\StringBufferCache.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationManagerWrapper.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationSectionGroupWrapper.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationWrapper.cs" />
