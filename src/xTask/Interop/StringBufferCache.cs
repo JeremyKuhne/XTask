@@ -5,10 +5,11 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using XTask.Collections;
-
 namespace XTask.Interop
 {
+    using System;
+    using XTask.Collections;
+
     /// <summary>
     /// Allows caching of StringBuffer objects to ease GC pressure when creating many StringBuffers.
     /// </summary>
@@ -20,16 +21,55 @@ namespace XTask.Interop
         {
         }
 
+        public StringBuffer Acquire(ulong minCapacity)
+        {
+            StringBuffer item = this.Acquire();
+            item.EnsureCharCapacity(minCapacity: minCapacity);
+            return item;
+        }
+
         public static StringBufferCache Instance
         {
             get { return instance; }
         }
 
-        protected override StringBuffer PrepareCachedItem(StringBuffer item)
+        public override void Release(StringBuffer item)
         {
             // Free the underlying buffer (which is implicitly cached)
             item.Free();
-            return item;
+            base.Release(item);
         }
+
+        public static void CachedBufferInvoke(Action<StringBuffer> action)
+        {
+            var buffer = Instance.Acquire();
+            try
+            {
+                action(buffer);
+            }
+            finally
+            {
+                Instance.Release(buffer);
+            }
+        }
+
+        public static T CachedBufferInvoke<T>(Func<StringBuffer, T> func)
+        {
+            return CachedBufferInvoke(0, func);
+        }
+
+        public static T CachedBufferInvoke<T>(uint minCapacity, Func<StringBuffer, T> func)
+        {
+            var buffer = Instance.Acquire(minCapacity);
+            try
+            {
+                return func(buffer);
+            }
+            finally
+            {
+                Instance.Release(buffer);
+            }
+        }
+
     }
 }

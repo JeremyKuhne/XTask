@@ -8,62 +8,40 @@
 namespace XTask.Collections
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Threading;
 
-    public class Cache<T> : IDisposable where T : IDisposable, new() 
+    public class Cache<T> : IDisposable where T : class, IDisposable, new()
     {
-        private int cacheSpace;
-        private ConcurrentStack<T> itemsCache = new ConcurrentStack<T>();
+        protected readonly T[] itemsCache;
 
         public Cache(int cacheSpace)
         {
             if (cacheSpace < 1) cacheSpace = Environment.ProcessorCount * 4;
-            this.cacheSpace = cacheSpace;
+            this.itemsCache = new T[cacheSpace];
         }
 
         public T Acquire()
         {
             T item;
-            if (this.itemsCache.TryPop(out item))
+
+            for (int i = 0; i < this.itemsCache.Length; i++)
             {
-                Interlocked.Increment(ref this.cacheSpace);
-            }
-            else
-            {
-                item = new T();
+                item = Interlocked.Exchange(ref this.itemsCache[i], null);
+                if (item != null) return item;
             }
 
-            return item;
+            return new T();
         }
 
-        public void Release(T item)
+        public virtual void Release(T item)
         {
-            if (ShouldAttemptCache(item))
+            for (int i = 0; i < this.itemsCache.Length; i++)
             {
-                if (Interlocked.Decrement(ref this.cacheSpace) < 0)
-                {
-                    // No more space
-                    Interlocked.Increment(ref this.cacheSpace);
-                }
-                else
-                {
-                    this.itemsCache.Push(this.PrepareCachedItem(item));
-                    return;
-                }
+                item = Interlocked.Exchange(ref this.itemsCache[i], item);
+                if (item == null) return;
             }
 
             item.Dispose();
-        }
-
-        protected virtual T PrepareCachedItem(T item)
-        {
-            return item;
-        }
-
-        protected virtual bool ShouldAttemptCache(T item)
-        {
-            return true;
         }
 
         public void Dispose()
@@ -75,9 +53,11 @@ namespace XTask.Collections
         {
             if (disposing)
             {
-                T item;
-                while (this.itemsCache.TryPop(out item)) item.Dispose();
-                this.itemsCache = null;
+                for (int i = 0; i < this.itemsCache.Length; i++)
+                {
+                    this.itemsCache[i]?.Dispose();
+                    this.itemsCache[i] = null;
+                }
             }
         }
     }

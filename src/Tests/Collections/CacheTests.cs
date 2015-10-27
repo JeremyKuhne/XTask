@@ -25,16 +25,24 @@ namespace XTask.Tests.Collections
 
         public class TestCache : Cache<TestItem>
         {
-            public int CachedCount;
-
             public TestCache(int cacheSpace) : base(cacheSpace)
             {
             }
 
-            protected override TestItem PrepareCachedItem(TestItem item)
+            public TestItem[] Cache
             {
-                CachedCount++;
-                return item;
+                get { return this.itemsCache; }
+            }
+
+            public int CachedCount
+            {
+                get
+                {
+                    int count = 0;
+                    foreach (var item in Cache)
+                        if (item != null) count++;
+                    return count;
+                }
             }
         }
 
@@ -66,7 +74,7 @@ namespace XTask.Tests.Collections
         {
             TestCache cache = new TestCache(5);
             TestItem item = new TestItem();
-            Parallel.For(0, 10000, (i) => cache.Release(item));
+            Parallel.For(0, 5, (i) => cache.Release(item));
             cache.CachedCount.Should().Be(5);
         }
     }

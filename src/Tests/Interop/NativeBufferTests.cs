@@ -68,6 +68,28 @@ namespace XTask.Tests.Interop
             }
         }
 
+        [Fact]
+        public void DisposedBufferIsEmpty()
+        {
+            var buffer = new NativeBuffer(5);
+            buffer.ByteCapacity.Should().Be(5);
+            buffer.Dispose();
+            buffer.ByteCapacity.Should().Be(0);
+            buffer.DangerousGetHandle().Should().Be(IntPtr.Zero);
+        }
+
+        [Fact]
+        public void FreedBufferIsEmpty()
+        {
+            using (var buffer = new NativeBuffer(5))
+            {
+                buffer.ByteCapacity.Should().Be(5);
+                buffer.Free();
+                buffer.ByteCapacity.Should().Be(0);
+                buffer.DangerousGetHandle().Should().Be(IntPtr.Zero);
+            }
+        }
+
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364934.aspx
         [DllImport(Libraries.Kernel32, EntryPoint = "GetCurrentDirectoryW", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
         private static extern uint GetCurrentDirectorySafe(

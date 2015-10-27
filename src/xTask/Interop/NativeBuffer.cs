@@ -135,6 +135,7 @@ namespace XTask.Interop
             {
                 HeapHandleCache.Instance.Release(this.handle);
                 this.handle = null;
+                this.capacity = 0;
             }
         }
 

@@ -79,7 +79,10 @@ namespace XTask.Interop
                 if (deviceName != null) deviceName = Paths.RemoveTrailingSeparators(deviceName);
 
                 // Null will return everything defined- this list is quite large so set a higher initial allocation
-                using (var buffer = deviceName == null ? new StringBuffer(initialMinCapacity: 8192) : StringBuffer.GetCachedBuffer(initialMinCapacity: 256))
+
+                var buffer = deviceName == null ? new StringBuffer(initialMinCapacity: 8192) : StringBufferCache.Instance.Acquire(minCapacity: 256);
+
+                try
                 {
                     uint result = 0;
 
@@ -100,12 +103,16 @@ namespace XTask.Interop
                     buffer.Length = result;
                     return buffer.Split('\0');
                 }
+                finally
+                {
+                    StringBufferCache.Instance.Release(buffer);
+                }
             }
 
             [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static IEnumerable<string> GetLogicalDriveStrings()
             {
-                using (var buffer = StringBuffer.GetCachedBuffer())
+                return StringBufferCache.CachedBufferInvoke((buffer) =>
                 {
                     uint result = 0;
 
@@ -123,14 +130,14 @@ namespace XTask.Interop
 
                     buffer.Length = result;
                     return buffer.Split('\0');
-                }
+                });
             }
 
             [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static string GetVolumePathName(string path)
             {
                 // Most paths are mounted at the root, 50 should handle the canonical (guid) root
-                using (var volumePathName = StringBuffer.GetCachedBuffer(initialMinCapacity: 50))
+                return StringBufferCache.CachedBufferInvoke(50, (volumePathName) =>
                 {
                     while (!Private.GetVolumePathNameW(path, volumePathName, (uint)volumePathName.CharCapacity))
                     {
@@ -147,13 +154,13 @@ namespace XTask.Interop
 
                     volumePathName.SetLengthToFirstNull();
                     return volumePathName.ToString();
-                }
+                });
             }
 
             [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
             internal static IEnumerable<string> GetVolumePathNamesForVolumeName(string volumeName)
             {
-                using (var buffer = StringBuffer.GetCachedBuffer())
+                return StringBufferCache.CachedBufferInvoke((buffer) =>
                 {
                     uint returnLength = 0;
 
@@ -173,7 +180,7 @@ namespace XTask.Interop
 
                     buffer.Length = returnLength;
                     return buffer.Split('\0');
-                }
+                });
             }
 
             internal static string GetVolumeNameForVolumeMountPoint(string volumeMountPoint)
@@ -181,7 +188,7 @@ namespace XTask.Interop
                 volumeMountPoint = Paths.AddTrailingSeparator(volumeMountPoint);
 
                 // MSDN claims 50 is "reasonable", let's go double.
-                using (var volumeName = StringBuffer.GetCachedBuffer(initialMinCapacity: 100))
+                return StringBufferCache.CachedBufferInvoke(100, (volumeName) =>
                 {
                     if (!Private.GetVolumeNameForVolumeMountPointW(volumeMountPoint, volumeName, (uint)volumeName.CharCapacity))
                     {
@@ -191,15 +198,15 @@ namespace XTask.Interop
 
                     volumeName.SetLengthToFirstNull();
                     return volumeName.ToString();
-                }
+                });
             }
 
             internal static VolumeInformation GetVolumeInformation(string rootPath)
             {
                 rootPath = Paths.AddTrailingSeparator(rootPath);
 
-                using (var volumeName = StringBuffer.GetCachedBuffer(initialMinCapacity: Paths.MaxPath + 1))
-                using (var fileSystemName = StringBuffer.GetCachedBuffer(initialMinCapacity: Paths.MaxPath + 1))
+                using (var volumeName = new StringBuffer(initialMinCapacity: Paths.MaxPath + 1))
+                using (var fileSystemName = new StringBuffer(initialMinCapacity: Paths.MaxPath + 1))
                 {
                     uint serialNumber, maxComponentLength;
                     FileSystemFeature flags;

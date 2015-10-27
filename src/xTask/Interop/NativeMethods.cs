@@ -184,7 +184,7 @@ namespace XTask.Interop
                 addedExtendedPrefix = true;
             }
 
-            using (var buffer = StringBuffer.GetCachedBuffer())
+            return StringBufferCache.CachedBufferInvoke(Paths.MaxPath, (buffer) =>
             {
                 uint returnValue = 0;
 
@@ -226,9 +226,9 @@ namespace XTask.Interop
                 }
                 else
                 {
-                    return buffer.SubString(startIndex: startIndex);
+                   return buffer.SubString(startIndex: startIndex);
                 }
-            }
+            });
         }
 
         /// <summary>
@@ -237,7 +237,7 @@ namespace XTask.Interop
         [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
         internal static string BufferInvoke(Func<StringBuffer, uint> invoker, string value = null, Func<int, bool> shouldThrow = null)
         {
-            using (var buffer = StringBuffer.GetCachedBuffer())
+            return StringBufferCache.CachedBufferInvoke(Paths.MaxPath, (buffer) =>
             {
                 uint returnValue = 0;
 
@@ -261,7 +261,7 @@ namespace XTask.Interop
 
                 buffer.Length = returnValue;
                 return buffer.ToString();
-            }
+            });
         }
 
         internal static void SetEnvironmentVariable(string name, string value)

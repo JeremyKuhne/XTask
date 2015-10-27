@@ -10,7 +10,6 @@ namespace XTask.Interop
     using System;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
-    using Collections;
 
     /// <summary>
     /// Native buffer that deals in char size increments. Dispose to free memory. Allows buffers larger
@@ -55,16 +54,6 @@ namespace XTask.Interop
             {
                 this.Append(initialContents);
             }
-        }
-
-        /// <summary>
-        /// Get a buffer with at least the specified capacity from the global cache.
-        /// </summary>
-        public static StringBuffer GetCachedBuffer(ulong initialMinCapacity = 0)
-        {
-            var buffer = StringBufferCache.Instance.Acquire();
-            buffer.EnsureCharCapacity(initialMinCapacity);
-            return buffer;
         }
 
         /// <summary>

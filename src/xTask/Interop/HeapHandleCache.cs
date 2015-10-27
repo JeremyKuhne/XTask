@@ -47,9 +47,10 @@ namespace XTask.Interop
             return handle;
         }
 
-        protected override bool ShouldAttemptCache(HeapHandle item)
+        public override void Release(HeapHandle item)
         {
-            return item.ByteLength <= this.maxSize;
+            if (item.ByteLength <= this.maxSize)
+                base.Release(item);
         }
     }
 }
