@@ -11,7 +11,10 @@ namespace XTask.Settings
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
+    using Services;
     using XTask.Utility;
+    using Systems.Configuration;
+    using Systems.File;
 
     /// <summary>
     /// Argument provider that provides default arguments from IClientSettings
@@ -30,10 +33,10 @@ namespace XTask.Settings
             this.clientSettings = clientSettings;
         }
 
-        public static ArgumentSettingsProvider Create(IArgumentProvider argumentProvider, string settingsSection = null)
+        public static ArgumentSettingsProvider Create(IArgumentProvider argumentProvider, IConfigurationManager configurationManager, IFileService fileService, string settingsSection = null)
         {
             settingsSection = settingsSection ?? Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().MainModule.FileName) + ".Defaults";
-            ArgumentSettingsProvider settingsProvider = new ArgumentSettingsProvider(settingsSection, argumentProvider, ClientSettings.Create(settingsSection));
+            ArgumentSettingsProvider settingsProvider = new ArgumentSettingsProvider(settingsSection, argumentProvider, ClientSettings.Create(settingsSection, configurationManager, fileService));
             return settingsProvider;
         }
 

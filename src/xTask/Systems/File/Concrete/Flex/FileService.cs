@@ -10,20 +10,22 @@ namespace XTask.Systems.File.Concrete.Flex
     using Interop;
     using Microsoft.Win32.SafeHandles;
     using System;
+    using Services;
 
     /// <summary>
     /// File service that provides fast and accurate file system access. Supports extended syntax and implicit long paths.
+    /// Maintains a separate, enhanced current directory that supports alternate volume names.
     /// </summary>
     /// <remarks>
     /// Also supports UNCs, devices, and alternate data streams.
     /// </remarks>
-    internal class FileService : ExtendedFileService, IExtendedFileService
+    internal class FileService : IFileService
     {
         private CurrentDirectory directory;
 
-        public FileService() : base()
+        public FileService(IExtendedFileService extendedFileService)
         {
-            this.directory = new Flex.CurrentDirectory(this);
+            this.directory = new Flex.CurrentDirectory(this, extendedFileService);
         }
 
         public string CurrentDirectory

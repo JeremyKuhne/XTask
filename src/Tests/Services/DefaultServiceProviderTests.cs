@@ -18,8 +18,8 @@ namespace XTask.Tests.Services
         [Fact]
         public void ExpectedServicesFound()
         {
-            DefaultServiceProvider.Services.GetService<IFileService>().Should().NotBeNull();
-            DefaultServiceProvider.Services.GetService<IConsoleService>().Should().NotBeNull();
+            FlexServiceProvider.Services.GetService<IFileService>().Should().NotBeNull();
+            FlexServiceProvider.Services.GetService<IConsoleService>().Should().NotBeNull();
         }
     }
 }

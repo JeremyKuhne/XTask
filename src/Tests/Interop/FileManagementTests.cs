@@ -15,6 +15,7 @@ namespace XTask.Tests.Interop
     using XTask.Systems.File.Concrete.Flex;
     using XTask.Interop;
     using Xunit;
+    using Systems.File.Concrete;
 
     public class FileManagementTests
     {
@@ -341,13 +342,13 @@ namespace XTask.Tests.Interop
         [Fact]
         public void FinalPathNameLongPathPrefixRoundTripBehavior()
         {
-            using (var cleaner = new TestFileCleaner(false))
+            using (var cleaner = new TestFileCleaner(useDotNet: false))
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
                 string filePath = Paths.Combine(longPath, Path.GetRandomFileName());
-                IFileService system = new FileService();
-                system.CreateDirectory(longPath);
-                system.WriteAllText(filePath, "FinalPathNameLongPathPrefixRoundTripBehavior");
+
+                cleaner.FileService.CreateDirectory(longPath);
+                cleaner.FileService.WriteAllText(filePath, "FinalPathNameLongPathPrefixRoundTripBehavior");
 
                 using (var handle = NativeMethods.FileManagement.CreateFile(filePath, FileAccess.Read, FileShare.ReadWrite, FileMode.Open, 0))
                 {
@@ -407,7 +408,7 @@ namespace XTask.Tests.Interop
             {
                 string filePath = cleaner.CreateTestFile("FinalPathNameVolumeNameBehavior");
 
-                string canonicalRoot = cleaner.ExtendedFileService.GetCanonicalRoot(filePath);
+                string canonicalRoot = cleaner.ExtendedFileService.GetCanonicalRoot(cleaner.FileService, filePath);
                 string replacedPath = Paths.ReplaceRoot(canonicalRoot, filePath);
 
                 using (var handle = NativeMethods.FileManagement.CreateFile(replacedPath.ToLower(), FileAccess.Read, FileShare.ReadWrite, FileMode.Open, 0))
@@ -435,8 +436,8 @@ namespace XTask.Tests.Interop
         [Fact]
         public void FinalPathNameLinkBehavior()
         {
-            IExtendedFileService fileService = new FileService();
-            if (!fileService.CanCreateSymbolicLinks()) return;
+            var extendedFileService = new ExtendedFileService();
+            if (!extendedFileService.CanCreateSymbolicLinks()) return;
 
             // GetFinalPathName always points to the linked file unless you specifically open the reparse point
             using (var cleaner = new TestFileCleaner())
@@ -444,7 +445,7 @@ namespace XTask.Tests.Interop
                 string filePath = Paths.Combine(cleaner.TempFolder, "Target");
                 string extendedPath = Paths.AddExtendedPrefix(filePath, addIfUnderLegacyMaxPath: true);
 
-                fileService.WriteAllText(filePath, "CreateSymbolicLinkToFile");
+                cleaner.FileService.WriteAllText(filePath, "CreateSymbolicLinkToFile");
 
                 string symbolicLink = Paths.Combine(cleaner.TempFolder, "Link");
                 string extendedLink = Paths.AddExtendedPrefix(symbolicLink, addIfUnderLegacyMaxPath: true);

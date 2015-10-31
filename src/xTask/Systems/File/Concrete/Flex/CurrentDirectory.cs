@@ -15,11 +15,13 @@ namespace XTask.Systems.File.Concrete.Flex
 
     public class CurrentDirectory
     {
-        private IExtendedFileService fileService;
+        private IExtendedFileService extendedFileService;
+        private IFileService fileService;
 
-        public CurrentDirectory(IExtendedFileService fileService)
+        public CurrentDirectory(IFileService fileService, IExtendedFileService extendedFileService)
         {
             this.fileService = fileService;
+            this.extendedFileService = extendedFileService;
             this.SetCurrentDirectory(Environment.CurrentDirectory);
         }
 
@@ -39,7 +41,7 @@ namespace XTask.Systems.File.Concrete.Flex
         private string AddEntry(string directory, string canonicalRoot = null)
         {
             string root = Paths.GetRoot(directory);
-            canonicalRoot = canonicalRoot ?? fileService.GetCanonicalRoot(directory);
+            canonicalRoot = canonicalRoot ?? extendedFileService.GetCanonicalRoot(fileService, directory);
 
             // If the directory has vanished, walk up
             while (!fileService.DirectoryExists(directory)
@@ -62,7 +64,7 @@ namespace XTask.Systems.File.Concrete.Flex
 
         public string GetCurrentDirectory(string path = null)
         {
-            string volume = path == null ? lastVolume : fileService.GetCanonicalRoot(path);
+            string volume = path == null ? lastVolume : extendedFileService.GetCanonicalRoot(fileService, path);
 
             string directory;
             if (this.volumeDirectories.TryGetValue(volume, out directory))
@@ -73,7 +75,7 @@ namespace XTask.Systems.File.Concrete.Flex
             else
             {
                 // Try to get the hidden environment variable (e.g. "=C:") for the given drive if available
-                string driveLetter = fileService.GetDriveLetter(path);
+                string driveLetter = extendedFileService.GetDriveLetter(fileService, path);
                 if (driveLetter != null)
                 {
                     string environmentPath = NativeMethods.GetEnvironmentVariable("=" + driveLetter.Substring(0, 2));

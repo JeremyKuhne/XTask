@@ -7,54 +7,42 @@
 
 namespace XTask.Tests.Settings
 {
-    using System;
-    using System.Configuration;
-    using System.Xml;
     using FluentAssertions;
     using NSubstitute;
-    using XTask.Systems.Configuration;
-    using XTask.Systems.File;
-    using XTask.Settings;
-    using Xunit;
+    using System;
+    using System.Configuration;
     using System.IO;
+    using System.Xml;
+    using XTask.Settings;
+    using Systems.Configuration;
+    using Systems.File;
+    using Xunit;
 
     public class ClientSettingsViewTests
     {
         private class TestClientSettingsView : ClientSettingsView
         {
-            private TestClientSettingsView(string settingsSection, SettingsLocation settingsLocation) :
-                base(settingsSection, settingsLocation) { }
+            public TestClientSettingsView(IConfigurationManager configurationManager, IFileService fileService, string settingsSection = "testsettings", SettingsLocation settingsLocation = SettingsLocation.Executable) :
+                base(settingsSection, settingsLocation, configurationManager, fileService) { }
 
-            public static IConfigurationManager TestConfigurationManager
+            public IConfiguration TestGetConfiguration(ConfigurationUserLevel userLevel)
             {
-                get { return ClientSettingsView.ConfigurationManager; }
-                set { ClientSettingsView.ConfigurationManager = value; }
+                return this.GetConfiguration(userLevel);
             }
 
-            public static IFileService TestFileService
+            public IConfiguration TestGetContainingConfigurationIfDifferent()
             {
-                get { return ClientSettingsView.FileService.Value; }
-                set { ClientSettingsView.FileService = new Lazy<IFileService>(() => value); }
+                return this.GetContainingConfigurationIfDifferent();
             }
 
-            public static IConfiguration TestGetConfiguration(ConfigurationUserLevel userLevel)
+            public IConfiguration TestGetConfiguration(SettingsLocation location)
             {
-                return ClientSettingsView.GetConfiguration(userLevel);
-            }
-
-            public static IConfiguration TestGetContainingConfigurationIfDifferent()
-            {
-                return ClientSettingsView.GetContainingConfigurationIfDifferent();
-            }
-
-            public static IConfiguration TestGetConfiguration(SettingsLocation location)
-            {
-                return ClientSettingsView.GetConfiguration(location);
+                return this.GetConfiguration(location);
             }
 
             public static XmlNode TestSerializeToXmlElement(string serializedValue)
             {
-                return ClientSettingsView.SerializeToXmlElement(serializedValue);
+                return SerializeToXmlElement(serializedValue);
             }
         }
 
@@ -71,29 +59,29 @@ namespace XTask.Tests.Settings
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(
                 x => (ConfigurationUserLevel)x[0] == ConfigurationUserLevel.None ? noneConfiguration : allOtherConfigurations);
 
-            TestClientSettingsView.TestConfigurationManager = configurationManager;
+            // Now we set the file system to return a path exists
+            IFileService fileService = Substitute.For<IFileService>();
+            fileService.GetAttributes("").ReturnsForAnyArgs(FileAttributes.Normal);
+            configurationManager.OpenConfiguration("").ReturnsForAnyArgs(allOtherConfigurations);
+
+
+            TestClientSettingsView view = new TestClientSettingsView(configurationManager, fileService);
 
             // None should return the none configuration, others should find the allOther via the TestFilePath lookup
-            TestClientSettingsView.TestGetConfiguration(ConfigurationUserLevel.None).Should().Be(noneConfiguration);
-            TestClientSettingsView.TestGetConfiguration(ConfigurationUserLevel.PerUserRoaming).Should().Be(allOtherConfigurations);
-            TestClientSettingsView.TestGetConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).Should().Be(allOtherConfigurations);
+            view.TestGetConfiguration(ConfigurationUserLevel.None).Should().Be(noneConfiguration);
+            view.TestGetConfiguration(ConfigurationUserLevel.PerUserRoaming).Should().Be(allOtherConfigurations);
+            view.TestGetConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).Should().Be(allOtherConfigurations);
 
-            TestClientSettingsView.TestGetConfiguration(SettingsLocation.RunningExecutable).Should().Be(noneConfiguration);
-            TestClientSettingsView.TestGetConfiguration(SettingsLocation.Executable).Should().Be(noneConfiguration);
-            TestClientSettingsView.TestGetConfiguration(SettingsLocation.Local).Should().Be(allOtherConfigurations);
-            TestClientSettingsView.TestGetConfiguration(SettingsLocation.Roaming).Should().Be(allOtherConfigurations);
+            view.TestGetConfiguration(SettingsLocation.RunningExecutable).Should().Be(noneConfiguration);
+            view.TestGetConfiguration(SettingsLocation.Executable).Should().Be(noneConfiguration);
+            view.TestGetConfiguration(SettingsLocation.Local).Should().Be(allOtherConfigurations);
+            view.TestGetConfiguration(SettingsLocation.Roaming).Should().Be(allOtherConfigurations);
 
             // This won't be true if running at the console
             // TestClientSettingsView.TestGetConfiguration(SettingsLocation.ContainingExecutable).Should().BeNull();
 
-            // Now we set the file system to return a path exists
-            IFileService testFileService = Substitute.For<IFileService>();
-            testFileService.GetAttributes("").ReturnsForAnyArgs(FileAttributes.Normal);
-            configurationManager.OpenConfiguration("").ReturnsForAnyArgs(allOtherConfigurations);
-            TestClientSettingsView.TestFileService = testFileService;
-
             // Validate our direct path access route works as expected
-            TestClientSettingsView.TestGetConfiguration(SettingsLocation.ContainingExecutable).Should().Be(allOtherConfigurations);
+            view.TestGetConfiguration(SettingsLocation.ContainingExecutable).Should().Be(allOtherConfigurations);
         }
 
         [Fact]
@@ -105,9 +93,9 @@ namespace XTask.Tests.Settings
             configuration.FilePath.Returns("TestFilePath");
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
 
-            TestClientSettingsView.TestConfigurationManager = configurationManager;
+            TestClientSettingsView view = new TestClientSettingsView(configurationManager, null);
 
-            TestClientSettingsView.GetConfigurationPath(SettingsLocation.Executable).Should().Be("TestFilePath");
+            view.GetConfigurationPath(SettingsLocation.Executable).Should().Be("TestFilePath");
         }
 
         [Fact]
@@ -118,8 +106,7 @@ namespace XTask.Tests.Settings
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
             configuration.GetSectionGroup("userSettings").Returns((IConfigurationSectionGroup) => null);
 
-            TestClientSettingsView.TestConfigurationManager = configurationManager;
-            var testView = TestClientSettingsView.Create("Foo", SettingsLocation.Executable);
+            var testView = TestClientSettingsView.Create("Foo", SettingsLocation.Executable, configurationManager, null);
             configuration.Received().AddSectionGroup("userSettings");
         }
 
@@ -133,8 +120,7 @@ namespace XTask.Tests.Settings
             IConfigurationManager configurationManager = Substitute.For<IConfigurationManager>();
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
 
-            TestClientSettingsView.TestConfigurationManager = configurationManager;
-            var testView = TestClientSettingsView.Create("Foo", SettingsLocation.Executable);
+            var testView = TestClientSettingsView.Create("Foo", SettingsLocation.Executable, configurationManager, null);
 
             configuration.DidNotReceiveWithAnyArgs().AddSectionGroup("");
             sectionGroup.Received().Add("Foo", Arg.Any<ClientSettingsSection>());
@@ -174,8 +160,7 @@ namespace XTask.Tests.Settings
             IConfigurationManager configurationManager = Substitute.For<IConfigurationManager>();
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
 
-            TestClientSettingsView.TestConfigurationManager = configurationManager;
-            var testView = TestClientSettingsView.Create("Foo", SettingsLocation.Executable);
+            var testView = TestClientSettingsView.Create("Foo", SettingsLocation.Executable, configurationManager, null);
             testView.SaveSetting("foo", value).Should().BeTrue();
             testView.GetSetting("foo").Should().Be(value);
         }

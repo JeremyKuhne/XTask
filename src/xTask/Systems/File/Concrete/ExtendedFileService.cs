@@ -12,7 +12,10 @@ namespace XTask.Systems.File.Concrete
     using System.Collections.Generic;
     using System.Security.Principal;
 
-    public abstract class ExtendedFileService
+    /// <summary>
+    /// Basic implementation of extended file service support. These methods have no .NET implementation.
+    /// </summary>
+    public class ExtendedFileService : IExtendedFileService
     {
         public string GetFinalPath(string path, bool resolveLinks = false)
         {

@@ -9,8 +9,9 @@ namespace XTask.Tests.FileSystem
 {
     using FluentAssertions;
     using System.IO;
-    using XTask.Systems.File;
-    using XTask.Systems.File.Concrete.Flex;
+    using Systems.File;
+    using Systems.File.Concrete.Flex;
+    using Systems.File.Concrete;
     using Xunit;
 
     public class FlexFileSystemInfoTests
@@ -21,7 +22,7 @@ namespace XTask.Tests.FileSystem
         public void CreateInfoForRootDrive(string prefix)
         {
             string driveRoot = prefix + Paths.GetRoot(Path.GetTempPath());
-            FileService fileService = new FileService();
+            FileService fileService = new FileService(new ExtendedFileService());
 
             var info = fileService.GetPathInfo(driveRoot);
             info.Should().BeAssignableTo<IDirectoryInformation>();

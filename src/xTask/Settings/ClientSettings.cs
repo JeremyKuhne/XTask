@@ -8,22 +8,29 @@
 namespace XTask.Settings
 {
     using System.Collections.Generic;
+    using Services;
+    using Systems.File;
+    using Systems.Configuration;
 
     public class ClientSettings : IClientSettings
     {
         private Dictionary<SettingsLocation, IClientSettingsView> settingsViews = new Dictionary<SettingsLocation, IClientSettingsView>();
         private List<SettingsLocation> locationPriority = new List<SettingsLocation>();
+        private IConfigurationManager configurationManager;
+        private IFileService fileService;
 
-        private ClientSettings(string settingsSection)
+        private ClientSettings(string settingsSection, IConfigurationManager configurationManager, IFileService fileService)
         {
             this.SettingsSection = settingsSection;
+            this.configurationManager = configurationManager;
+            this.fileService = fileService;
         }
 
         public string SettingsSection { get; private set; }
 
-        public static ClientSettings Create(string settingsSection)
+        public static ClientSettings Create(string settingsSection, IConfigurationManager configurationManager, IFileService fileService)
         {
-            ClientSettings settings = new ClientSettings(settingsSection);
+            ClientSettings settings = new ClientSettings(settingsSection, configurationManager, fileService);
             settings.Initialize();
             return settings;
         }
@@ -37,10 +44,10 @@ namespace XTask.Settings
         {
             foreach (SettingsLocation location in locations)
             {
-                IClientSettingsView view = ClientSettingsView.Create(this.SettingsSection, location);
+                IClientSettingsView view = ClientSettingsView.Create(this.SettingsSection, location, this.configurationManager, this.fileService);
                 if (view != null)
                 {
-                    this.settingsViews.Add(location, ClientSettingsView.Create(this.SettingsSection, location));
+                    this.settingsViews.Add(location, ClientSettingsView.Create(this.SettingsSection, location, this.configurationManager, this.fileService));
                     this.locationPriority.Add(location);
                 }
             }
@@ -89,7 +96,7 @@ namespace XTask.Settings
 
         public string GetConfigurationPath(SettingsLocation location)
         {
-            return ClientSettingsView.GetConfigurationPath(location);
+            return this.GetConfigurationPath(location);
         }
     }
 }

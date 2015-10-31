@@ -10,6 +10,7 @@ namespace XTask.Build
     using System;
     using System.IO;
     using System.Xml;
+    using Systems.File;
     using XTask.Settings;
 
     /// <summary>
@@ -17,7 +18,8 @@ namespace XTask.Build
     /// </summary>
     public class BuildArgumentParser : ArgumentProvider
     {
-        public BuildArgumentParser(string taskName, string[] targets, string options)
+        public BuildArgumentParser(string taskName, string[] targets, string options, IFileService fileService)
+            : base (fileService)
         {
             this.AddTarget(taskName);
             if (targets != null)

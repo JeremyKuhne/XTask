@@ -23,7 +23,7 @@ namespace XFile.Tasks
     {
         protected override ExitCode ExecuteFileTask()
         {
-            Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetDriveLetter(GetFullTargetPath()));
+            Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetDriveLetter(this.FileService, GetFullTargetPath()));
 
             return ExitCode.Success;
         }

@@ -18,7 +18,7 @@ namespace XTask.Systems.Console
         /// </summary>
         public static IConsoleService Console
         {
-            get { return DefaultServiceProvider.Services.GetService<IConsoleService>(); }
+            get { return FlexServiceProvider.Services.GetService<IConsoleService>(); }
         }
 
         /// <summary>

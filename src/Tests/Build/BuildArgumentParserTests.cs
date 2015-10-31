@@ -16,14 +16,14 @@ namespace XTask.Tests.Build
         [Fact]
         public void BasicTaskTest()
         {
-            BuildArgumentParser parser = new BuildArgumentParser("task", null, null);
+            BuildArgumentParser parser = new BuildArgumentParser("task", null, null, null);
             parser.Command.Should().Be("task");
         }
 
         [Fact]
         public void BasicTargetsTest()
         {
-            BuildArgumentParser parser = new BuildArgumentParser("task", new string[] { "foo", "bar" }, null);
+            BuildArgumentParser parser = new BuildArgumentParser("task", new string[] { "foo", "bar" }, null, null);
             parser.Target.Should().Be("foo");
             parser.Targets.Should().ContainInOrder("foo", "bar");
         }
@@ -32,7 +32,7 @@ namespace XTask.Tests.Build
         public void BasicOptionTest()
         {
             string options = @"<Foo>Bar</Foo>";
-            BuildArgumentParser parser = new BuildArgumentParser("task", null, options);
+            BuildArgumentParser parser = new BuildArgumentParser("task", null, options, null);
             parser.GetOption<string>("foo").Should().Be("Bar");
         }
 
@@ -40,7 +40,7 @@ namespace XTask.Tests.Build
         public void MultiOptionTest()
         {
             string options = @"<Foo>Bar</Foo><Foo>Foo</Foo>";
-            BuildArgumentParser parser = new BuildArgumentParser("task", null, options);
+            BuildArgumentParser parser = new BuildArgumentParser("task", null, options, null);
             parser.GetOption<string>("foo").Should().Be("Bar;Foo");
         }
     }

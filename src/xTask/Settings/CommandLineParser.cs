@@ -8,12 +8,18 @@
 namespace XTask.Settings
 {
     using System;
+    using Systems.File;
 
     /// <summary>
     /// Standard command line argument parser.
     /// </summary>
     public class CommandLineParser : ArgumentProvider
     {
+        public CommandLineParser(IFileService fileService)
+            : base (fileService)
+        {
+        }
+
         public void Parse(string[] arguments)
         {
             if (arguments == null || arguments.Length == 0) { return; }

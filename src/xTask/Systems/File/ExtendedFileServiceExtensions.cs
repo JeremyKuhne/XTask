@@ -8,10 +8,6 @@
 namespace XTask.Systems.File
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     public static class ExtendedFileServiceExtensions
     {
@@ -20,7 +16,7 @@ namespace XTask.Systems.File
         /// </summary>
         /// <exception cref="ArgumentException">Thrown if the path is relative or indeterminate.</exception>
         /// <exception cref="System.IO.IOException">Thrown if unable to get the root from the OS.</exception>
-        public static string GetCanonicalRoot(this IExtendedFileService fileService, string path)
+        public static string GetCanonicalRoot(this IExtendedFileService extendedFileService, IFileService fileService, string path)
         {
             if (Paths.IsRelative(path)) throw new ArgumentException();
 
@@ -43,8 +39,8 @@ namespace XTask.Systems.File
                     break;
                 case PathFormat.VolumeAbsoluteExtended:
                 case PathFormat.DriveAbsolute:
-                    canonicalRoot = fileService.GetVolumeName(root);
-                    simpleRoot = fileService.GetMountPoint(root);
+                    canonicalRoot = extendedFileService.GetVolumeName(root);
+                    simpleRoot = extendedFileService.GetMountPoint(root);
                     break;
             }
 
@@ -54,14 +50,14 @@ namespace XTask.Systems.File
         /// <summary>
         /// Return the legacy drive letter (e.g. "C", "D") for the given path or null if one doesn't exist
         /// </summary>
-        public static string GetDriveLetter(this IExtendedFileService fileService, string path)
+        public static string GetDriveLetter(this IExtendedFileService extendedFileService, IFileService fileService, string path)
         {
-            string pathCanonicalRoot = fileService.GetCanonicalRoot(path);
+            string pathCanonicalRoot = extendedFileService.GetCanonicalRoot(fileService, path);
 
             // We have to walk drives
-            foreach (var drive in fileService.GetLogicalDriveStrings())
+            foreach (var drive in extendedFileService.GetLogicalDriveStrings())
             {
-                string driveCanonicalRoot = fileService.GetCanonicalRoot(drive);
+                string driveCanonicalRoot = extendedFileService.GetCanonicalRoot(fileService, drive);
                 if (String.Equals(pathCanonicalRoot, driveCanonicalRoot))
                 {
                     return drive;

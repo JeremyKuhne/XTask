@@ -11,6 +11,9 @@ namespace XTask.Tasks
     using Services;
     using Settings;
 
+    /// <summary>
+    /// Base class for task interaction support
+    /// </summary>
     public abstract class TaskInteraction : ITaskInteraction
     {
         private ITypedServiceProvider services;
@@ -28,7 +31,7 @@ namespace XTask.Tasks
 
         public virtual T GetService<T>() where T : class
         {
-            T service = this.services?.GetService<T>() ?? DefaultServiceProvider.Services.GetService<T>();
+            T service = this.services?.GetService<T>() ?? FlexServiceProvider.Services.GetService<T>();
             if (service != null) return service;
 
             if (typeof(T) == typeof(ILoggers))

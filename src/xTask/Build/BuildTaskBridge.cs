@@ -9,10 +9,12 @@ namespace XTask.Build
 {
     using System.Collections.Generic;
     using System.Threading;
+    using Services;
     using XTask.Settings;
     using XTask.Tasks;
     using XTask.Utility;
     using MSBuildFramework = Microsoft.Build.Framework;
+    using Systems.File;
 
     /// <summary>
     /// Core implementation of MSBuild support for tasks, derive and provide the task service and
@@ -21,9 +23,11 @@ namespace XTask.Build
     public abstract class BuildTaskBridge : MSBuildFramework.ITask, ITaskOutputHandler
     {
         private List<MSBuildFramework.ITaskItem> output = new List<MSBuildFramework.ITaskItem>();
+        private IFileService fileService;
 
-        protected BuildTaskBridge()
+        protected BuildTaskBridge(IFileService fileService)
         {
+            this.fileService = fileService;
             this.PropertyViewProvider = new PropertyViewProvider();
         }
 
@@ -68,7 +72,7 @@ namespace XTask.Build
             // The equivalent of Main() for console access
             ExitCode result = Utility.ExitCode.GeneralFailure;
 
-            IArgumentProvider argumentProvider = new BuildArgumentParser(this.TaskName, this.Targets, this.Options);
+            IArgumentProvider argumentProvider = new BuildArgumentParser(this.TaskName, this.Targets, this.Options, fileService);
 
             using (ITaskService taskService = this.GetTaskService(ref argumentProvider))
             {

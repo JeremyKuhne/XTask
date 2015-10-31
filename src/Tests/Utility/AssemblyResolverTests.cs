@@ -22,20 +22,14 @@ namespace XTask.Tests.Utility
     {
         public class TestAssemblyResolver : AssemblyResolver
         {
-            protected TestAssemblyResolver()
-                : base()
+            protected TestAssemblyResolver(IFileService fileService)
+                : base(fileService)
             {
             }
 
-            public IFileService TestFileService
+            public static TestAssemblyResolver TestCreate(IArgumentProvider arguments, IFileService fileService)
             {
-                get { return this.FileService; }
-                set { this.FileService = value; }
-            }
-
-            public static TestAssemblyResolver TestCreate(IArgumentProvider arguments)
-            {
-                TestAssemblyResolver resolver = new TestAssemblyResolver();
+                TestAssemblyResolver resolver = new TestAssemblyResolver(fileService);
                 resolver.Initialize(arguments);
                 return resolver;
             }
@@ -83,7 +77,7 @@ namespace XTask.Tests.Utility
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
             arguments.GetOption<string>(StandardOptions.AssembliesToResolve).Returns("foo;bar");
             arguments.GetOption<string>(StandardOptions.AssemblyResolutionPaths).Returns(@"C:\TestLoad1;C:\TestLoad2");
-            TestAssemblyResolver testResolver = TestAssemblyResolver.TestCreate(arguments);
+            TestAssemblyResolver testResolver = TestAssemblyResolver.TestCreate(arguments, null);
             testResolver.AssembliesToResolve.Should().BeEquivalentTo("foo", "bar");
             testResolver.ResolutionPaths.Should().BeEquivalentTo(@"C:\TestLoad1", @"C:\TestLoad2");
         }
@@ -92,7 +86,7 @@ namespace XTask.Tests.Utility
         public void NullOrEmptyRequestReturnsNull()
         {
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
-            TestAssemblyResolver testResolver = TestAssemblyResolver.TestCreate(arguments);
+            TestAssemblyResolver testResolver = TestAssemblyResolver.TestCreate(arguments, null);
             ((object)testResolver.Domain_AssemblyResolve(null, new ResolveEventArgs(null))).Should().BeNull();
             ((object)testResolver.Domain_AssemblyResolve(null, new ResolveEventArgs(String.Empty))).Should().BeNull();
         }
@@ -101,7 +95,7 @@ namespace XTask.Tests.Utility
         public void NoSettingsRequestReturnsNull()
         {
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
-            TestAssemblyResolver testResolver = TestAssemblyResolver.TestCreate(arguments);
+            TestAssemblyResolver testResolver = TestAssemblyResolver.TestCreate(arguments, null);
             ((object)testResolver.Domain_AssemblyResolve(null, new ResolveEventArgs("MyDependency"))).Should().BeNull();
         }
 
@@ -111,11 +105,12 @@ namespace XTask.Tests.Utility
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
             arguments.GetOption<string>(StandardOptions.AssembliesToResolve).Returns("MyDependency");
             arguments.GetOption<string>(StandardOptions.AssemblyResolutionPaths).Returns(@"C:\TestLoad1");
-            TestAssemblyResolver testResolver = Substitute.ForPartsOf<TestAssemblyResolver>();
-            testResolver.TestInitialize(arguments);
+
             IFileService fileService = Substitute.For<IFileService>();
             fileService.GetAttributes(@"C:\TestLoad1\MyDependency.dll").Returns(FileAttributes.Normal);
-            testResolver.TestFileService = fileService;
+
+            TestAssemblyResolver testResolver = Substitute.ForPartsOf<TestAssemblyResolver>(fileService);
+            testResolver.TestInitialize(arguments);
 
             ((object)testResolver.Domain_AssemblyResolve(null, new ResolveEventArgs("MyDependency"))).Should().Be(Assembly.GetExecutingAssembly());
             testResolver.Received(1).TestLoadAssemblyFrom(@"C:\TestLoad1\MyDependency.dll");
@@ -127,11 +122,12 @@ namespace XTask.Tests.Utility
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
             arguments.GetOption<string>(StandardOptions.AssembliesToResolve).Returns("MyDependency");
             arguments.GetOption<string>(StandardOptions.AssemblyResolutionPaths).Returns(@"C:\TestLoad1");
-            TestAssemblyResolver testResolver = Substitute.ForPartsOf<TestAssemblyResolver>();
-            testResolver.TestInitialize(arguments);
+
             IFileService fileService = Substitute.For<IFileService>();
             fileService.GetAttributes(@"C:\TestLoad1\MyDependency.dll").Returns(x => { throw new FileNotFoundException(); });
-            testResolver.TestFileService = fileService;
+
+            TestAssemblyResolver testResolver = Substitute.ForPartsOf<TestAssemblyResolver>(fileService);
+            testResolver.TestInitialize(arguments);
 
             ((object)testResolver.Domain_AssemblyResolve(null, new ResolveEventArgs("MyDependency"))).Should().BeNull();
             testResolver.ReceivedWithAnyArgs(0).TestLoadAssemblyFrom("");
@@ -141,11 +137,11 @@ namespace XTask.Tests.Utility
         public void FallbackResolverCalled()
         {
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
-            TestAssemblyResolver testResolver = Substitute.ForPartsOf<TestAssemblyResolver>();
-            testResolver.TestInitialize(arguments);
             IFileService fileService = Substitute.For<IFileService>();
             ResolveEventArgs resolveArgs = new ResolveEventArgs("MyDependency");
-            testResolver.TestFileService = fileService;
+
+            TestAssemblyResolver testResolver = Substitute.ForPartsOf<TestAssemblyResolver>(fileService);
+            testResolver.TestInitialize(arguments);
 
             ((object)testResolver.Domain_AssemblyResolve(null, resolveArgs)).Should().BeNull();
             testResolver.Received(1).TestFallBack_AssemblyResolve(testResolver, resolveArgs);

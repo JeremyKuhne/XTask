@@ -19,7 +19,7 @@ namespace XTask.Systems.File.Concrete.DotNet
     /// Standard .NET implementations are not very performant- they typically do way more validation than is necessary
     /// before calling Win32 APIs.
     /// </remarks>
-    public class FileService : ExtendedFileService, IExtendedFileService
+    public class FileService : IFileService
     {
         public string CurrentDirectory
         {

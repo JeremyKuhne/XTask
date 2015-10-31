@@ -12,22 +12,14 @@ namespace XTask.Tests.Utility
     using XTask.Settings;
     using Xunit;
     using System;
+    using XTask.Services;
 
     public class ArgumentParserTests
     {
-        public class TestArgumentParser : CommandLineParser
-        {
-            public IFileService TestFileService
-            {
-                get { return this.FileService.Value; }
-                set { this.FileService = new Lazy<IFileService>(() => value); }
-            }
-        }
-
         [Fact]
         public void NullParse()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(null);
 
             parser.Target.Should().BeNull("null argument set should have null target");
@@ -38,7 +30,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void EmptyParse()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[0]);
             parser.Target.Should().BeNull("empty argument set should have null target");
             parser.Targets.Should().NotBeNull("empty argument set should not have null targets");
@@ -48,7 +40,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void EffectivelyEmptyArgumentsParse()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { null, "" });
             parser.Target.Should().BeNull("effectively empty argument set should have null target");
             parser.Targets.Should().NotBeNull("effectively empty argument set should not have null targets");
@@ -58,7 +50,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void BasicSwitchArguments()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { @"/ foo", @"-BAR" });
             parser.Target.Should().BeNull("only switch arguments should have null target");
             parser.Targets.Should().NotBeNull("only switch arguments should not have null targets");
@@ -71,7 +63,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void StringArgument()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { @"/foo:bar" });
             parser.Target.Should().BeNull("only switch arguments should have null target");
             parser.Targets.Should().NotBeNull("only switch arguments should not have null targets");
@@ -84,7 +76,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void MultipartArgument()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { @"/foo:bar", @"/foo:foo" });
             parser.Target.Should().BeNull("only switch arguments should have null target");
             parser.Targets.Should().NotBeNull("only switch arguments should not have null targets");
@@ -97,8 +89,7 @@ namespace XTask.Tests.Utility
         {
             string path;
             IFileService fileService = TestFileServices.CreateSubstituteForFile(out path, "a\nb\nc\n@ @ @");
-            TestArgumentParser parser = new TestArgumentParser();
-            parser.TestFileService = fileService;
+            CommandLineParser parser = new CommandLineParser(fileService);
 
             parser.Parse(new string[] { "Command", @"/foo:@" + path });
             parser.GetOption<string>("foo").Should().Be("a;b;c", "specified in file as a, b, c");
@@ -107,7 +98,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void BooleanSwitches()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { @"/foo", @"/bar:1", @"/foofoo:0", @"/barbar:false", @"/foobar:true" });
             parser.Target.Should().BeNull("only switch arguments should have null target");
             parser.Targets.Should().NotBeNull("only switch arguments should not have null targets");
@@ -129,7 +120,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void SimpleCommand()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { "command" });
             parser.Command.Should().Be("command", "command was specified");
             parser.Target.Should().BeNull("no targets specified");
@@ -139,7 +130,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void SingleTarget()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { "command", "target" });
             parser.Command.Should().Be("command", "command was specified first");
             parser.Target.Should().Be("target", "single target should be target");
@@ -150,7 +141,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void MultipleTarget()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { "command", "targetone", "targettwo" });
             parser.Command.Should().Be("command", "command was specified first");
             parser.Target.Should().Be("targetone", "first target should be target");
@@ -162,8 +153,7 @@ namespace XTask.Tests.Utility
         {
             string path;
             IFileService fileService = TestFileServices.CreateSubstituteForFile(out path, "a\nb\nc\n@ @ @");
-            TestArgumentParser parser = new TestArgumentParser();
-            parser.TestFileService = fileService;
+            CommandLineParser parser = new CommandLineParser(fileService);
 
             parser.Parse(new string[] { "Command", @"@" + path });
             parser.Targets.Should().ContainInOrder("a", "b", "c");
@@ -172,7 +162,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void NoCommand()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(null);
             parser.Command.Should().Be("help", "no command should come back as help");
             parser.Target.Should().BeNull("no targets specified");
@@ -182,7 +172,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void QuestionHelp()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { "?" });
             parser.Command.Should().Be("help", "no command should come back as help");
             parser.HelpRequested.Should().BeTrue("requested help");
@@ -193,7 +183,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void UnspecifiedHelp()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { "HeLp" });
             parser.Command.Should().Be("help", "no command should come back as help");
             parser.HelpRequested.Should().BeTrue("requested help");
@@ -204,7 +194,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void TargetedHelp()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { "Help", "command" });
             parser.Command.Should().Be("command", "command for help was specified as command");
             parser.HelpRequested.Should().BeTrue("requested help");
@@ -215,7 +205,7 @@ namespace XTask.Tests.Utility
         [Fact]
         public void ReversedHelp()
         {
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(null);
             parser.Parse(new string[] { "command", "help" });
             parser.Command.Should().Be("command", "command for help was specified as command");
             parser.HelpRequested.Should().BeTrue("requested help");

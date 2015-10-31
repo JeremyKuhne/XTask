@@ -11,12 +11,14 @@ namespace XTask.Tasks
     using System;
     using System.Linq;
     using Systems.Console;
-    using XTask.Utility;
+    using Systems.File;
+    using Systems.Configuration;
+    using Utility;
 
     /// <summary>
     /// Puts task into an interactive mode where multiple commands can be entered.
     /// </summary>
-    public class InteractiveTask : Tasks.Task
+    public class InteractiveTask : Task
     {
         private string prompt;
         private IConsoleService consoleService;
@@ -38,9 +40,9 @@ namespace XTask.Tasks
                 this.consoleService.Write(this.prompt);
                 input = Environment.ExpandEnvironmentVariables(this.consoleService.ReadLine().Trim());
                 if (InteractiveTask.quitCommands.Contains(input, StringComparer.OrdinalIgnoreCase)) break;
-                CommandLineParser parser = new CommandLineParser();
+                CommandLineParser parser = new CommandLineParser(this.GetService<IFileService>());
                 parser.Parse(Strings.SplitCommandLine(input).ToArray());
-                IArgumentProvider argumentProvider = ArgumentSettingsProvider.Create(parser);
+                IArgumentProvider argumentProvider = ArgumentSettingsProvider.Create(parser, this.GetService<IConfigurationManager>(), this.GetService<IFileService>());
                 ConsoleTaskExecution execution = new ConsoleTaskExecution(argumentProvider, this.registry);
                 execution.ExecuteTask();
             } while (true);

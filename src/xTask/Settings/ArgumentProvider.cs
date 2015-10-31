@@ -12,7 +12,6 @@ namespace XTask.Settings
     using System.Linq;
     using System.Text;
     using XTask.Systems.File;
-    using XTask.Systems.File.Concrete.Flex;
     using XTask.Utility;
 
     /// <summary>
@@ -31,11 +30,11 @@ namespace XTask.Settings
         private List<string> targets = new List<string>();
         private string command;
 
-        protected Lazy<IFileService> FileService { get; set; }
+        protected IFileService FileService { get; private set; }
 
-        public ArgumentProvider()
+        public ArgumentProvider(IFileService fileService)
         {
-            this.FileService = new Lazy<IFileService>(() => new FileService());
+            this.FileService = fileService;
         }
 
         protected void AddTarget(string target)
@@ -77,14 +76,14 @@ namespace XTask.Settings
 
         protected IEnumerable<string> ReadFileLines(string fileName)
         {
-            string path = this.FileService.Value.GetFullPath(fileName.TrimStart(ArgumentProvider.FileOptionDelimiter));
+            string path = this.FileService.GetFullPath(fileName.TrimStart(ArgumentProvider.FileOptionDelimiter));
 
-            if (!this.FileService.Value.FileExists(path))
+            if (!this.FileService.FileExists(path))
                 throw new TaskArgumentException(XTaskStrings.ErrorFileNotFound, path);
 
             // (Somewhat akward, but cannot yield within a try with catch block)
 
-            IEnumerator<string> lineEnumerator = this.FileService.Value.ReadLines(path).GetEnumerator();
+            IEnumerator<string> lineEnumerator = this.FileService.ReadLines(path).GetEnumerator();
 
             bool moreLines;
             string line;

@@ -11,10 +11,9 @@ namespace XTask.Utility
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using XTask.Systems.File;
-    using XTask.Systems.File.Concrete.Flex;
-    using XTask.Settings;
-    using XTask.Tasks;
+    using Settings;
+    using Systems.File;
+    using Tasks;
 
     public class AssemblyResolver
     {
@@ -22,16 +21,17 @@ namespace XTask.Utility
 
         protected HashSet<string> resolutionPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         protected HashSet<string> assembliesToResolve = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        protected IFileService FileService { get; set; }
 
-        protected AssemblyResolver()
+        protected IFileService FileService { get; private set; }
+
+        protected AssemblyResolver(IFileService fileService)
         {
-            this.FileService = new FileService();
+            this.FileService = fileService;
         }
 
-        public static AssemblyResolver Create(IArgumentProvider arguments)
+        public static AssemblyResolver Create(IArgumentProvider arguments, IFileService fileService)
         {
-            AssemblyResolver resolver = new AssemblyResolver();
+            AssemblyResolver resolver = new AssemblyResolver(fileService);
             resolver.Initialize(arguments);
             return resolver;
         }

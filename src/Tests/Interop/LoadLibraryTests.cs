@@ -13,8 +13,9 @@ namespace XTask.Tests.Interop
     using System.Runtime.InteropServices;
     using System.Security;
     using Systems.File;
+    using Systems.File.Concrete;
+    using Systems.File.Concrete.Flex;
     using XTask.Interop;
-    using XTask.Systems.File.Concrete.Flex;
     using Xunit;
 
     public class LoadLibraryTests
@@ -24,7 +25,7 @@ namespace XTask.Tests.Interop
         private string GetNativeTestLibraryLocation()
         {
             string path = Paths.Combine(Paths.GetDirectory((new Uri(typeof(LoadLibraryTests).Assembly.CodeBase)).LocalPath), NativeTestLibrary);
-            IFileService system = new FileService();
+            IFileService system = new FileService(new ExtendedFileService());
             if (!system.FileExists(path))
             {
                 throw new System.IO.FileNotFoundException(path);
@@ -44,13 +45,13 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LoadAsResourceFromLongPath()
         {
-            using (var cleaner = new TestFileCleaner())
+            using (var cleaner = new TestFileCleaner(useDotNet: false))
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
-                IFileService system = new FileService();
-                system.CreateDirectory(longPath);
+
+                cleaner.FileService.CreateDirectory(longPath);
                 string longPathLibrary = Paths.Combine(longPath, "LoadAsResourceFromLongPath.dll");
-                system.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
+                cleaner.FileService.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
                 longPathLibrary = Paths.AddExtendedPrefix(longPathLibrary);
 
                 using (var handle = NativeMethods.LoadLibrary(longPathLibrary, LoadLibraryFlags.LOAD_LIBRARY_AS_IMAGE_RESOURCE | LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE))
@@ -73,13 +74,12 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LoadStringFromLongPath()
         {
-            using (var cleaner = new TestFileCleaner())
+            using (var cleaner = new TestFileCleaner(useDotNet: false))
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
-                IFileService system = new FileService();
-                system.CreateDirectory(longPath);
+                cleaner.FileService.CreateDirectory(longPath);
                 string longPathLibrary = Paths.Combine(longPath, "LoadStringFromLongPath.dll");
-                system.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
+                cleaner.FileService.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
                 longPathLibrary = Paths.AddExtendedPrefix(longPathLibrary);
 
                 using (var handle = NativeMethods.LoadLibrary(longPathLibrary, LoadLibraryFlags.LOAD_LIBRARY_AS_IMAGE_RESOURCE | LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE))
@@ -102,13 +102,12 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LoadAsBinaryFromLongPath()
         {
-            using (var cleaner = new TestFileCleaner())
+            using (var cleaner = new TestFileCleaner(useDotNet: false))
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
-                IFileService system = new FileService();
-                system.CreateDirectory(longPath);
+                cleaner.FileService.CreateDirectory(longPath);
                 string longPathLibrary = Paths.Combine(longPath, "LoadAsBinaryFromLongPath.dll");
-                system.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
+                cleaner.FileService.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
                 longPathLibrary = Paths.AddExtendedPrefix(longPathLibrary);
 
                 using (var handle = NativeMethods.LoadLibrary(longPathLibrary, LoadLibraryFlags.LOAD_WITH_ALTERED_SEARCH_PATH))
@@ -135,13 +134,12 @@ namespace XTask.Tests.Interop
         [Fact]
         public void LoadFunctionFromLongPath()
         {
-            using (var cleaner = new TestFileCleaner())
+            using (var cleaner = new TestFileCleaner(useDotNet: false))
             {
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 500);
-                IFileService system = new FileService();
-                system.CreateDirectory(longPath);
+                cleaner.FileService.CreateDirectory(longPath);
                 string longPathLibrary = Paths.Combine(longPath, "LoadFunctionFromLongPath.dll");
-                system.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
+                cleaner.FileService.CopyFile(GetNativeTestLibraryLocation(), longPathLibrary);
                 longPathLibrary = Paths.AddExtendedPrefix(longPathLibrary);
 
                 using (var handle = NativeMethods.LoadLibrary(longPathLibrary, 0))

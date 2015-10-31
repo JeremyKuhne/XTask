@@ -8,10 +8,10 @@
 namespace XTask.Tasks
 {
     using System;
-    using XTask.Logging;
-    using XTask.Services;
-    using XTask.Settings;
-    using XTask.Utility;
+    using Logging;
+    using Services;
+    using Settings;
+    using Utility;
 
     public abstract class Task : ImplementedServiceProvider, ITask, ITaskExecutor, ITaskDocumentation
     {
@@ -43,7 +43,7 @@ namespace XTask.Tasks
             // 2. TaskInteraction
             // 3. DefaultServices
 
-            return base.GetService<T>() ?? this.interaction?.GetService<T>() ?? DefaultServiceProvider.Services.GetService<T>();
+            return base.GetService<T>() ?? this.interaction?.GetService<T>() ?? FlexServiceProvider.Services.GetService<T>();
         }
 
         public void GetUsage(ITaskInteraction interaction)

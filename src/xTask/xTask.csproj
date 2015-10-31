@@ -74,7 +74,9 @@
     <Compile Include="Interop\SafeHandleZeroIsInvalid.cs" />
     <Compile Include="Interop\SafeLibraryHandle.cs" />
     <Compile Include="Interop\StringBufferCache.cs" />
-    <Compile Include="Systems\Configuration\Concrete\ConfigurationManagerWrapper.cs" />
+    <Compile Include="Services\IConfigurationService.cs" />
+    <Compile Include="Services\SimpleServiceProvider.cs" />
+    <Compile Include="Systems\Configuration\Concrete\ConfigurationManager.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationSectionGroupWrapper.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationWrapper.cs" />
     <Compile Include="Systems\Configuration\IConfiguration.cs" />
@@ -125,7 +127,7 @@
     <Compile Include="Systems\File\IFileSystemInformation.cs" />
     <Compile Include="Logging\IClipboardSource.cs" />
     <Compile Include="Metrics\NullFeatureUsageTracker.cs" />
-    <Compile Include="Services\DefaultServiceProvider.cs" />
+    <Compile Include="Services\FlexServiceProvider.cs" />
     <Compile Include="Services\ITypedServiceProvider.cs" />
     <Compile Include="Logging\AggregatedLogger.cs" />
     <Compile Include="Logging\BuildLogger.cs" />

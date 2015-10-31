@@ -8,7 +8,10 @@
 namespace XFile
 {
     using System;
+    using XTask.Services;
     using XTask.Settings;
+    using XTask.Systems.Configuration;
+    using XTask.Systems.File;
     using XTask.Tasks;
     using XTask.Utility;
 
@@ -19,10 +22,10 @@ namespace XFile
         {
             ExitCode result = ExitCode.GeneralFailure;
 
-            CommandLineParser parser = new CommandLineParser();
+            CommandLineParser parser = new CommandLineParser(FlexServiceProvider.Services.GetService<IFileService>());
             parser.Parse(args);
 
-            IArgumentProvider argumentProvider = ArgumentSettingsProvider.Create(parser);
+            IArgumentProvider argumentProvider = ArgumentSettingsProvider.Create(parser, FlexServiceProvider.Services.GetService<IConfigurationManager>(), FlexServiceProvider.Services.GetService<IFileService>());
 
             using (ITaskService taskService = XFileTaskService.Create())
             {

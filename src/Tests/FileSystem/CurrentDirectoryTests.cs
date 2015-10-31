@@ -19,12 +19,14 @@ namespace XTask.Tests.FileSystem
         [Fact]
         public void SetCurrentDirectoryThrowsOnRelative()
         {
-            IExtendedFileService fileService = Substitute.For<IExtendedFileService>();
-            fileService.GetFullPath("").ReturnsForAnyArgs(x => x[0]);
-            fileService.GetVolumeName("").ReturnsForAnyArgs("TestRoot");
-            fileService.GetAttributes("").ReturnsForAnyArgs(System.IO.FileAttributes.Directory);
+            IExtendedFileService extendedFileService = Substitute.For<IExtendedFileService>();
+            IFileService fileService = Substitute.For<IFileService>();
 
-            CurrentDirectory cd = new CurrentDirectory(fileService);
+            fileService.GetFullPath("").ReturnsForAnyArgs(x => x[0]);
+            fileService.GetAttributes("").ReturnsForAnyArgs(System.IO.FileAttributes.Directory);
+            extendedFileService.GetVolumeName("").ReturnsForAnyArgs("TestRoot");
+
+            CurrentDirectory cd = new CurrentDirectory(fileService, extendedFileService);
             Action action = () => cd.SetCurrentDirectory("a");
             action.ShouldThrow<ArgumentException>();
         }

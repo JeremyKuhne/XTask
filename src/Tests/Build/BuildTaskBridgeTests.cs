@@ -19,6 +19,11 @@ namespace XTask.Tests.Build
     {
         private class TestBuildTaskBridge : BuildTaskBridge
         {
+            public TestBuildTaskBridge()
+                : base(null)
+            {
+            }
+
             public override ITaskService GetTaskService(ref IArgumentProvider argumentProvider)
             {
                 throw new NotImplementedException();

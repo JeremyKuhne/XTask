@@ -8,8 +8,9 @@
 namespace XTask.Tests.FileSystem
 {
     using System.IO;
-    using XTask.Systems.File;
-    using Concrete = XTask.Systems.File.Concrete;
+    using Systems.File;
+    using Systems.File.Concrete;
+    using Concrete = Systems.File.Concrete;
 
     public class TestFileCleaner : FileCleaner
     {
@@ -18,13 +19,15 @@ namespace XTask.Tests.FileSystem
 
         internal static object DirectorySetLock;
 
+        private static IExtendedFileService extendedFileService = new ExtendedFileService();
+
         static TestFileCleaner()
         {
             DirectorySetLock = new object();
         }
 
         public TestFileCleaner(bool useDotNet = false)
-            : base ("XTaskTests", useDotNet ? (IFileService) new Concrete.DotNet.FileService() : new Concrete.Flex.FileService())
+            : base ("XTaskTests", useDotNet ? (IFileService) new Concrete.DotNet.FileService() : new Concrete.Flex.FileService(extendedFileService))
         {
             this.useDotNet = useDotNet;
 
@@ -96,7 +99,7 @@ namespace XTask.Tests.FileSystem
         {
             get
             {
-                return this.fileServiceProvider as IExtendedFileService;
+                return extendedFileService;
             }
         }
     }

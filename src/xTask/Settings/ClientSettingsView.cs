@@ -14,9 +14,7 @@ namespace XTask.Settings
     using System.Linq;
     using System.Xml;
     using XTask.Systems.Configuration;
-    using XTask.Systems.Configuration.Concrete;
     using XTask.Systems.File;
-    using XTask.Systems.File.Concrete.Flex;
     using XTask.Utility;
 
     /// <summary>
@@ -28,17 +26,14 @@ namespace XTask.Settings
 
         private IConfiguration configuration;
         private ClientSettingsSection clientSettings;
-        protected static IConfigurationManager ConfigurationManager{ get; set; }
-        protected static Lazy<IFileService> FileService { get; set; }
 
-        static ClientSettingsView()
-        {
-            ClientSettingsView.ConfigurationManager = new ConfigurationManagerWrapper();
-            ClientSettingsView.FileService = new Lazy<IFileService>(() => new FileService());
-        }
+        protected IConfigurationManager ConfigurationManager{ get; private set; }
+        protected IFileService FileService { get; private set; }
 
-        protected ClientSettingsView(string settingsSection, SettingsLocation settingsLocation)
+        protected ClientSettingsView(string settingsSection, SettingsLocation settingsLocation, IConfigurationManager configurationManager, IFileService fileService)
         {
+            this.ConfigurationManager = configurationManager;
+            this.FileService = fileService;
             this.SettingsSection = settingsSection;
             this.SettingsLocation = settingsLocation;
         }
@@ -46,11 +41,11 @@ namespace XTask.Settings
         public string SettingsSection { get; private set; }
         public SettingsLocation SettingsLocation { get; private set; }
 
-        public static IClientSettingsView Create(string settingsSection, SettingsLocation settingsLocation)
+        public static IClientSettingsView Create(string settingsSection, SettingsLocation settingsLocation, IConfigurationManager configurationManager, IFileService fileService)
         {
             try
             {
-                ClientSettingsView view = new ClientSettingsView(settingsSection, settingsLocation);
+                ClientSettingsView view = new ClientSettingsView(settingsSection, settingsLocation, configurationManager, fileService);
                 if (!view.Initialize())
                 {
                     return null;
@@ -65,7 +60,7 @@ namespace XTask.Settings
             }
         }
 
-        protected static IConfiguration GetConfiguration(ConfigurationUserLevel userLevel)
+        protected IConfiguration GetConfiguration(ConfigurationUserLevel userLevel)
         {
             // Configuration flows from Machine.config -> exe.config -> roaming user.config -> local user.config with
             // latter definitions trumping earlier (e.g. local trumps roaming, which trumps exe, etc.).
@@ -74,7 +69,7 @@ namespace XTask.Settings
             // As we want to handle the consolodation ourselves we need to open twice. Once to get the actual user config
             // path, then again with the path explicitly specified with "None" for our user level. (Values are lazily
             // loaded so this isn't a terrible perf issue.)
-            IConfiguration configuration = ConfigurationManager.OpenConfiguration(userLevel);
+            IConfiguration configuration = this.ConfigurationManager.OpenConfiguration(userLevel);
 
             if (userLevel == ConfigurationUserLevel.None)
             {
@@ -82,13 +77,13 @@ namespace XTask.Settings
             }
             else
             {
-                return ConfigurationManager.OpenConfiguration(configuration.FilePath);
+                return this.ConfigurationManager.OpenConfiguration(configuration.FilePath);
             }
         }
 
-        protected static IConfiguration GetContainingConfigurationIfDifferent()
+        protected IConfiguration GetContainingConfigurationIfDifferent()
         {
-            IConfiguration configuration = ClientSettingsView.GetConfiguration(ConfigurationUserLevel.None);
+            IConfiguration configuration = this.GetConfiguration(ConfigurationUserLevel.None);
 
             // Only create this type if we don't match
             string codeBase = typeof(ClientSettingsView).Assembly.CodeBase;
@@ -97,7 +92,7 @@ namespace XTask.Settings
 
             string assemblyConfig = codeBaseUri.LocalPath + ".config";
             if (!String.Equals(configuration.FilePath, assemblyConfig, StringComparison.OrdinalIgnoreCase)
-                && FileService.Value.FileExists(assemblyConfig))
+                && this.FileService.FileExists(assemblyConfig))
             {
                 // We don't match and exist, go ahead and try to create
                 return ConfigurationManager.OpenConfiguration(assemblyConfig);
@@ -106,18 +101,18 @@ namespace XTask.Settings
             return null;
         }
 
-        protected static IConfiguration GetConfiguration(SettingsLocation location)
+        protected IConfiguration GetConfiguration(SettingsLocation location)
         {
             switch (location)
             {
                 case SettingsLocation.Local:
-                    return ClientSettingsView.GetConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal);
+                    return this.GetConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal);
                 case SettingsLocation.Roaming:
-                    return ClientSettingsView.GetConfiguration(ConfigurationUserLevel.PerUserRoaming);
+                    return this.GetConfiguration(ConfigurationUserLevel.PerUserRoaming);
                 case SettingsLocation.RunningExecutable:
-                    return ClientSettingsView.GetConfiguration(ConfigurationUserLevel.None);
+                    return this.GetConfiguration(ConfigurationUserLevel.None);
                 case SettingsLocation.ContainingExecutable:
-                    return ClientSettingsView.GetContainingConfigurationIfDifferent();
+                    return this.GetContainingConfigurationIfDifferent();
             }
             return null;
         }
@@ -125,9 +120,9 @@ namespace XTask.Settings
         /// <summary>
         /// Gets the file path for the given location's configuration file
         /// </summary>
-        public static string GetConfigurationPath(SettingsLocation location)
+        public string GetConfigurationPath(SettingsLocation location)
         {
-            IConfiguration configuration = ClientSettingsView.GetConfiguration(location);
+            IConfiguration configuration = this.GetConfiguration(location);
             if (configuration != null)
             {
                 return configuration.FilePath;
@@ -140,7 +135,7 @@ namespace XTask.Settings
 
         private bool Initialize()
         {
-            IConfiguration configuration = ClientSettingsView.GetConfiguration(this.SettingsLocation);
+            IConfiguration configuration = this.GetConfiguration(this.SettingsLocation);
 
             if (configuration == null) { return false; }
 

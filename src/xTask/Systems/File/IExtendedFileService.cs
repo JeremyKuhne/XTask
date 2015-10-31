@@ -16,7 +16,7 @@ namespace XTask.Systems.File
     /// One of the metrics for what goes in this interface is frequency of use. Another metric
     /// is whether or not the APIs already exist in System.IO.
     /// </remarks>
-    public interface IExtendedFileService : IFileService
+    public interface IExtendedFileService
     {
         /// <summary>
         /// Gets the short path version of the given path, if it has one.

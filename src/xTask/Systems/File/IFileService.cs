@@ -7,15 +7,17 @@
 
 namespace XTask.Systems.File
 {
-    using System.Collections.Generic;
     using System.IO;
 
     /// <summary>
     /// Proxy for file system access
     /// </summary>
     /// <remarks>
-    /// This interface is supposed to be close to the lowest level functionality to facilitate
-    /// developing impementations and sharing more complicated logic (through extension methods).
+    /// This interface is supposed to be close to the lowest level functionality to facilitate creating additional impementations
+    /// and the sharing of more complicated logic with these implementations through extension methods.
+    /// 
+    /// Some particularly common operations are on the base interface to facilitate easy access and potentientially improve
+    /// perf slightly by aligning with typical OS APIs.
     /// </remarks>
     public interface IFileService
     {
@@ -25,8 +27,6 @@ namespace XTask.Systems.File
         /// <exception cref="System.UnauthorizedAccessException">Thrown if the current user does not have rights to the specified path.</exception>
         /// <returns>Null if the given path doesn't exist.</returns>
         IFileSystemInformation GetPathInfo(string path);
-
-        // IEnumerable<IFileSystemInformation> EnumerateFiles(string path, string searchPattern = "*.*");
 
         /// <summary>
         /// Get a stream for given path.
