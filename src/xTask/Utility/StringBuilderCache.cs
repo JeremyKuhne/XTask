@@ -7,57 +7,41 @@
 
 namespace XTask.Utility
 {
-    using System;
-    using System.Collections.Concurrent;
+    using Collections;
     using System.Text;
 
     /// <summary>
     /// Allows limited reuse of StringBuilders to improve memory pressure
     /// </summary>
-    public class StringBuilderCache : IDisposable
+    public class StringBuilderCache : Cache<StringBuilder>
     {
         internal static StringBuilderCache Instance = new StringBuilderCache();
 
-        private uint minSize;
-        private uint maxSize;
-        private uint maxBuilders;
+        private int minSize;
+        private int maxSize;
 
-        private ConcurrentBag<StringBuilder> builders;
-
-        public StringBuilderCache(uint minSize = 16, uint maxSize = 1024, uint maxBuilders = 0)
+        public StringBuilderCache(int minSize = 16, int maxSize = 1024, int maxBuilders = 0)
+            : base(maxBuilders)
         {
+            if (minSize < 0) minSize = 0;
+            if (maxSize < 0) maxSize = 0;
             this.minSize = minSize;
             this.maxSize = maxSize;
-            this.maxBuilders = maxBuilders > 1 ? maxBuilders : (uint)Environment.ProcessorCount * 4;
-            this.builders = new ConcurrentBag<StringBuilder>();
         }
 
-        /// <summary>
-        /// Get a StringBuilder
-        /// </summary>
-        public StringBuilder Acquire()
+        public override StringBuilder Acquire()
         {
-            StringBuilder sb;
-            if (builders.TryTake(out sb))
-            {
-                sb.Clear();
-            }
-            else
-            {
-                sb = new StringBuilder((int)this.minSize);
-            }
-
-            return sb;
+            var builder = base.Acquire();
+            builder.EnsureCapacity(minSize);
+            return builder;
         }
 
-        /// <summary>
-        /// Give a StringBuilder back for potential reuse
-        /// </summary>
-        public void Release(StringBuilder sb)
+        public override void Release(StringBuilder item)
         {
-            if (sb.MaxCapacity <= this.maxSize && this.builders.Count < maxBuilders)
+            item.Clear();
+            if (item.Capacity <= this.maxSize)
             {
-                this.builders.Add(sb);
+                base.Release(item);
             }
         }
 
@@ -69,21 +53,6 @@ namespace XTask.Utility
             string value = sb.ToString();
             this.Release(sb);
             return value;
-        }
-
-        public void Dispose()
-        {
-            this.Dispose(disposing: true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                StringBuilder sb;
-                while (this.builders.TryTake(out sb));
-                this.builders = null;
-            }
         }
     }
 }

@@ -49,33 +49,49 @@ namespace XTask.Tests.Collections
         [Fact]
         public void CachedItemCountTest()
         {
-            TestCache cache = new TestCache(5);
-            TestItem item = new TestItem();
-            for (int i = 0; i < 7; i++)
+            using (var cache = new TestCache(5))
             {
-                cache.Release(item);
-            }
+                TestItem item = new TestItem();
+                for (int i = 0; i < 7; i++)
+                {
+                    cache.Release(item);
+                }
 
-            cache.CachedCount.Should().Be(5);
+                cache.CachedCount.Should().Be(5);
+            }
         }
 
         [Fact]
         public void GetCachedItem()
         {
-            TestCache cache = new TestCache(5);
-            TestItem item = new TestItem();
-            cache.Release(item);
-            cache.Acquire().Should().BeSameAs(item);
-            cache.Acquire().Should().NotBeSameAs(item);
+            using (var cache = new TestCache(5))
+            {
+                TestItem item = new TestItem();
+                cache.Release(item);
+                cache.Acquire().Should().BeSameAs(item);
+                cache.Acquire().Should().NotBeSameAs(item);
+            }
         }
 
         [Fact]
         public void CachedItemParallelCountTest()
         {
-            TestCache cache = new TestCache(5);
-            TestItem item = new TestItem();
-            Parallel.For(0, 5, (i) => cache.Release(item));
-            cache.CachedCount.Should().Be(5);
+            using (var cache = new TestCache(5))
+            {
+                TestItem item = new TestItem();
+                Parallel.For(0, 5, (i) => cache.Release(item));
+                cache.CachedCount.Should().Be(5);
+            }
+        }
+
+        [Fact]
+        public void NonDisposableContent()
+        {
+            using (var cache = new Cache<object>(1))
+            {
+                cache.Release(new object());
+                cache.Release(new object());
+            }
         }
     }
 }

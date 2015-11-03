@@ -10,17 +10,27 @@ namespace XTask.Collections
     using System;
     using System.Threading;
 
-    public class Cache<T> : IDisposable where T : class, IDisposable, new()
+    /// <summary>
+    /// Light weight multithreaded fixed size cache class.
+    /// </summary>
+    public class Cache<T> : IDisposable where T : class, new()
     {
+        // Protected for testing
         protected readonly T[] itemsCache;
 
+        /// <summary>
+        /// Create a cache with space for the specified number of items.
+        /// </summary>
         public Cache(int cacheSpace)
         {
             if (cacheSpace < 1) cacheSpace = Environment.ProcessorCount * 4;
             this.itemsCache = new T[cacheSpace];
         }
 
-        public T Acquire()
+        /// <summary>
+        /// Get an item from the cache or create one if none are available.
+        /// </summary>
+        public virtual T Acquire()
         {
             T item;
 
@@ -33,6 +43,9 @@ namespace XTask.Collections
             return new T();
         }
 
+        /// <summary>
+        /// Release an item back to the cache, disposing if no room is available.
+        /// </summary>
         public virtual void Release(T item)
         {
             for (int i = 0; i < this.itemsCache.Length; i++)
@@ -41,7 +54,7 @@ namespace XTask.Collections
                 if (item == null) return;
             }
 
-            item.Dispose();
+            (item as IDisposable)?.Dispose();
         }
 
         public void Dispose()
@@ -55,7 +68,7 @@ namespace XTask.Collections
             {
                 for (int i = 0; i < this.itemsCache.Length; i++)
                 {
-                    this.itemsCache[i]?.Dispose();
+                    (this.itemsCache[i] as IDisposable)?.Dispose();
                     this.itemsCache[i] = null;
                 }
             }
