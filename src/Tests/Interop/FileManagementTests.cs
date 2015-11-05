@@ -11,11 +11,10 @@ namespace XTask.Tests.Interop
     using FluentAssertions;
     using System;
     using System.IO;
-    using XTask.Systems.File;
-    using XTask.Systems.File.Concrete.Flex;
-    using XTask.Interop;
-    using Xunit;
     using Systems.File.Concrete;
+    using XTask.Interop;
+    using XTask.Systems.File;
+    using Xunit;
 
     public class FileManagementTests
     {
@@ -107,8 +106,8 @@ namespace XTask.Tests.Interop
             // Basic dot space handling with UNCs
             InlineData(@"\\Server\Share\", @"\\Server\Share\")
             InlineData(@"\\Server\Share\ ", @"\\Server\Share\")
-            InlineData(@"\\Server\Share\.", @"\\Server\Share")          // UNCs can eat trailing separator
-            InlineData(@"\\Server\Share\..", @"\\Server\Share")         // UNCs can eat trailing separator
+            InlineData(@"\\Server\Share\.", @"\\Server\Share")                      // UNCs can eat trailing separator
+            InlineData(@"\\Server\Share\..", @"\\Server\Share")                     // UNCs can eat trailing separator
             InlineData(@"\\Server\Share\...", @"\\Server\Share\")
             InlineData(@"\\Server\Share\ .", @"\\Server\Share\")
             InlineData(@"\\Server\Share\ ..", @"\\Server\Share\")
@@ -120,7 +119,43 @@ namespace XTask.Tests.Interop
             InlineData(@"\\Server\Share\..\", @"\\Server\Share\")
             InlineData(@"\\Server\Share\...\", @"\\Server\Share\...\")
 
-            // Same as above with prefix
+            // Slash direction makes no difference
+            InlineData(@"//Server\Share\", @"\\Server\Share\")
+            InlineData(@"//Server\Share\ ", @"\\Server\Share\")
+            InlineData(@"//Server\Share\.", @"\\Server\Share")                      // UNCs can eat trailing separator
+            InlineData(@"//Server\Share\..", @"\\Server\Share")                     // UNCs can eat trailing separator
+            InlineData(@"//Server\Share\...", @"\\Server\Share\")
+            InlineData(@"//Server\Share\ .", @"\\Server\Share\")
+            InlineData(@"//Server\Share\ ..", @"\\Server\Share\")
+            InlineData(@"//Server\Share\ ...", @"\\Server\Share\")
+            InlineData(@"//Server\Share\. ", @"\\Server\Share\")
+            InlineData(@"//Server\Share\.. ", @"\\Server\Share\")
+            InlineData(@"//Server\Share\... ", @"\\Server\Share\")
+            InlineData(@"//Server\Share\.\", @"\\Server\Share\")
+            InlineData(@"//Server\Share\..\", @"\\Server\Share\")
+            InlineData(@"//Server\Share\...\", @"\\Server\Share\...\")
+
+            // Slash count breaks rooting
+            InlineData(@"\\\Server\Share\", @"\\\Server\Share\")
+            InlineData(@"\\\Server\Share\ ", @"\\\Server\Share\")
+            InlineData(@"\\\Server\Share\.", @"\\\Server\Share")                     // UNCs can eat trailing separator
+            InlineData(@"\\\Server\Share\..", @"\\\Server")                          // Paths without 2 initial slashes will not root the share
+            InlineData(@"\\\Server\Share\...", @"\\\Server\Share\")
+            InlineData(@"\\\Server\Share\ .", @"\\\Server\Share\")
+            InlineData(@"\\\Server\Share\ ..", @"\\\Server\Share\")
+            InlineData(@"\\\Server\Share\ ...", @"\\\Server\Share\")
+            InlineData(@"\\\Server\Share\. ", @"\\\Server\Share\")
+            InlineData(@"\\\Server\Share\.. ", @"\\\Server\Share\")
+            InlineData(@"\\\Server\Share\... ", @"\\\Server\Share\")
+            InlineData(@"\\\Server\Share\.\", @"\\\Server\Share\")
+            InlineData(@"\\\Server\Share\..\", @"\\\Server\")                       // Paths without 2 initial slashes will not root the share
+            InlineData(@"\\\Server\Share\...\", @"\\\Server\Share\...\")
+
+            // Inital slash count is always kept
+            InlineData(@"\\\\Server\Share\", @"\\\Server\Share\")
+            InlineData(@"\\\\\Server\Share\", @"\\\Server\Share\")
+
+            // Extended paths root to \\?\
             InlineData(@"\\?\UNC\Server\Share\", @"\\?\UNC\Server\Share\")
             InlineData(@"\\?\UNC\Server\Share\ ", @"\\?\UNC\Server\Share\")
             InlineData(@"\\?\UNC\Server\Share\.", @"\\?\UNC\Server\Share")
@@ -146,65 +181,21 @@ namespace XTask.Tests.Interop
             InlineData(@"C:/..", @"C:\")
             InlineData(@"//Server/Share", @"\\Server\Share")
             InlineData(@"//Server/Share/..", @"\\Server\Share")
+            InlineData(@"//Server//Share", @"\\Server\Share")
+            InlineData(@"//Server//Share/..", @"\\Server\")                         // Double slash shares normalize but don't root correctly
+            InlineData(@"//Server\\Share/..", @"\\Server\")
             InlineData(@"//?/", @"\\?\")
 
             // Device behavior
             InlineData(@"CON", @"\\.\CON")
             InlineData(@"CON:Alt", @"\\.\CON")
             InlineData(@"LPT9", @"\\.\LPT9")
+
+            InlineData(@"C:\A\B\.\..\C", @"C:\A\C")
             ]
         public void ValidateKnownFixedBehaviors(string value, string expected)
         {
             NativeMethods.FileManagement.GetFullPathName(value).Should().Be(expected, $"source was {value}");
-        }
-
-        [Theory
-            // Basic dot space handling
-            InlineData(@"C:\", @"C:\")
-            InlineData(@"C:\ ", @"C:\")
-            InlineData(@"C:\.", @"C:\")
-            InlineData(@"C:\..", @"C:\")
-            InlineData(@"C:\...", @"C:\")
-            // InlineData(@"C:\ .", @"C:\")                              // THROWS
-            // InlineData(@"C:\ ..", @"C:\")                             // THROWS
-            // InlineData(@"C:\ ...", @"C:\")                            // THROWS
-            InlineData(@"C:\. ", @"C:\")
-            InlineData(@"C:\.. ", @"C:\")
-            InlineData(@"C:\... ", @"C:\")
-            InlineData(@"C:\.\", @"C:\")
-            InlineData(@"C:\..\", @"C:\")
-            InlineData(@"C:\...\", @"C:\")                              // DIFFERS- Native is identical
-            InlineData(@"C:\ \", @"C:\")                                // DIFFERS- Native is identical
-            // InlineData(@"C:\ .\", @"C:\ \")                          // THROWS
-            // InlineData(@"C:\ ..\", @"C:\ ..\")                       // THROWS
-            // InlineData(@"C:\ ...\", @"C:\ ...\")                     // THROWS
-            InlineData(@"C:\. \", @"C:\")                               // DIFFERS- Native is identical
-            InlineData(@"C:\.. \", @"C:\")                              // DIFFERS- Native is identical
-            InlineData(@"C:\... \", @"C:\")                             // DIFFERS- Native is identical
-            InlineData(@"C:\A \", @"C:\A\")                             // DIFFERS- Native is identical
-            InlineData(@"C:\A \B", @"C:\A\B")                           // DIFFERS- Native is identical
-
-            // Basic dot space handling with UNCs
-            InlineData(@"\\Server\Share\", @"\\Server\Share\")
-            InlineData(@"\\Server\Share\ ", @"\\Server\Share\")
-            // InlineData(@"\\Server\Share\.", @"\\Server\Share")       // UNCs can eat trailing separator THROWS ArgumentException
-            InlineData(@"\\Server\Share\..", @"\\Server\Share")         // UNCs can eat trailing separator
-            InlineData(@"\\Server\Share\...", @"\\Server\Share")        // DIFFERS- Native has a trailing slash
-            // InlineData(@"\\Server\Share\ .", @"\\Server\Share\")     // THROWS
-            // InlineData(@"\\Server\Share\ ..", @"\\Server\Share\")    // THROWS
-            // InlineData(@"\\Server\Share\ ...", @"\\Server\Share\")   // THROWS
-            InlineData(@"\\Server\Share\. ", @"\\Server\Share")         // DIFFERS- Native has a trailing slash
-            InlineData(@"\\Server\Share\.. ", @"\\Server\Share")        // DIFFERS- Native has a trailing slash
-            InlineData(@"\\Server\Share\... ", @"\\Server\Share")       // DIFFERS- Native has a trailing slash
-            InlineData(@"\\Server\Share\.\", @"\\Server\Share\")
-            InlineData(@"\\Server\Share\..\", @"\\Server\Share\")
-            InlineData(@"\\Server\Share\...\", @"\\Server\Share\")      // DIFFERS- Native is identical
-
-            // InlineData(@"C:\Foo:Bar", @"C:\Foo:Bar")                 // NotSupportedException
-            ]
-        public void CompareDotNetBehaviors(string value, string expected)
-        {
-            Path.GetFullPath(value).Should().Be(expected, $"source was {value}");
         }
 
         [Theory
