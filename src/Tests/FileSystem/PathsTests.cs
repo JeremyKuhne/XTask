@@ -255,5 +255,37 @@ namespace XTask.Tests.FileSystem
             sb.ToString().Should().Be(expected);
         }
 
+        [Fact]
+        public void NormalizeDirectorySeparatorsThrowsOnNull()
+        {
+            Action action = () => Paths.NormalizeDirectorySeparators(null);
+            action.ShouldThrow<ArgumentNullException>();
+        }
+
+        [Theory
+            InlineData(@"", @"")
+            InlineData(@"\", @"\")
+            InlineData(@"\\", @"\\")
+            InlineData(@"\\\", @"\")
+            InlineData(@"/", @"\")
+            InlineData(@"//", @"\\")
+            InlineData(@"///", @"\")
+            InlineData(@"/\/\", @"\")
+            InlineData(@"\/\/", @"\")
+            InlineData(@"C:\\", @"C:\")
+            InlineData(@"C:\a", @"C:\a")
+            InlineData(@"C:\\a", @"C:\a")
+            InlineData(@"C:\\a////////////b/", @"C:\a\b\")
+            ]
+        public void NormalizeDirectorySeparatorsTests(string input, string expected)
+        {
+            var result = Paths.NormalizeDirectorySeparators(input);
+            result.Should().Be(expected);
+            if (String.Equals(input, result, StringComparison.Ordinal))
+            {
+                // If they're equal we should get back the same instance
+                result.Should().BeSameAs(input);
+            }
+        }
     }
 }

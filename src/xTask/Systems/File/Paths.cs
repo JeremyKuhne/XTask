@@ -9,10 +9,11 @@ namespace XTask.Systems.File
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Text;
     using Utility;
+    using Interop;
 
     /// <summary>
     /// Path related helpers.
@@ -59,12 +60,22 @@ namespace XTask.Systems.File
         // "Naming Files, Paths, and Namespaces"
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247.aspx
         //
-        private static readonly char[] directorySeparatorCharacters = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
+        private static readonly char[] directorySeparatorCharacters = new char[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar };
 
         /// <summary>
         /// The default directory separator
         /// </summary>
-        public static readonly char DirectorySeparator = Path.DirectorySeparatorChar;
+        public static readonly char DirectorySeparator = System.IO.Path.DirectorySeparatorChar;
+
+        /// <summary>
+        /// The alternate directory separator
+        /// </summary>
+        public static readonly char AltDirectorySeparator = System.IO.Path.AltDirectorySeparatorChar;
+
+        /// <summary>
+        /// Volume separator character
+        /// </summary>
+        public static readonly char VolumeSeparator = System.IO.Path.VolumeSeparatorChar;
 
         /// <summary>
         /// Returns true if the path specified is relative to the current drive or working directory.
@@ -151,7 +162,7 @@ namespace XTask.Systems.File
                     return index;
                 }
 
-                if (((ch == Path.DirectorySeparatorChar) || ch == ' ' || (ch == Path.AltDirectorySeparatorChar)) || (ch == Path.VolumeSeparatorChar))
+                if (((ch == DirectorySeparator) || ch == ' ' || (ch == AltDirectorySeparator)) || (ch == VolumeSeparator))
                 {
                     // Found a space, directory or volume separator before a period
                     // (this is something .NET gets wrong- extensions cannot have spaces in them)
@@ -187,8 +198,8 @@ namespace XTask.Systems.File
             if (skipTrailingSlash && EndsInDirectorySeparator(path)) length--;
 
             while (((length > rootLength)
-                && (path[--length] != Path.DirectorySeparatorChar))
-                && (path[length] != Path.AltDirectorySeparatorChar))
+                && (path[--length] != DirectorySeparator))
+                && (path[length] != AltDirectorySeparator))
             {
             }
 
@@ -317,12 +328,23 @@ namespace XTask.Systems.File
         /// <remarks>
         /// Does not look for invalid characters beyond what makes for an indeterminate path.
         /// </remarks>
-        public static PathFormat GetPathFormat(string path, out int rootLength)
+        public unsafe static PathFormat GetPathFormat(string path, out int rootLength)
         {
-            int pathLength;
-            rootLength = -1;
+            if (path == null || path.Length == 0 || path[0] == ':')
+            {
+                rootLength = -1;
+                return PathFormat.UnknownFormat;
+            }
 
-            if (path == null || ((pathLength = path.Length) == 0) || path[0] == ':')  return PathFormat.UnknownFormat;
+            fixed (char* start = path)
+            {
+                return Paths.GetPathFormat(start, path.Length, out rootLength);
+            }
+        }
+
+        private static unsafe PathFormat GetPathFormat(char* path, int pathLength, out int rootLength)
+        {
+            rootLength = -1;
 
             // Forward slashes are normalized to backslashes, so consider them equivalent
             if (!(path[0] == '\\' || path[0] == '/'))
@@ -400,7 +422,7 @@ namespace XTask.Systems.File
                     if (path[4] == '\\' || path[4] == '/') return PathFormat.UnknownFormat;
 
                     // Find the end of the volume/device identifier
-                    int nextSeparator = path.IndexOfAny(directorySeparatorCharacters, 4);
+                    int nextSeparator = NextSeparator(path, pathLength, 4);
                     rootLength = nextSeparator > -1 ? nextSeparator + 1 : pathLength;
                     return format;
                 }
@@ -410,13 +432,13 @@ namespace XTask.Systems.File
             if (pathLength >= uncRoot + 2      // At least \\a\b or \\?\UNC\a\b
                 && path[uncRoot - 1] != '\\')  // Not just \\\ or \\?\UNC\\
             {
-                int indexOfShareSeparator = path.IndexOfAny(directorySeparatorCharacters, uncRoot);
+                int indexOfShareSeparator = NextSeparator(path, pathLength, uncRoot);
                 if (indexOfShareSeparator > -1                     // Needs at least one slash past \\?\UNC\a
                     && indexOfShareSeparator != pathLength - 1     //  and it can't be the final (e.g. \\?\UNC\a\)
                     && path[indexOfShareSeparator + 1] != '\\')    //  and it can't be two backslashes (e.g. \\?\UNC\\)
                 {
                     // We're good, find the end of the server\share
-                    int nextSeparator = path.IndexOfAny(directorySeparatorCharacters, indexOfShareSeparator + 1);
+                    int nextSeparator = NextSeparator(path, pathLength, indexOfShareSeparator + 1);
                     rootLength = nextSeparator > -1 ? nextSeparator + 1 : pathLength;
                     return format;
                 }
@@ -424,6 +446,16 @@ namespace XTask.Systems.File
 
             // Bad extended UNC
             return PathFormat.UnknownFormat;
+        }
+
+        private unsafe static int NextSeparator(char* value, int length, int skip)
+        {
+            for (int i = skip; i < length; i++)
+            {
+                if (value[i] == DirectorySeparator || value[i] == AltDirectorySeparator) return i;
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -483,9 +515,10 @@ namespace XTask.Systems.File
         /// <summary>
         /// Returns true if the given character is a directory separator.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDirectorySeparator(char character)
         {
-            return (character == Path.DirectorySeparatorChar || character == Path.AltDirectorySeparatorChar);
+            return (character == DirectorySeparator || character == AltDirectorySeparator);
         }
 
         /// <summary>
@@ -502,7 +535,7 @@ namespace XTask.Systems.File
             }
             else
             {
-                return path + Path.DirectorySeparatorChar;
+                return path + DirectorySeparator;
             }
         }
 
@@ -527,6 +560,7 @@ namespace XTask.Systems.File
         /// <summary>
         /// Returns true if the given path is extended.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsExtended(string path)
         {
             return path != null && path.StartsWith(Paths.ExtendedPathPrefix, StringComparison.Ordinal);
@@ -608,6 +642,85 @@ namespace XTask.Systems.File
             {
                 path1.Append(path2);
             }
+        }
+
+        /// <summary>
+        /// Normalize the directory separators in the given path. Makes alternate directory separators into default separators and
+        /// collapses runs of separators. Will keep initial two separators as these have special meaning (UNC or extended path).
+        /// Does not collpase relative segments.
+        /// </summary>
+        public static string NormalizeDirectorySeparators(string path)
+        {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
+            var normalized = InternalNormalizeDirectorySeparators(path);
+            if (normalized == null)
+                return path;
+            else
+                return StringBufferCache.Instance.ToStringAndRelease(normalized);
+        }
+
+
+        private static StringBuffer InternalNormalizeDirectorySeparators(string path)
+        {
+            // Check to see if we need to normalize
+            bool normalized = true;
+            char current;
+
+            for (int i = 0; i < path.Length; i++)
+            {
+                current = path[i];
+
+                // If we have a separator
+                if (Paths.IsDirectorySeparator(path[i]))
+                {
+                    if (
+                        // And it isn't the default
+                        path[i] != Paths.DirectorySeparator
+                        // or it isn't the first char and the next is also a separator (to allow for UNC & extended syntax which begin with \\)
+                        || (i > 0 && i < path.Length - 1 && Paths.IsDirectorySeparator(path[i + 1])))
+                    {
+                        normalized = false;
+                        break;
+                    }
+                }
+            }
+
+            // Already normalized, don't allocate another string
+            if (normalized) return null;
+
+            // Normalize
+            var builder = StringBufferCache.Instance.Acquire((ulong)path.Length);
+
+            // Keep an initial separator if we start with separators
+            int startSeparators = 0;
+            while (startSeparators < path.Length && Paths.IsDirectorySeparator(path[startSeparators])) startSeparators++;
+            if (startSeparators > 0) builder.Append(Paths.DirectorySeparator);
+
+            // This is a special case- we want to keep *two* if we have *just* two to allow for UNCs and extended paths
+            if (startSeparators == 2) builder.Append(Paths.DirectorySeparator);
+
+            for (int i = startSeparators; i < path.Length; i++)
+            {
+                current = path[i];
+
+                // If we have a separator
+                if (Paths.IsDirectorySeparator(current))
+                {
+                    // If the next is a separator, skip adding this
+                    if (i < path.Length - 1 && Paths.IsDirectorySeparator(path[i + 1]))
+                    {
+                        continue;
+                    }
+
+                    // Ensure it is the primary separator
+                    current = Paths.DirectorySeparator;
+                }
+
+                builder.Append(current);
+            }
+
+            return builder;
         }
     }
 }
