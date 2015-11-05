@@ -162,6 +162,27 @@ namespace XTask.Interop
         }
 
         /// <summary>
+        /// Check for the index of a specified character.
+        /// </summary>
+        /// <param name="nameof(value)">Character to look for.</param>
+        /// <param name="nameof(index)">Index the character was found at if true is returned.</param>
+        /// <param name="nameof(skip)">Skip the given number of characters before looking.</param>
+        /// <returns>True if the given character was found.</returns>
+        public unsafe bool IndexOf(char value, out ulong index, ulong skip = 0)
+        {
+            for (index = skip; index < this.length; index++)
+            {
+                if (CharPointer[index] == value)
+                {
+                    return true;
+                }
+            }
+
+            index = this.length + 1;
+            return false;
+        }
+
+        /// <summary>
         /// Returns true if the buffer starts with the given string.
         /// </summary>
         public bool StartsWithOrdinal(string value)
@@ -203,6 +224,15 @@ namespace XTask.Interop
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Append the given character.
+        /// </summary>
+        public unsafe void Append(char value)
+        {
+            this.CharPointer[this.length] = value;
+            this.Length++;
         }
 
         /// <summary>

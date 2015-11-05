@@ -590,5 +590,34 @@ namespace XTask.Tests.Interop
                 action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
+
+        [Fact]
+        public void AppendChar()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                buffer.Append("a");
+                buffer.Append("b");
+                buffer.ToString().Should().Be("ab");
+            }
+        }
+
+        [Theory
+            InlineData("", 'a', 0, 1, false)
+            InlineData("", 'a', 1, 1, false)
+            InlineData("a", 'a', 0, 0, true)
+            InlineData("", 'a', 1, 1, false)
+            InlineData("aa", 'a', 0, 0, true)
+            InlineData("aa", 'a', 1, 1, true)
+            ]
+        public void IndexOfTests(string source, char value, ulong skip, ulong expectedIndex, bool expectedValue)
+        {
+            using (var buffer = new StringBuffer(source))
+            {
+                ulong index;
+                buffer.IndexOf(value, out index, skip).Should().Be(expectedValue);
+                index.Should().Be(expectedIndex);
+            }
+        }
     }
 }

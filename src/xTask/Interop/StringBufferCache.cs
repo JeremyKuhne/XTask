@@ -40,6 +40,16 @@ namespace XTask.Interop
             base.Release(item);
         }
 
+        public string ToStringAndRelease(StringBuffer item)
+        {
+            string returnValue = item.ToString();
+            this.Release(item);
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Invoke the given action on a cached buffer.
+        /// </summary>
         public static void CachedBufferInvoke(Action<StringBuffer> action)
         {
             var buffer = Instance.Acquire();
@@ -70,6 +80,5 @@ namespace XTask.Interop
                 Instance.Release(buffer);
             }
         }
-
     }
 }
