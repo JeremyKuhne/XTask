@@ -21,6 +21,7 @@ namespace XTask.Interop
 
     internal static partial class NativeMethods
     {
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364232.aspx
         internal static class FileManagement
         {
             // Putting private P/Invokes in a subclass to allow exact matching of signatures for perf on initial call and reduce string count

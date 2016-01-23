@@ -87,6 +87,13 @@ namespace XTask.Tests.Interop
             InlineData(@"\\", @"\\")
             InlineData(@"\\Server", @"\\Server")
             InlineData(@"/", @"\")
+            InlineData(@"  C:\", @"C:\")                                // Initial whitespace is only eaten if the path begins with C: or \
+            InlineData(@"  C", @"  C")
+            InlineData(@" \\", @"\\")
+            InlineData(@" \", @"\")
+            InlineData(@" /", @"\")
+            InlineData(@".\PROGRA~1", @".\PROGRA~1")
+            InlineData(@"C:\PROGRA~1", @"C:\PROGRA~1")
             // InlineData(@"c:\ . .\foo", @"c:\foo")                    // ArgumentException
             ]
         public void ValidateNoFullCheckBehaviors(string value, string expected)
@@ -94,9 +101,18 @@ namespace XTask.Tests.Interop
             this.NormalizePath(value).Should().Be(expected);
         }
 
+        [Theory
+            InlineData(@".\PROGRA~1", @".\PROGRA~1")
+            InlineData(@"C:\PROGRA~1", @"C:\Program Files")
+            ]
+        public void ValidateNoFullCheckExpandShortPathBehaviors(string value, string expected)
+        {
+            this.NormalizePath(value, fullCheck: false, expandShortPaths: true).Should().Be(expected);
+        }
+
         private static MethodInfo normalizeMethod;
 
-        private string NormalizePath(string path, bool fullCheck = false, int maxPathLength = 260, bool expandShortPaths = false)
+        private string NormalizePath(string path, bool fullCheck = false, bool expandShortPaths = false, int maxPathLength = 260)
         {
             if (normalizeMethod == null)
             {
@@ -126,6 +142,10 @@ namespace XTask.Tests.Interop
             InlineData(@"\\\a\", null)
             InlineData(@"\\\a\b", null)
             InlineData(@"\\\a\b\c", @"\\a\b")
+            InlineData(@".\PROGRA~1", @".")
+            InlineData(@"C:\PROGRA~1", @"C:\")
+            InlineData(@".\PROGRA~1\A.TXT", @".\PROGRA~1")
+            InlineData(@"C:\PROGRA~1\A.TXT", @"C:\Program Files")
             ]
         public void ValidateGetDirectoryNameBehaviors(string input, string expected)
         {

@@ -672,11 +672,11 @@ namespace XTask.Systems.File
                 current = path[i];
 
                 // If we have a separator
-                if (Paths.IsDirectorySeparator(path[i]))
+                if (Paths.IsDirectorySeparator(current))
                 {
                     if (
                         // And it isn't the default
-                        path[i] != Paths.DirectorySeparator
+                        current != Paths.DirectorySeparator
                         // or it isn't the first char and the next is also a separator (to allow for UNC & extended syntax which begin with \\)
                         || (i > 0 && i < path.Length - 1 && Paths.IsDirectorySeparator(path[i + 1])))
                     {
