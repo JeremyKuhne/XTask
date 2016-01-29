@@ -33,8 +33,8 @@ namespace XTask.Tests.Interop
             string testString = "Test";
             using (var buffer = new StringBuffer(testString))
             {
-                buffer.Length.Should().Be((ulong)testString.Length);
-                buffer.CharCapacity.Should().Be((ulong)testString.Length + 1);
+                buffer.Length.Should().Be((uint)testString.Length);
+                buffer.CharCapacity.Should().Be((uint)testString.Length + 1);
 
                 for (int i = 0; i < testString.Length; i++)
                 {
@@ -56,16 +56,6 @@ namespace XTask.Tests.Interop
                 buffer.Length = 3;
                 buffer.ToString().Should().Be("Foo");
                 buffer.CharCapacity.Should().Be(5, "shouldn't reduce capacity when dropping length");
-            }
-        }
-
-        [Fact]
-        public void OverByteCapacityThrowsArgumentOutOfRange()
-        {
-            using (var buffer = new StringBuffer())
-            {
-                Action action = () => buffer.EnsureCharCapacity(ulong.MaxValue / 2 + 1);
-                action.ShouldThrow<ArgumentOutOfRangeException>();
             }
         }
 
@@ -169,7 +159,7 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new StringBuffer(source))
             {
-                buffer.SubStringEquals(value, startIndex: (ulong)startIndex, count: count).Should().Be(expected);
+                buffer.SubStringEquals(value, startIndex: (uint)startIndex, count: count).Should().Be(expected);
             }
         }
 
@@ -228,9 +218,9 @@ namespace XTask.Tests.Interop
             using (var valueBuffer = new StringBuffer(value))
             {
                 if (count == -1)
-                    buffer.Append(valueBuffer, (ulong)startIndex);
+                    buffer.Append(valueBuffer, (uint)startIndex);
                 else
-                    buffer.Append(valueBuffer, (ulong)startIndex, (ulong)count);
+                    buffer.Append(valueBuffer, (uint)startIndex, (uint)count);
                 buffer.ToString().Should().Be(expected);
             }
         }
@@ -339,7 +329,7 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new StringBuffer(source))
             {
-                buffer.SubString(startIndex: (ulong)startIndex, count: count).Should().Be(expected);
+                buffer.SubString(startIndex: (uint)startIndex, count: count).Should().Be(expected);
             }
         }
 
@@ -371,7 +361,7 @@ namespace XTask.Tests.Interop
             InlineData("\0", 1, 0)
             InlineData("Foo\0Bar", 7, 3)
             ]
-        public unsafe void SetLengthToFirstNullTests(string content, ulong startLength, ulong endLength)
+        public unsafe void SetLengthToFirstNullTests(string content, uint startLength, uint endLength)
         {
             using (var buffer = new StringBuffer(content))
             {
@@ -501,7 +491,7 @@ namespace XTask.Tests.Interop
             InlineData(@"Foo", @"Bar", 1, 0, 3, "FBar")
             InlineData(@"Foo", @"Bar", 1, 1, 2, "Far")
             ]
-        public void CopyFromString(string content, string source, ulong bufferIndex, int sourceIndex, int count, string expected)
+        public void CopyFromString(string content, string source, uint bufferIndex, int sourceIndex, int count, string expected)
         {
             using (var buffer = new StringBuffer(content))
             {
@@ -554,7 +544,7 @@ namespace XTask.Tests.Interop
             InlineData(@"Foo", @"Bar", 1, 0, 3, "FBar")
             InlineData(@"Foo", @"Bar", 1, 1, 2, "Far")
             ]
-        public void CopyToBufferString(string destination, string content, ulong destinationIndex, ulong bufferIndex, ulong count, string expected)
+        public void CopyToBufferString(string destination, string content, uint destinationIndex, uint bufferIndex, uint count, string expected)
         {
             using (var buffer = new StringBuffer(content))
             using (var destinationBuffer = new StringBuffer(destination))
@@ -581,7 +571,7 @@ namespace XTask.Tests.Interop
             InlineData("Foo", 3, 1)
             InlineData("Foo", 4, 0)
             ]
-        public void CopyToBufferThrowsIndexingBeyondSourceBufferLength(string source, ulong index, ulong count)
+        public void CopyToBufferThrowsIndexingBeyondSourceBufferLength(string source, uint index, uint count)
         {
             using (var buffer = new StringBuffer(source))
             using (var targetBuffer = new StringBuffer())
@@ -610,11 +600,11 @@ namespace XTask.Tests.Interop
             InlineData("aa", 'a', 0, 0, true)
             InlineData("aa", 'a', 1, 1, true)
             ]
-        public void IndexOfTests(string source, char value, ulong skip, ulong expectedIndex, bool expectedValue)
+        public void IndexOfTests(string source, char value, uint skip, uint expectedIndex, bool expectedValue)
         {
             using (var buffer = new StringBuffer(source))
             {
-                ulong index;
+                uint index;
                 buffer.IndexOf(value, out index, skip).Should().Be(expectedValue);
                 index.Should().Be(expectedIndex);
             }

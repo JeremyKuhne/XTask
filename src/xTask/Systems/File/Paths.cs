@@ -690,7 +690,7 @@ namespace XTask.Systems.File
             if (normalized) return null;
 
             // Normalize
-            var builder = StringBufferCache.Instance.Acquire((ulong)path.Length);
+            var builder = StringBufferCache.Instance.Acquire((uint)path.Length);
 
             // Keep an initial separator if we start with separators
             int startSeparators = 0;

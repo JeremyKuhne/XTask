@@ -23,13 +23,27 @@ namespace XTask.Interop
     /// </remarks>
     public class StringBuffer : NativeBuffer
     {
-        private ulong length;
+        // While uint (UInt32) isn't CLS compliant it matches up better with interop scenarios. Windows typically
+        // uses DWORD in it's interfaces, which is also an unsigned 32 bit integer.
+        //
+        // NativeBuffer uses ulong (UInt64) to allow for memory blocks that are much larger than 4GB (Windows uses
+        // SIZE_T which is the pointer size ULONG_PTR, e.g. 32 or 64). Allowing string buffers that up to 8GB in size
+        // (uint * sizeof(char)) should be way over the size of what one would need. Allowing ulong or long doesn't
+        // match up with DWORD and requires bounds checks that are avoidable with uint.
+        //
+        // Natively Windows strings can never go over ushort bytes (UInt16) which is 64KB or 32K characters. .NET's
+        // string can't go over int in size (4GB). While uint chars won't fit in a String, it is, again the native
+        // type size used in most Windows APIs that take a size in chars.
+        //
+        // Note that a number of Windows APIs return null delimited lists of strings. Given the normal maximum Windows
+        // string size (32K chars) we could handle around 128K strings in a single StringBuffer.
+        private uint length;
 
         /// <summary>
         /// Create and empty StringBuffer.
         /// </summary>
         public StringBuffer()
-            : this(initialMinCapacity: 0)
+            : this(initialCharCapacity: 0)
         {
         }
 
@@ -37,8 +51,8 @@ namespace XTask.Interop
         /// Instantiate the buffer with capacity for at least the specified number of characters. Capacity
         /// includes the trailing null character.
         /// </summary>
-        public StringBuffer(ulong initialMinCapacity)
-            : base(initialMinCapacity)
+        public StringBuffer(uint initialCharCapacity)
+            : base(initialCharCapacity * sizeof(char))
         {
         }
 
@@ -95,12 +109,12 @@ namespace XTask.Interop
         /// <summary>
         /// Character capacity of the buffer. Includes the count for the trailing null character.
         /// </summary>
-        public ulong CharCapacity
+        public uint CharCapacity
         {
             get
             {
                 ulong byteCapacity = this.ByteCapacity;
-                return byteCapacity == 0 ? 0 : byteCapacity / sizeof(char);
+                return byteCapacity == 0 ? 0 : (uint)(byteCapacity / sizeof(char));
             }
         }
 
@@ -109,19 +123,18 @@ namespace XTask.Interop
         /// </summary>
         /// <exception cref="OutOfMemoryException">Thrown if unable to allocate memory when setting.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(Capacity)"/> to a value that is larger than the maximum addressable memory.</exception>
-        public void EnsureCharCapacity(ulong minCapacity)
+        public void EnsureCharCapacity(uint minCapacity)
         {
-            if (minCapacity > (ulong.MaxValue / sizeof(char))) throw new ArgumentOutOfRangeException(nameof(minCapacity));
-            this.EnsureByteCapacity(minCapacity * sizeof(char));
+            this.EnsureByteCapacity((ulong)minCapacity * sizeof(char));
         }
 
         /// <summary>
         /// The logical length of the buffer in characters. (Does not include the final null.) Will automatically attempt to increase capacity.
         /// This is where the usable data ends.
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(Length)"/> to a value that is larger than the maximum addressable memory.</exception>
         /// <exception cref="OutOfMemoryException">Thrown if unable to allocate memory when setting.</exception>
-        public unsafe ulong Length
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(Length)"/> to a value that is larger than the maximum addressable memory.</exception>
+        public unsafe uint Length
         {
             get { return this.length; }
             set
@@ -141,8 +154,8 @@ namespace XTask.Interop
         public unsafe void SetLengthToFirstNull()
         {
             char* buffer = CharPointer;
-            ulong capacity = CharCapacity;
-            for (ulong i = 0; i < capacity; i++)
+            uint capacity = CharCapacity;
+            for (uint i = 0; i < capacity; i++)
             {
                 if (buffer[i] == '\0')
                 {
@@ -168,7 +181,7 @@ namespace XTask.Interop
         /// <param name="nameof(index)">Index the character was found at if true is returned.</param>
         /// <param name="nameof(skip)">Skip the given number of characters before looking.</param>
         /// <returns>True if the given character was found.</returns>
-        public unsafe bool IndexOf(char value, out ulong index, ulong skip = 0)
+        public unsafe bool IndexOf(char value, out uint index, uint skip = 0)
         {
             for (index = skip; index < this.length; index++)
             {
@@ -202,7 +215,7 @@ namespace XTask.Interop
         /// Thrown if <paramref name="nameof(startIndex)"/> or <paramref name="nameof(count)"/> are outside the range
         /// of the buffer's length.
         /// </exception>
-        public unsafe bool SubStringEquals(string value, ulong startIndex = 0, int count = -1)
+        public unsafe bool SubStringEquals(string value, uint startIndex = 0, int count = -1)
         {
             if (value == null) return false;
             if (count < -1) throw new ArgumentOutOfRangeException(nameof(count));
@@ -275,7 +288,7 @@ namespace XTask.Interop
         /// <exception cref="ArgumentOutOfRangeException">
         /// Thrown if <paramref name="startIndex"/> is outside the range of <paramref name="value"/> characters.
         /// </exception>
-        public unsafe void Append(StringBuffer value, ulong startIndex)
+        public unsafe void Append(StringBuffer value, uint startIndex)
         {
             if (value == null) throw new ArgumentNullException(nameof(value));
             this.Append(value, startIndex, value.Length - startIndex);
@@ -292,7 +305,7 @@ namespace XTask.Interop
         /// Thrown if <paramref name="startIndex"/> or <paramref name="nameof(count)"/> are outside the range
         /// of <paramref name="value"/> characters.
         /// </exception>
-        public unsafe void Append(StringBuffer value, ulong startIndex, ulong count)
+        public unsafe void Append(StringBuffer value, uint startIndex, uint count)
         {
             if (count == 0) return;
             if (value == null) throw new ArgumentNullException(nameof(value));
@@ -307,14 +320,14 @@ namespace XTask.Interop
         /// Copy contents to the specified buffer. Will grow the destination buffer if needed.
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="nameof(destination)"/> is null</exception>
-        public unsafe void CopyTo(ulong bufferIndex, StringBuffer destination, ulong destinationIndex, ulong count)
+        public unsafe void CopyTo(uint bufferIndex, StringBuffer destination, uint destinationIndex, uint count)
         {
             if (destination == null) throw new ArgumentNullException(nameof(destination));
             if (destinationIndex > destination.length) throw new ArgumentOutOfRangeException(nameof(destinationIndex));
             if (this.Length < bufferIndex + count) throw new ArgumentOutOfRangeException(nameof(count));
 
             if (count == 0) return;
-            ulong lastIndex = destinationIndex + (ulong)count;
+            uint lastIndex = destinationIndex + count;
             if (destination.Length < lastIndex) destination.Length = lastIndex;
 
             Buffer.MemoryCopy(
@@ -328,7 +341,7 @@ namespace XTask.Interop
         /// Copy contents from the specified string into the buffer at the given index. Will grow the buffer if neeeded.
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="nameof(source)"/> is null</exception>
-        public unsafe void CopyFrom(ulong bufferIndex, string source, int sourceIndex = 0, int count = -1)
+        public unsafe void CopyFrom(uint bufferIndex, string source, int sourceIndex = 0, int count = -1)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (bufferIndex > this.Length) throw new ArgumentOutOfRangeException(nameof(bufferIndex));
@@ -337,7 +350,7 @@ namespace XTask.Interop
             if (source.Length < sourceIndex + count) throw new ArgumentOutOfRangeException(nameof(count));
 
             if (count == 0) return;
-            ulong lastIndex = bufferIndex + (ulong)count;
+            uint lastIndex = bufferIndex + (uint)count;
             if (this.Length < lastIndex) this.Length = lastIndex;
 
             fixed (char* content = source)
@@ -490,7 +503,7 @@ namespace XTask.Interop
         /// Thrown if <paramref name="nameof(startIndex)"/> or <paramref name="nameof(count)"/> are outside the range of the buffer's length
         /// or count is greater than the maximum string size (int.MaxValue).
         /// </exception>
-        public unsafe string SubString(ulong startIndex, int count = -1)
+        public unsafe string SubString(uint startIndex, int count = -1)
         {
             if (this.Length > 0 && startIndex > this.Length - 1) throw new ArgumentOutOfRangeException(nameof(startIndex));
             if (count < -1) throw new ArgumentOutOfRangeException(nameof(count));

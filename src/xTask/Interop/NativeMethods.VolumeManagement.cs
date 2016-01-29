@@ -80,14 +80,14 @@ namespace XTask.Interop
 
                 // Null will return everything defined- this list is quite large so set a higher initial allocation
 
-                var buffer = deviceName == null ? new StringBuffer(initialMinCapacity: 8192) : StringBufferCache.Instance.Acquire(minCapacity: 256);
+                var buffer = deviceName == null ? new StringBuffer(initialCharCapacity: 4096) : StringBufferCache.Instance.Acquire(minCapacity: 256);
 
                 try
                 {
                     uint result = 0;
 
                     // QueryDosDevicePrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while ((result = Private.QueryDosDeviceW(deviceName, buffer, (uint)buffer.CharCapacity)) == 0)
+                    while ((result = Private.QueryDosDeviceW(deviceName, buffer, buffer.CharCapacity)) == 0)
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         switch (lastError)
@@ -117,7 +117,7 @@ namespace XTask.Interop
                     uint result = 0;
 
                     // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while ((result = Private.GetLogicalDriveStringsW((uint)buffer.CharCapacity, buffer)) > (uint)buffer.CharCapacity)
+                    while ((result = Private.GetLogicalDriveStringsW(buffer.CharCapacity, buffer)) > buffer.CharCapacity)
                     {
                         buffer.EnsureCharCapacity(result);
                     }
@@ -139,7 +139,7 @@ namespace XTask.Interop
                 // Most paths are mounted at the root, 50 should handle the canonical (guid) root
                 return StringBufferCache.CachedBufferInvoke(50, (volumePathName) =>
                 {
-                    while (!Private.GetVolumePathNameW(path, volumePathName, (uint)volumePathName.CharCapacity))
+                    while (!Private.GetVolumePathNameW(path, volumePathName, volumePathName.CharCapacity))
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         switch (lastError)
@@ -165,7 +165,7 @@ namespace XTask.Interop
                     uint returnLength = 0;
 
                     // GetLogicalDriveStringsPrivate takes the buffer count in TCHARs, which is 2 bytes for Unicode (WCHAR)
-                    while (!Private.GetVolumePathNamesForVolumeNameW(volumeName, buffer, (uint)buffer.CharCapacity, ref returnLength))
+                    while (!Private.GetVolumePathNamesForVolumeNameW(volumeName, buffer, buffer.CharCapacity, ref returnLength))
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         switch (lastError)
@@ -190,7 +190,7 @@ namespace XTask.Interop
                 // MSDN claims 50 is "reasonable", let's go double.
                 return StringBufferCache.CachedBufferInvoke(100, (volumeName) =>
                 {
-                    if (!Private.GetVolumeNameForVolumeMountPointW(volumeMountPoint, volumeName, (uint)volumeName.CharCapacity))
+                    if (!Private.GetVolumeNameForVolumeMountPointW(volumeMountPoint, volumeName, volumeName.CharCapacity))
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         throw GetIoExceptionForError(lastError, volumeMountPoint);
@@ -205,12 +205,12 @@ namespace XTask.Interop
             {
                 rootPath = Paths.AddTrailingSeparator(rootPath);
 
-                using (var volumeName = new StringBuffer(initialMinCapacity: Paths.MaxPath + 1))
-                using (var fileSystemName = new StringBuffer(initialMinCapacity: Paths.MaxPath + 1))
+                using (var volumeName = new StringBuffer(initialCharCapacity: Paths.MaxPath + 1))
+                using (var fileSystemName = new StringBuffer(initialCharCapacity: Paths.MaxPath + 1))
                 {
                     uint serialNumber, maxComponentLength;
                     FileSystemFeature flags;
-                    if (!Private.GetVolumeInformationW(rootPath, volumeName, (uint)volumeName.CharCapacity, out serialNumber, out maxComponentLength, out flags, fileSystemName, (uint)fileSystemName.CharCapacity))
+                    if (!Private.GetVolumeInformationW(rootPath, volumeName, volumeName.CharCapacity, out serialNumber, out maxComponentLength, out flags, fileSystemName, fileSystemName.CharCapacity))
                     {
                         int lastError = Marshal.GetLastWin32Error();
                         throw GetIoExceptionForError(lastError, rootPath);

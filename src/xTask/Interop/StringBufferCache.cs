@@ -21,7 +21,7 @@ namespace XTask.Interop
         {
         }
 
-        public StringBuffer Acquire(ulong minCapacity)
+        public StringBuffer Acquire(uint minCapacity)
         {
             StringBuffer item = this.Acquire();
             item.EnsureCharCapacity(minCapacity: minCapacity);
