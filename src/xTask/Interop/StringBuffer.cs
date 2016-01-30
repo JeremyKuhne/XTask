@@ -37,7 +37,7 @@ namespace XTask.Interop
         //
         // Note that a number of Windows APIs return null delimited lists of strings. Given the normal maximum Windows
         // string size (32K chars) we could handle around 128K strings in a single StringBuffer.
-        private uint length;
+        private uint _length;
 
         /// <summary>
         /// Create and empty StringBuffer.
@@ -66,7 +66,7 @@ namespace XTask.Interop
             // initialize to the correct size for the specified initial contents.
             if (initialContents != null)
             {
-                this.Append(initialContents);
+                Append(initialContents);
             }
         }
 
@@ -78,12 +78,12 @@ namespace XTask.Interop
         {
             get
             {
-                if (index >= this.length) throw new ArgumentOutOfRangeException(nameof(index));
+                if (index >= _length) throw new ArgumentOutOfRangeException(nameof(index));
                 return CharPointer[index];
             }
             set
             {
-                if (index >= this.length) throw new ArgumentOutOfRangeException(nameof(index));
+                if (index >= _length) throw new ArgumentOutOfRangeException(nameof(index));
                 CharPointer[index] = value;
             }
         }
@@ -96,12 +96,12 @@ namespace XTask.Interop
         {
             get
             {
-                if (index >= this.length) throw new ArgumentOutOfRangeException(nameof(index));
+                if (index >= _length) throw new ArgumentOutOfRangeException(nameof(index));
                 return CharPointer[index];
             }
             set
             {
-                if (index >= this.length) throw new ArgumentOutOfRangeException(nameof(index));
+                if (index >= _length) throw new ArgumentOutOfRangeException(nameof(index));
                 CharPointer[index] = value;
             }
         }
@@ -113,7 +113,7 @@ namespace XTask.Interop
         {
             get
             {
-                ulong byteCapacity = this.ByteCapacity;
+                ulong byteCapacity = ByteCapacity;
                 return byteCapacity == 0 ? 0 : (uint)(byteCapacity / sizeof(char));
             }
         }
@@ -125,7 +125,7 @@ namespace XTask.Interop
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(Capacity)"/> to a value that is larger than the maximum addressable memory.</exception>
         public void EnsureCharCapacity(uint minCapacity)
         {
-            this.EnsureByteCapacity((ulong)minCapacity * sizeof(char));
+            EnsureByteCapacity((ulong)minCapacity * sizeof(char));
         }
 
         /// <summary>
@@ -136,14 +136,14 @@ namespace XTask.Interop
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(Length)"/> to a value that is larger than the maximum addressable memory.</exception>
         public unsafe uint Length
         {
-            get { return this.length; }
+            get { return _length; }
             set
             {
                 // Null terminate
-                this.EnsureCharCapacity(value + 1);
+                EnsureCharCapacity(value + 1);
                 CharPointer[value] = '\0';
 
-                this.length = value;
+                _length = value;
             }
         }
 
@@ -159,7 +159,7 @@ namespace XTask.Interop
             {
                 if (buffer[i] == '\0')
                 {
-                    this.length = i;
+                    _length = i;
                     break;
                 }
             }
@@ -183,7 +183,7 @@ namespace XTask.Interop
         /// <returns>True if the given character was found.</returns>
         public unsafe bool IndexOf(char value, out uint index, uint skip = 0)
         {
-            for (index = skip; index < this.length; index++)
+            for (index = skip; index < _length; index++)
             {
                 if (CharPointer[index] == value)
                 {
@@ -191,7 +191,7 @@ namespace XTask.Interop
                 }
             }
 
-            index = this.length + 1;
+            index = _length + 1;
             return false;
         }
 
@@ -201,8 +201,8 @@ namespace XTask.Interop
         public bool StartsWithOrdinal(string value)
         {
             if (value == null) throw new ArgumentNullException(nameof(value));
-            if (this.length < (uint)value.Length) return false;
-            return this.SubStringEquals(value, startIndex: 0, count: value.Length);
+            if (_length < (uint)value.Length) return false;
+            return SubStringEquals(value, startIndex: 0, count: value.Length);
         }
 
         /// <summary>
@@ -219,8 +219,8 @@ namespace XTask.Interop
         {
             if (value == null) return false;
             if (count < -1) throw new ArgumentOutOfRangeException(nameof(count));
-            uint realCount = count == -1 ? this.length - startIndex : (uint)count;
-            if (startIndex + realCount > this.length) throw new ArgumentOutOfRangeException(nameof(count));
+            uint realCount = count == -1 ? _length - startIndex : (uint)count;
+            if (startIndex + realCount > _length) throw new ArgumentOutOfRangeException(nameof(count));
 
             int length = value.Length;
 
@@ -244,8 +244,8 @@ namespace XTask.Interop
         /// </summary>
         public unsafe void Append(char value)
         {
-            this.CharPointer[this.length] = value;
-            this.Length++;
+            CharPointer[_length] = value;
+            Length++;
         }
 
         /// <summary>
@@ -261,8 +261,8 @@ namespace XTask.Interop
         /// </exception>
         public unsafe void Append(string value, int startIndex = 0, int count = -1)
         {
-            this.CopyFrom(
-                bufferIndex: this.Length,
+            CopyFrom(
+                bufferIndex: _length,
                 source: value,
                 sourceIndex: startIndex,
                 count: count);
@@ -276,7 +276,7 @@ namespace XTask.Interop
         public unsafe void Append(StringBuffer value)
         {
             if (value == null) throw new ArgumentNullException(nameof(value));
-            this.Append(value, 0, value.Length);
+            Append(value, 0, value.Length);
         }
 
         /// <summary>
@@ -291,7 +291,7 @@ namespace XTask.Interop
         public unsafe void Append(StringBuffer value, uint startIndex)
         {
             if (value == null) throw new ArgumentNullException(nameof(value));
-            this.Append(value, startIndex, value.Length - startIndex);
+            Append(value, startIndex, value.Length - startIndex);
         }
 
         /// <summary>
@@ -312,7 +312,7 @@ namespace XTask.Interop
             value.CopyTo(
                 bufferIndex: startIndex,
                 destination: this,
-                destinationIndex: this.Length,
+                destinationIndex: _length,
                 count: count);
         }
 
@@ -323,15 +323,15 @@ namespace XTask.Interop
         public unsafe void CopyTo(uint bufferIndex, StringBuffer destination, uint destinationIndex, uint count)
         {
             if (destination == null) throw new ArgumentNullException(nameof(destination));
-            if (destinationIndex > destination.length) throw new ArgumentOutOfRangeException(nameof(destinationIndex));
-            if (this.Length < bufferIndex + count) throw new ArgumentOutOfRangeException(nameof(count));
+            if (destinationIndex > destination._length) throw new ArgumentOutOfRangeException(nameof(destinationIndex));
+            if (_length < bufferIndex + count) throw new ArgumentOutOfRangeException(nameof(count));
 
             if (count == 0) return;
             uint lastIndex = destinationIndex + count;
             if (destination.Length < lastIndex) destination.Length = lastIndex;
 
             Buffer.MemoryCopy(
-                source: this.CharPointer + bufferIndex,
+                source: CharPointer + bufferIndex,
                 destination: destination.CharPointer + destinationIndex,
                 destinationSizeInBytes: checked((long)(destination.ByteCapacity + destinationIndex * sizeof(char))),
                 sourceBytesToCopy: checked((long)count * sizeof(char)));
@@ -344,21 +344,21 @@ namespace XTask.Interop
         public unsafe void CopyFrom(uint bufferIndex, string source, int sourceIndex = 0, int count = -1)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
-            if (bufferIndex > this.Length) throw new ArgumentOutOfRangeException(nameof(bufferIndex));
+            if (bufferIndex > _length) throw new ArgumentOutOfRangeException(nameof(bufferIndex));
             if (sourceIndex < 0 || sourceIndex > source.Length) throw new ArgumentOutOfRangeException(nameof(sourceIndex));
             if (count < 0) count = source.Length - sourceIndex;
             if (source.Length < sourceIndex + count) throw new ArgumentOutOfRangeException(nameof(count));
 
             if (count == 0) return;
             uint lastIndex = bufferIndex + (uint)count;
-            if (this.Length < lastIndex) this.Length = lastIndex;
+            if (_length < lastIndex) Length = lastIndex;
 
             fixed (char* content = source)
             {
                 Buffer.MemoryCopy(
                     source: content + sourceIndex,
                     destination: CharPointer + bufferIndex,
-                    destinationSizeInBytes: checked((long)(this.ByteCapacity + bufferIndex * sizeof(char))),
+                    destinationSizeInBytes: checked((long)(ByteCapacity + bufferIndex * sizeof(char))),
                     sourceBytesToCopy: count * sizeof(char));
             }
         }
@@ -373,7 +373,7 @@ namespace XTask.Interop
             char* start = CharPointer;
             char* current = start;
 
-            uint length = this.length;
+            uint length = _length;
 
             for (uint i = 0; i < length; i++)
             {
@@ -405,7 +405,7 @@ namespace XTask.Interop
             char* start = CharPointer;
             char* current = start;
 
-            uint length = this.length;
+            uint length = _length;
 
             for (uint i = 0; i < length; i++)
             {
@@ -431,7 +431,7 @@ namespace XTask.Interop
         public unsafe bool Contains(char value)
         {
             char* start = CharPointer;
-            uint length = this.length;
+            uint length = _length;
 
             for (uint i = 0; i < length; i++)
             {
@@ -449,7 +449,7 @@ namespace XTask.Interop
             if (values == null || values.Length == 0) return false;
 
             char* start = CharPointer;
-            uint length = this.length;
+            uint length = _length;
 
             for (uint i = 0; i < length; i++)
             {
@@ -465,7 +465,7 @@ namespace XTask.Interop
         /// </summary>
         public unsafe void TrimEnd(params char[] values)
         {
-            if (values == null || values.Length == 0 || this.Length == 0) return;
+            if (values == null || values.Length == 0 || _length == 0) return;
 
             char* end = CharPointer + Length - 1;
 
@@ -492,8 +492,8 @@ namespace XTask.Interop
         /// <exception cref="OverflowException">Thrown if the length of the buffer is larger than a string's max capacity (int.MaxValue).</exception>
         public unsafe override string ToString()
         {
-            if (this.length == 0) return String.Empty;
-            return new string(CharPointer, startIndex: 0, length: checked((int)this.length));
+            if (_length == 0) return String.Empty;
+            return new string(CharPointer, startIndex: 0, length: checked((int)_length));
         }
 
         /// <summary>
@@ -506,11 +506,11 @@ namespace XTask.Interop
         /// </exception>
         public unsafe string SubString(uint startIndex, int count = -1)
         {
-            if (startIndex > (this.length == 0 ? 0 : this.length - 1)) throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (startIndex > (_length == 0 ? 0 : _length - 1)) throw new ArgumentOutOfRangeException(nameof(startIndex));
             if (count < -1) throw new ArgumentOutOfRangeException(nameof(count));
 
-            uint realCount = count == -1 ? this.length - startIndex : (uint)count;
-            if (realCount > int.MaxValue || startIndex + realCount > this.length) throw new ArgumentOutOfRangeException(nameof(count));
+            uint realCount = count == -1 ? _length - startIndex : (uint)count;
+            if (realCount > int.MaxValue || startIndex + realCount > _length) throw new ArgumentOutOfRangeException(nameof(count));
             if (realCount == 0) return String.Empty;
 
             return new string(value: CharPointer + startIndex, startIndex: 0, length: checked((int)realCount));
@@ -518,7 +518,7 @@ namespace XTask.Interop
 
         public override void Free()
         {
-            this.length = 0;
+            _length = 0;
             base.Free();
         }
     }

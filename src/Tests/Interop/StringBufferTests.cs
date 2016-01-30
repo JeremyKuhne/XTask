@@ -327,7 +327,7 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new StringBuffer())
             {
-                var length = buffer.GetType().GetField("length", BindingFlags.NonPublic | BindingFlags.Instance);
+                var length = buffer.GetType().GetField("_length", BindingFlags.NonPublic | BindingFlags.Instance);
 
                 length.SetValue(buffer, (uint)int.MaxValue + 1);
                 Action action = () => buffer.SubString(startIndex: 0, count: -1);
@@ -374,7 +374,7 @@ namespace XTask.Tests.Interop
         {
             using (var buffer = new StringBuffer())
             {
-                var length = buffer.GetType().GetField("length", BindingFlags.NonPublic | BindingFlags.Instance);
+                var length = buffer.GetType().GetField("_length", BindingFlags.NonPublic | BindingFlags.Instance);
 
                 length.SetValue(buffer, (uint)int.MaxValue + 1);
                 Action action = () => buffer.ToString();

@@ -28,15 +28,15 @@ namespace XTask.Interop
     /// </remarks>
     public class NativeBuffer : IDisposable
     {
-        private HeapHandle handle;
-        private ulong capacity;
+        private HeapHandle _handle;
+        private ulong _capacity;
 
         /// <summary>
         /// Create a buffer with at least the specified initial capacity in bytes.
         /// </summary>
         public NativeBuffer(ulong initialMinCapacity = 0)
         {
-            this.EnsureByteCapacity(initialMinCapacity);
+            EnsureByteCapacity(initialMinCapacity);
         }
 
         protected unsafe void* VoidPointer
@@ -44,7 +44,7 @@ namespace XTask.Interop
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return this.InternalDangerousGetHandle().ToPointer();
+                return InternalDangerousGetHandle().ToPointer();
             }
         }
 
@@ -53,14 +53,14 @@ namespace XTask.Interop
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return (byte*)this.VoidPointer;
+                return (byte*)VoidPointer;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IntPtr InternalDangerousGetHandle()
         {
-            SafeHandle handle = this.handle;
+            SafeHandle handle = _handle;
             return handle == null ? IntPtr.Zero : handle.DangerousGetHandle();
         }
 
@@ -72,7 +72,7 @@ namespace XTask.Interop
         public static implicit operator SafeHandle(NativeBuffer buffer)
         {
             // Marshalling code will throw on null for SafeHandle
-            return buffer.handle ?? EmptySafeHandle.Instance;
+            return buffer._handle ?? EmptySafeHandle.Instance;
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace XTask.Interop
         /// </summary>
         public ulong ByteCapacity
         {
-            get { return this.capacity; }
+            get { return _capacity; }
         }
 
         /// <summary>
@@ -90,10 +90,10 @@ namespace XTask.Interop
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(minCapacity)"/> to a value that is larger than the maximum addressable memory.</exception>
         public void EnsureByteCapacity(ulong minCapacity)
         {
-            if (this.capacity < minCapacity)
+            if (_capacity < minCapacity)
             {
-                this.Resize(minCapacity);
-                this.capacity = minCapacity;
+                Resize(minCapacity);
+                _capacity = minCapacity;
             }
         }
 
@@ -101,12 +101,12 @@ namespace XTask.Interop
         {
             get
             {
-                if (index >= this.capacity) throw new ArgumentOutOfRangeException();
+                if (index >= _capacity) throw new ArgumentOutOfRangeException();
                 return BytePointer[index];
             }
             set
             {
-                if (index >= this.capacity) throw new ArgumentOutOfRangeException();
+                if (index >= _capacity) throw new ArgumentOutOfRangeException();
                 BytePointer[index] = value;
             }
         }
@@ -115,27 +115,27 @@ namespace XTask.Interop
         {
             if (byteLength == 0)
             {
-                this.ReleaseHandle();
+                ReleaseHandle();
                 return;
             }
 
-            if (this.handle == null)
+            if (_handle == null)
             {
-                this.handle = HeapHandleCache.Instance.Acquire(byteLength);
+                _handle = HeapHandleCache.Instance.Acquire(byteLength);
             }
             else
             {
-                this.handle.Resize(byteLength);
+                _handle.Resize(byteLength);
             }
         }
 
         private void ReleaseHandle()
         {
-            if (this.handle != null)
+            if (_handle != null)
             {
-                HeapHandleCache.Instance.Release(this.handle);
-                this.handle = null;
-                this.capacity = 0;
+                HeapHandleCache.Instance.Release(_handle);
+                _handle = null;
+                _capacity = 0;
             }
         }
 
@@ -144,18 +144,18 @@ namespace XTask.Interop
         /// </summary>
         public virtual void Free()
         {
-            this.ReleaseHandle();
+            ReleaseHandle();
         }
 
         public void Dispose()
         {
-            this.Dispose(disposing: true);
+            Dispose(disposing: true);
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
-                this.Free();
+                Free();
         }
     }
 }
