@@ -9,6 +9,7 @@ namespace XTask.Tests.Interop
 {
     using FluentAssertions;
     using System;
+    using System.Reflection;
     using XTask.Interop;
     using Xunit;
 
@@ -286,32 +287,67 @@ namespace XTask.Tests.Interop
         }
 
         [Fact]
-        public void ToStringIndexOverLengthThrows()
+        public void SubStringIndexOverLengthThrows()
         {
             using (var buffer = new StringBuffer())
             {
                 Action action = () => buffer.SubString(startIndex: 1);
-                action.ShouldThrow<ArgumentOutOfRangeException>();
+                action.ShouldThrow<ArgumentOutOfRangeException>().And.ParamName.Should().Be("startIndex");
+
+                buffer.Append("a");
+                action.ShouldThrow<ArgumentOutOfRangeException>().And.ParamName.Should().Be("startIndex");
+
+                buffer.Append("b");
+                action.ShouldNotThrow();
             }
         }
 
         [Fact]
-        public void ToStringNegativeCountThrows()
+        public void SubStringNegativeCountThrows()
         {
             using (var buffer = new StringBuffer())
             {
                 Action action = () => buffer.SubString(startIndex: 0, count: -2);
-                action.ShouldThrow<ArgumentOutOfRangeException>();
+                action.ShouldThrow<ArgumentOutOfRangeException>().And.ParamName.Should().Be("count");
             }
         }
 
         [Fact]
-        public void ToStringCountOverLengthThrows()
+        public void SubStringCountOverLengthThrows()
         {
             using (var buffer = new StringBuffer())
             {
                 Action action = () => buffer.SubString(startIndex: 0, count: 1);
-                action.ShouldThrow<ArgumentOutOfRangeException>();
+                action.ShouldThrow<ArgumentOutOfRangeException>().And.ParamName.Should().Be("count");
+            }
+        }
+
+        [Fact]
+        public void SubStringImplicitCountOverMaxStringThrows()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                var length = buffer.GetType().GetField("length", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                length.SetValue(buffer, (uint)int.MaxValue + 1);
+                Action action = () => buffer.SubString(startIndex: 0, count: -1);
+                action.ShouldThrow<ArgumentOutOfRangeException>().And.ParamName.Should().Be("count");
+            }
+        }
+
+        [Fact]
+        public void SubStringIndexPlusCountCombinedOutOfRangeThrows()
+        {
+            using (var buffer = new StringBuffer("a"))
+            {
+                Action action = () => buffer.SubString(startIndex: 1, count: 1);
+                action.ShouldThrow<ArgumentOutOfRangeException>().And.ParamName.Should().Be("startIndex");
+
+                buffer.Append("b");
+                action.ShouldNotThrow<ArgumentOutOfRangeException>();
+
+                action = () => buffer.SubString(startIndex: 1, count: 2);
+                action.ShouldThrow<ArgumentOutOfRangeException>().And.ParamName.Should().Be("count");
             }
         }
 
@@ -325,11 +361,24 @@ namespace XTask.Tests.Interop
             InlineData(@"", 0, 0, @"")
             InlineData(@"A", 0, 0, @"")
         ]
-        public void ToStringTest(string source, int startIndex, int count, string expected)
+        public void SubStringTest(string source, int startIndex, int count, string expected)
         {
             using (var buffer = new StringBuffer(source))
             {
                 buffer.SubString(startIndex: (uint)startIndex, count: count).Should().Be(expected);
+            }
+        }
+
+        [Fact]
+        public void ToStringOverSizeThrowsOverflow()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                var length = buffer.GetType().GetField("length", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                length.SetValue(buffer, (uint)int.MaxValue + 1);
+                Action action = () => buffer.ToString();
+                action.ShouldThrow<OverflowException>();
             }
         }
 

@@ -78,12 +78,12 @@ namespace XTask.Interop
         {
             get
             {
-                if (index >= this.Length) throw new ArgumentOutOfRangeException(nameof(index));
+                if (index >= this.length) throw new ArgumentOutOfRangeException(nameof(index));
                 return CharPointer[index];
             }
             set
             {
-                if (index >= this.Length) throw new ArgumentOutOfRangeException(nameof(index));
+                if (index >= this.length) throw new ArgumentOutOfRangeException(nameof(index));
                 CharPointer[index] = value;
             }
         }
@@ -96,12 +96,12 @@ namespace XTask.Interop
         {
             get
             {
-                if (index >= this.Length) throw new ArgumentOutOfRangeException(nameof(index));
+                if (index >= this.length) throw new ArgumentOutOfRangeException(nameof(index));
                 return CharPointer[index];
             }
             set
             {
-                if (index >= this.Length) throw new ArgumentOutOfRangeException(nameof(index));
+                if (index >= this.length) throw new ArgumentOutOfRangeException(nameof(index));
                 CharPointer[index] = value;
             }
         }
@@ -201,7 +201,7 @@ namespace XTask.Interop
         public bool StartsWithOrdinal(string value)
         {
             if (value == null) throw new ArgumentNullException(nameof(value));
-            if (this.Length < (ulong)value.Length) return false;
+            if (this.length < (uint)value.Length) return false;
             return this.SubStringEquals(value, startIndex: 0, count: value.Length);
         }
 
@@ -219,13 +219,13 @@ namespace XTask.Interop
         {
             if (value == null) return false;
             if (count < -1) throw new ArgumentOutOfRangeException(nameof(count));
-            ulong realCount = count == -1 ? this.length - startIndex : (ulong)count;
+            uint realCount = count == -1 ? this.length - startIndex : (uint)count;
             if (startIndex + realCount > this.length) throw new ArgumentOutOfRangeException(nameof(count));
 
             int length = value.Length;
 
             // Check the substring length against the input length
-            if (realCount != (ulong)length) return false;
+            if (realCount != (uint)length) return false;
 
             fixed (char* valueStart = value)
             {
@@ -373,9 +373,9 @@ namespace XTask.Interop
             char* start = CharPointer;
             char* current = start;
 
-            ulong length = this.Length;
+            uint length = this.length;
 
-            for (ulong i = 0; i < length; i++)
+            for (uint i = 0; i < length; i++)
             {
                 if (splitCharacter == *current)
                 {
@@ -405,9 +405,9 @@ namespace XTask.Interop
             char* start = CharPointer;
             char* current = start;
 
-            ulong length = this.Length;
+            uint length = this.length;
 
-            for (ulong i = 0; i < length; i++)
+            for (uint i = 0; i < length; i++)
             {
                 if ((splitWhite && Char.IsWhiteSpace(*current))
                  || (!splitWhite && ContainsChar(splitCharacters, *current)))
@@ -431,9 +431,9 @@ namespace XTask.Interop
         public unsafe bool Contains(char value)
         {
             char* start = CharPointer;
-            ulong length = this.Length;
+            uint length = this.length;
 
-            for (ulong i = 0; i < length; i++)
+            for (uint i = 0; i < length; i++)
             {
                 if (*start++ == value) return true;
             }
@@ -449,9 +449,9 @@ namespace XTask.Interop
             if (values == null || values.Length == 0) return false;
 
             char* start = CharPointer;
-            ulong length = this.Length;
+            uint length = this.length;
 
-            for (ulong i = 0; i < length; i++)
+            for (uint i = 0; i < length; i++)
             {
                 if (ContainsChar(values, *start)) return true;
                 start++;
@@ -487,12 +487,13 @@ namespace XTask.Interop
         }
 
         /// <summary>
-        /// String representation of the entire buffer. If the buffer is larger than the maximum size string (int.MaxValue) will truncate.
+        /// String representation of the entire buffer.
         /// </summary>
+        /// <exception cref="OverflowException">Thrown if the length of the buffer is larger than a string's max capacity (int.MaxValue).</exception>
         public unsafe override string ToString()
         {
-            if (this.Length == 0) return String.Empty;
-            return new string(CharPointer, startIndex: 0, length: this.length > int.MaxValue ? int.MaxValue : checked((int)this.Length));
+            if (this.length == 0) return String.Empty;
+            return new string(CharPointer, startIndex: 0, length: checked((int)this.length));
         }
 
         /// <summary>
@@ -505,11 +506,11 @@ namespace XTask.Interop
         /// </exception>
         public unsafe string SubString(uint startIndex, int count = -1)
         {
-            if (this.Length > 0 && startIndex > this.Length - 1) throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (startIndex > (this.length == 0 ? 0 : this.length - 1)) throw new ArgumentOutOfRangeException(nameof(startIndex));
             if (count < -1) throw new ArgumentOutOfRangeException(nameof(count));
 
-            ulong realCount = count == -1 ? this.length - startIndex : (ulong)count;
-            if (realCount > int.MaxValue || startIndex + realCount > this.Length) throw new ArgumentOutOfRangeException(nameof(count));
+            uint realCount = count == -1 ? this.length - startIndex : (uint)count;
+            if (realCount > int.MaxValue || startIndex + realCount > this.length) throw new ArgumentOutOfRangeException(nameof(count));
             if (realCount == 0) return String.Empty;
 
             return new string(value: CharPointer + startIndex, startIndex: 0, length: checked((int)realCount));
