@@ -15,42 +15,42 @@ namespace XTask.Tasks
     {
         private class TaskEntry : ITaskEntry
         {
-            private HashSet<string> aliases;
-            private Lazy<ITask> task;
+            private HashSet<string> _aliases;
+            private Lazy<ITask> _task;
 
-            public IEnumerable<string> Aliases { get { return this.aliases; } }
+            public IEnumerable<string> Aliases { get { return _aliases; } }
 
-            public ITask Task { get { return task.Value; } }
+            public ITask Task { get { return _task.Value; } }
 
             public TaskEntry(Func<ITask> task, params string[] taskNames)
             {
-                this.aliases = new HashSet<string>(taskNames, StringComparer.OrdinalIgnoreCase);
-                this.task = new Lazy<ITask>(task);
+                _aliases = new HashSet<string>(taskNames, StringComparer.OrdinalIgnoreCase);
+                _task = new Lazy<ITask>(task);
             }
         }
 
-        private List<TaskEntry> tasks = new List<TaskEntry>();
-        private Func<ITask> defaultTask;
+        private List<TaskEntry> _tasks = new List<TaskEntry>();
+        private Func<ITask> _defaultTask;
 
-        public IEnumerable<ITaskEntry> Tasks { get { return this.tasks; } }
+        public IEnumerable<ITaskEntry> Tasks { get { return _tasks; } }
 
         protected void RegisterTaskInternal(Func<ITask> task, params string[] taskNames)
         {
-            this.tasks.Add(new TaskEntry(task, taskNames));
+            _tasks.Add(new TaskEntry(task, taskNames));
         }
 
         protected void RegisterDefaultTaskInternal(Func<ITask> task)
         {
-            this.defaultTask = task;
+            _defaultTask = task;
         }
 
         public ITask this[string taskName]
         {
             get
             {
-                if (!String.IsNullOrEmpty(taskName))
+                if (!string.IsNullOrEmpty(taskName))
                 {
-                    foreach (var entry in this.tasks)
+                    foreach (var entry in _tasks)
                     {
                         if (entry.Aliases.Contains(taskName))
                         {
@@ -59,9 +59,9 @@ namespace XTask.Tasks
                     }
                 }
 
-                if (this.defaultTask != null)
+                if (_defaultTask != null)
                 {
-                    return this.defaultTask();
+                    return _defaultTask();
                 }
                 else
                 {

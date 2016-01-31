@@ -15,25 +15,25 @@ namespace XTask.Tasks
 
     public abstract class Task : ImplementedServiceProvider, ITask, ITaskExecutor, ITaskDocumentation
     {
-        private ITaskInteraction interaction;
+        private ITaskInteraction _interaction;
 
         public ExitCode Execute(ITaskInteraction interaction)
         {
-            this.interaction = interaction;
-            return this.ExecuteInternal();
+            _interaction = interaction;
+            return ExecuteInternal();
         }
 
         protected abstract ExitCode ExecuteInternal();
 
-        protected IArgumentProvider Arguments { get { return this.interaction.Arguments; } }
-        protected ILoggers Loggers { get { return this.interaction.Loggers; } }
+        protected IArgumentProvider Arguments { get { return _interaction.Arguments; } }
+        protected ILoggers Loggers { get { return _interaction.Loggers; } }
 
-        protected ILogger StatusLog { get { return this.Loggers[LoggerType.Status]; } }
-        protected ILogger ResultLog { get { return this.Loggers[LoggerType.Result]; } }
+        protected ILogger StatusLog { get { return Loggers[LoggerType.Status]; } }
+        protected ILogger ResultLog { get { return Loggers[LoggerType.Result]; } }
 
         protected void Output(object value)
         {
-            this.interaction.Output(value);
+            _interaction.Output(value);
         }
 
         public override T GetService<T>()
@@ -43,7 +43,7 @@ namespace XTask.Tasks
             // 2. TaskInteraction
             // 3. DefaultServices
 
-            return base.GetService<T>() ?? this.interaction?.GetService<T>() ?? FlexServiceProvider.Services.GetService<T>();
+            return base.GetService<T>() ?? _interaction?.GetService<T>() ?? FlexServiceProvider.Services.GetService<T>();
         }
 
         public void GetUsage(ITaskInteraction interaction)
@@ -52,7 +52,7 @@ namespace XTask.Tasks
             // IEEE Std 1003.1 http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap12.html
 
             ILogger logger = interaction.Loggers[LoggerType.Result];
-            if (String.IsNullOrEmpty(this.GeneralHelp))
+            if (string.IsNullOrEmpty(this.GeneralHelp))
             {
                 logger.Write(XTaskStrings.HelpNone);
                 return;
@@ -61,7 +61,7 @@ namespace XTask.Tasks
             logger.WriteLine(WriteStyle.Fixed, this.GeneralHelp);
 
             string optionDetails = this.OptionDetails;
-            if (String.IsNullOrEmpty(optionDetails)) { return; }
+            if (string.IsNullOrEmpty(optionDetails)) { return; }
 
             logger.WriteLine();
             logger.WriteLine(WriteStyle.Fixed | WriteStyle.Underline, XTaskStrings.HelpOptionDetailHeader);

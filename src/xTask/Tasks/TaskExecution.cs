@@ -14,12 +14,13 @@ namespace XTask.Tasks
 
     public abstract class TaskExecution
     {
-        private ITaskRegistry taskRegistry;
+        private ITaskRegistry _taskRegistry;
+
         protected TaskExecution(IArgumentProvider argumentProvider, ITaskRegistry taskRegistry, ITypedServiceProvider services)
         {
-            this.ArgumentProvider = argumentProvider;
-            this.taskRegistry = taskRegistry;
-            this.Services = services;
+            ArgumentProvider = argumentProvider;
+            _taskRegistry = taskRegistry;
+            Services = services;
         }
 
         protected IArgumentProvider ArgumentProvider { get; private set; }
@@ -28,15 +29,15 @@ namespace XTask.Tasks
 
         public ExitCode ExecuteTask()
         {
-            ITask task = this.taskRegistry[this.ArgumentProvider.Command];
-            ITaskInteraction interaction = this.GetInteraction(task);
+            ITask task = _taskRegistry[ArgumentProvider.Command];
+            ITaskInteraction interaction = GetInteraction(task);
 
             ExitCode result = ExitCode.GeneralFailure;
 
             using (interaction as IDisposable)
             using (task as IDisposable)
             {
-                if (this.ArgumentProvider.HelpRequested)
+                if (ArgumentProvider.HelpRequested)
                 {
                     task.OutputUsage(interaction);
                 }

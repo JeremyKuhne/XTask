@@ -23,7 +23,7 @@ namespace XTask.Tasks
 
         public override ExitCode Execute(ITaskInteraction interaction)
         {
-            if (String.IsNullOrEmpty(interaction.Arguments.Command))
+            if (string.IsNullOrEmpty(interaction.Arguments.Command))
             {
                 interaction.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, XTaskStrings.ErrorNoParametersSpecified);
             }

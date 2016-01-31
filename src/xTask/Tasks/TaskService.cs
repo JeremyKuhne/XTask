@@ -13,48 +13,48 @@ namespace XTask.Tasks
 
     public class TaskService : ITaskService
     {
-        private string applicationName;
-        private string generalHelpString;
+        private string _applicationName;
+        private string _generalHelpString;
 
-        private Lazy<SimpleTaskRegistry> taskRegistry;
+        private Lazy<SimpleTaskRegistry> _taskRegistry;
 
         protected TaskService(
             string generalHelpString = null,
             string applicationName = null)
         {
-            this.taskRegistry = new Lazy<SimpleTaskRegistry>(() =>
+            _taskRegistry = new Lazy<SimpleTaskRegistry>(() =>
             {
                 return new SimpleTaskRegistry();
             });
 
-            this.applicationName = applicationName ?? Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().MainModule.FileName);
-            this.generalHelpString = generalHelpString ?? XTaskStrings.HelpGeneral;
+            _applicationName = applicationName ?? Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().MainModule.FileName);
+            _generalHelpString = generalHelpString ?? XTaskStrings.HelpGeneral;
         }
 
         public virtual void Initialize()
         {
-            SimpleTaskRegistry registry = this.GetTaskRegistry();
+            SimpleTaskRegistry registry = GetTaskRegistry();
 
             // These commands are provided as part of the XTask framework
-            registry.RegisterTask(() => new DefaultsTask(this.applicationName), "defaults");
-            registry.RegisterTask(() => new InteractiveTask($"({this.applicationName}) ", registry), "interactive", "int", "i");
-            registry.RegisterTask(() => new HelpTask(registry, this.generalHelpString), "help", "?");
-            registry.RegisterDefaultTask(() => new UnknownTask(registry, this.generalHelpString));
+            registry.RegisterTask(() => new DefaultsTask(_applicationName), "defaults");
+            registry.RegisterTask(() => new InteractiveTask($"({_applicationName}) ", registry), "interactive", "int", "i");
+            registry.RegisterTask(() => new HelpTask(registry, _generalHelpString), "help", "?");
+            registry.RegisterDefaultTask(() => new UnknownTask(registry, _generalHelpString));
         }
 
         protected virtual SimpleTaskRegistry GetTaskRegistry()
         {
-            return this.taskRegistry.Value;
+            return _taskRegistry.Value;
         }
 
         public ITaskRegistry TaskRegistry
         {
-            get { return this.GetTaskRegistry(); }
+            get { return GetTaskRegistry(); }
         }
 
         public void Dispose()
         {
-            this.Dispose(disposing: true);
+            Dispose(disposing: true);
         }
 
         protected virtual void Dispose(bool disposing)

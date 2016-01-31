@@ -16,27 +16,27 @@ namespace XTask.Tasks
     /// </summary>
     public abstract class TaskInteraction : ITaskInteraction
     {
-        private ITypedServiceProvider services;
+        private ITypedServiceProvider _services;
 
         protected TaskInteraction(IArgumentProvider arguments, ITypedServiceProvider services)
         {
-            this.Arguments = arguments;
-            this.services = services;
+            Arguments = arguments;
+            _services = services;
         }
 
         public IArgumentProvider Arguments { get; private set; }
-        public ILoggers Loggers { get { return this.GetService<ILoggers>(); } }
+        public ILoggers Loggers { get { return GetService<ILoggers>(); } }
 
         protected abstract ILoggers GetDefaultLoggers();
 
         public virtual T GetService<T>() where T : class
         {
-            T service = this.services?.GetService<T>() ?? FlexServiceProvider.Services.GetService<T>();
+            T service = _services?.GetService<T>() ?? FlexServiceProvider.Services.GetService<T>();
             if (service != null) return service;
 
             if (typeof(T) == typeof(ILoggers))
             {
-                return (T)this.GetDefaultLoggers();
+                return (T)GetDefaultLoggers();
             }
             return null;
         }

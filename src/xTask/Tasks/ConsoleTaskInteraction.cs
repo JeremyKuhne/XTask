@@ -15,12 +15,12 @@ namespace XTask.Tasks
 
     public sealed class ConsoleTaskInteraction : TaskInteraction, IDisposable
     {
-        private Lazy<ConsoleTaskLoggers> loggers;
+        private Lazy<ConsoleTaskLoggers> _loggers;
 
         private ConsoleTaskInteraction(ITask task, IArgumentProvider arguments, ITypedServiceProvider services)
             : base (arguments, services)
         {
-            this.loggers = new Lazy<ConsoleTaskLoggers>(() => new ConsoleTaskLoggers(task, arguments));
+            _loggers = new Lazy<ConsoleTaskLoggers>(() => new ConsoleTaskLoggers(task, arguments));
         }
 
         public static ITaskInteraction Create(ITask task, IArgumentProvider arguments, ITypedServiceProvider services)
@@ -30,65 +30,65 @@ namespace XTask.Tasks
 
         protected override ILoggers GetDefaultLoggers()
         {
-            return this.loggers.Value;
+            return _loggers.Value;
         }
 
         private sealed class ConsoleTaskLoggers : Loggers, IDisposable
         {
-            private RichTextLogger richTextLogger;
-            private TextLogger textLogger;
-            private CsvLogger csvLogger;
-            private XmlSpreadsheetLogger spreadsheetLogger;
-            private AggregatedLogger aggregatedLogger;
+            private RichTextLogger _richTextLogger;
+            private TextLogger _textLogger;
+            private CsvLogger _csvLogger;
+            private XmlSpreadsheetLogger _spreadsheetLogger;
+            private AggregatedLogger _aggregatedLogger;
 
             public ConsoleTaskLoggers(ITask task, IArgumentProvider arguments)
             {
                 if (arguments.GetOption<bool?>(StandardOptions.Clipboard) ?? task.GetOptionDefault<bool>(StandardOptions.Clipboard[0]))
                 {
-                    this.richTextLogger = new RichTextLogger();
-                    this.csvLogger = new CsvLogger();
-                    this.textLogger = new TextLogger();
-                    this.spreadsheetLogger = new XmlSpreadsheetLogger();
-                    this.aggregatedLogger = new AggregatedLogger(
+                    _richTextLogger = new RichTextLogger();
+                    _csvLogger = new CsvLogger();
+                    _textLogger = new TextLogger();
+                    _spreadsheetLogger = new XmlSpreadsheetLogger();
+                    _aggregatedLogger = new AggregatedLogger(
                         ConsoleLogger.Instance,
-                        this.richTextLogger,
-                        this.spreadsheetLogger,
-                        this.csvLogger,
-                        this.textLogger);
+                        _richTextLogger,
+                        _spreadsheetLogger,
+                        _csvLogger,
+                        _textLogger);
 
-                    this.RegisterLogger(LoggerType.Result, this.aggregatedLogger);
+                    RegisterLogger(LoggerType.Result, _aggregatedLogger);
                 }
                 else
                 {
-                    this.RegisterLogger(LoggerType.Result, ConsoleLogger.Instance);
+                    RegisterLogger(LoggerType.Result, ConsoleLogger.Instance);
                 }
 
-                this.RegisterLogger(LoggerType.Status, ConsoleLogger.Instance);
+                RegisterLogger(LoggerType.Status, ConsoleLogger.Instance);
             }
 
             public void Dispose()
             {
-                if (this.aggregatedLogger != null)
+                if (_aggregatedLogger != null)
                 {
                     List<ClipboardData> allData = new List<ClipboardData>();
-                    allData.Add(this.richTextLogger.GetClipboardData());
-                    allData.Add(this.textLogger.GetClipboardData());
-                    allData.Add(this.csvLogger.GetClipboardData());
-                    allData.Add(this.spreadsheetLogger.GetClipboardData());
+                    allData.Add(_richTextLogger.GetClipboardData());
+                    allData.Add(_textLogger.GetClipboardData());
+                    allData.Add(_csvLogger.GetClipboardData());
+                    allData.Add(_spreadsheetLogger.GetClipboardData());
 
                     Clipboard.AddToClipboard(allData.ToArray());
-                    this.richTextLogger = null;
+                    _richTextLogger = null;
 
-                    this.csvLogger.Dispose();
-                    this.spreadsheetLogger.Dispose();
+                    _csvLogger.Dispose();
+                    _spreadsheetLogger.Dispose();
                 }
             }
         }
 
         public void Dispose()
         {
-            if (this.loggers.IsValueCreated) this.loggers.Value.Dispose();
-            this.loggers = null;
+            if (_loggers.IsValueCreated) _loggers.Value.Dispose();
+            _loggers = null;
         }
     }
 }

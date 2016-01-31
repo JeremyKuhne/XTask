@@ -20,16 +20,16 @@ namespace XTask.Tasks
     /// </summary>
     public class InteractiveTask : Task
     {
-        private string prompt;
-        private IConsoleService consoleService;
-        private ITaskRegistry registry;
-        private static readonly string[] quitCommands = { "quit", "q", "exit" };
+        private string _prompt;
+        private IConsoleService _consoleService;
+        private ITaskRegistry _registry;
+        private static readonly string[] s_QuitCommands = { "quit", "q", "exit" };
 
         public InteractiveTask(string prompt, ITaskRegistry registry, IConsoleService consoleService = null)
         {
-            this.prompt = prompt;
-            this.registry = registry;
-            this.consoleService = consoleService ?? ConsoleHelper.Console;
+            _prompt = prompt;
+            _registry = registry;
+            _consoleService = consoleService ?? ConsoleHelper.Console;
         }
 
         protected override ExitCode ExecuteInternal()
@@ -37,13 +37,13 @@ namespace XTask.Tasks
             string input = null;
             do
             {
-                this.consoleService.Write(this.prompt);
-                input = Environment.ExpandEnvironmentVariables(this.consoleService.ReadLine().Trim());
-                if (InteractiveTask.quitCommands.Contains(input, StringComparer.OrdinalIgnoreCase)) break;
-                CommandLineParser parser = new CommandLineParser(this.GetService<IFileService>());
+                _consoleService.Write(_prompt);
+                input = Environment.ExpandEnvironmentVariables(_consoleService.ReadLine().Trim());
+                if (s_QuitCommands.Contains(input, StringComparer.OrdinalIgnoreCase)) break;
+                CommandLineParser parser = new CommandLineParser(GetService<IFileService>());
                 parser.Parse(Strings.SplitCommandLine(input).ToArray());
-                IArgumentProvider argumentProvider = ArgumentSettingsProvider.Create(parser, this.GetService<IConfigurationManager>(), this.GetService<IFileService>());
-                ConsoleTaskExecution execution = new ConsoleTaskExecution(argumentProvider, this.registry);
+                IArgumentProvider argumentProvider = ArgumentSettingsProvider.Create(parser, GetService<IConfigurationManager>(), GetService<IFileService>());
+                ConsoleTaskExecution execution = new ConsoleTaskExecution(argumentProvider, _registry);
                 execution.ExecuteTask();
             } while (true);
 

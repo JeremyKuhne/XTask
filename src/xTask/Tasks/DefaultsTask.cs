@@ -21,13 +21,13 @@ namespace XTask.Tasks
     /// </summary>
     public class DefaultsTask : Task
     {
-        private string applicationName;
-        protected override string GeneralHelp { get { return String.Format(CultureInfo.InvariantCulture, XTaskStrings.HelpDefaults, this.applicationName); } }
+        private string _applicationName;
+        protected override string GeneralHelp { get { return string.Format(CultureInfo.InvariantCulture, XTaskStrings.HelpDefaults, _applicationName); } }
         protected override string OptionDetails { get { return XTaskStrings.HelpDefaultsOptions; } }
 
         public DefaultsTask(string applicationName) : base ()
         {
-            this.applicationName = applicationName;
+            _applicationName = applicationName;
         }
 
         protected override ExitCode ExecuteInternal()
@@ -35,17 +35,17 @@ namespace XTask.Tasks
             IClientSettings clientSettings = this.Arguments as IClientSettings;
             SettingsLocation? location;
 
-            if ((location = this.Arguments.GetOption<SettingsLocation?>(StandardOptions.Add)).HasValue)
+            if ((location = Arguments.GetOption<SettingsLocation?>(StandardOptions.Add)).HasValue)
             {
-                return this.ChangeSetting(clientSettings, location.Value, ChangeType.Add);
+                return ChangeSetting(clientSettings, location.Value, ChangeType.Add);
             }
-            else if ((location = this.Arguments.GetOption<SettingsLocation?>(StandardOptions.Remove)).HasValue)
+            else if ((location = Arguments.GetOption<SettingsLocation?>(StandardOptions.Remove)).HasValue)
             {
-                return this.ChangeSetting(clientSettings, location.Value, ChangeType.Remove);
+                return ChangeSetting(clientSettings, location.Value, ChangeType.Remove);
             }
             else
             {
-                return this.ListSettings(clientSettings);
+                return ListSettings(clientSettings);
             }
         }
 
@@ -59,8 +59,8 @@ namespace XTask.Tasks
                 table.AddRow(location.ToString(), clientSettings.GetConfigurationPath(location) ?? XTaskStrings.NoValue);
             }
 
-            this.Loggers[LoggerType.Result].Write(table);
-            this.Loggers[LoggerType.Result].WriteLine();
+            Loggers[LoggerType.Result].Write(table);
+            Loggers[LoggerType.Result].WriteLine();
 
             List<ClientSetting> settings =
             (
@@ -70,7 +70,7 @@ namespace XTask.Tasks
                 select setting
             ).ToList();
 
-            this.Loggers[LoggerType.Result].WriteLine(XTaskStrings.DefaultsCount, settings.Count);
+            Loggers[LoggerType.Result].WriteLine(XTaskStrings.DefaultsCount, settings.Count);
             table = Table.Create(ColumnFormat.FromCount(3));
             table.HasHeader = true;
             table.AddRow(XTaskStrings.DefaultsSettingColumnHeader, XTaskStrings.DefaultsLocationColumnHeader, XTaskStrings.DefaultsValueColumnHeader);
@@ -80,7 +80,7 @@ namespace XTask.Tasks
                 table.AddRow(setting.Name, setting.Location.ToString(), setting.Value.ToString());
             }
 
-            this.Loggers[LoggerType.Result].Write(table);
+            Loggers[LoggerType.Result].Write(table);
             return ExitCode.Success;
         }
 
@@ -105,16 +105,16 @@ namespace XTask.Tasks
                 switch (changeType)
                 {
                     case ChangeType.Add:
-                        this.Loggers[LoggerType.Status].Write(XTaskStrings.DefaultsSavingProgress, setting.Key);
+                        Loggers[LoggerType.Status].Write(XTaskStrings.DefaultsSavingProgress, setting.Key);
                         success = clientSettings.SaveSetting(location, setting.Key, setting.Value);
                         break;
                     case ChangeType.Remove:
-                        this.Loggers[LoggerType.Status].Write(XTaskStrings.DefaultsRemovingProgress, setting.Key);
+                        Loggers[LoggerType.Status].Write(XTaskStrings.DefaultsRemovingProgress, setting.Key);
                         success = clientSettings.RemoveSetting(location, setting.Key);
                         break;
                 }
 
-                this.Loggers[LoggerType.Status].WriteLine(success ? XTaskStrings.Succeeded : XTaskStrings.Failed);
+                Loggers[LoggerType.Status].WriteLine(success ? XTaskStrings.Succeeded : XTaskStrings.Failed);
             }
 
             return ExitCode.Success;

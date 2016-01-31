@@ -13,12 +13,12 @@ namespace XTask.Tasks
     {
         public void RegisterTask(Func<ITask> task, params string[] taskNames)
         {
-            this.RegisterTaskInternal(task, taskNames);
+            RegisterTaskInternal(task, taskNames);
         }
 
         public void RegisterDefaultTask(Func<ITask> task)
         {
-            this.RegisterDefaultTaskInternal(task);
+            RegisterDefaultTaskInternal(task);
         }
     }
 }
