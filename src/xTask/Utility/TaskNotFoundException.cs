@@ -17,12 +17,12 @@ namespace XTask.Utility
     public class TaskNotFoundException : TaskException
     {
         public TaskNotFoundException(string item)
-            : base(String.Format(CultureInfo.CurrentUICulture, XTaskStrings.CouldNotFindGeneral, item))
+            : base(string.Format(CultureInfo.CurrentUICulture, XTaskStrings.CouldNotFindGeneral, item))
         {
         }
 
         public TaskNotFoundException(string item, string detailMessage)
-            : base(String.Format(CultureInfo.CurrentUICulture, XTaskStrings.CouldNotFindGeneral, item, detailMessage))
+            : base(string.Format(CultureInfo.CurrentUICulture, XTaskStrings.CouldNotFindGeneral, item, detailMessage))
         {
         }
 

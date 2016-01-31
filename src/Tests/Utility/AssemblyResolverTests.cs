@@ -57,12 +57,12 @@ namespace XTask.Tests.Utility
 
             public IEnumerable<string> ResolutionPaths
             {
-                get { return this.resolutionPaths; }
+                get { return this._resolutionPaths; }
             }
 
             public IEnumerable<string> AssembliesToResolve
             {
-                get { return this.assembliesToResolve; }
+                get { return this._assembliesToResolve; }
             }
 
             public Assembly TestFallBack_AssemblyResolve(object sender, ResolveEventArgs args)

@@ -46,7 +46,7 @@ namespace XTask.Utility
             int start = 0;
             for (start = 0; start < builder.Length; start++)
             {
-                if (!Char.IsWhiteSpace(builder[start])) break;
+                if (!char.IsWhiteSpace(builder[start])) break;
             }
             builder.Remove(0, start);
         }
@@ -59,7 +59,7 @@ namespace XTask.Utility
             int end = builder.Length - 1;
             for (end = builder.Length - 1; end >= 0; end--)
             {
-                if (!Char.IsWhiteSpace(builder[end])) break;
+                if (!char.IsWhiteSpace(builder[end])) break;
             }
 
             builder.Length = end + 1;

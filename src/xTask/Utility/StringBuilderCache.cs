@@ -17,29 +17,29 @@ namespace XTask.Utility
     {
         internal static StringBuilderCache Instance = new StringBuilderCache();
 
-        private int minSize;
-        private int maxSize;
+        private int _minSize;
+        private int _maxSize;
 
         public StringBuilderCache(int minSize = 16, int maxSize = 1024, int maxBuilders = 0)
             : base(maxBuilders)
         {
             if (minSize < 0) minSize = 0;
             if (maxSize < 0) maxSize = 0;
-            this.minSize = minSize;
-            this.maxSize = maxSize;
+            _minSize = minSize;
+            _maxSize = maxSize;
         }
 
         public override StringBuilder Acquire()
         {
             var builder = base.Acquire();
-            builder.EnsureCapacity(minSize);
+            builder.EnsureCapacity(_minSize);
             return builder;
         }
 
         public override void Release(StringBuilder item)
         {
             item.Clear();
-            if (item.Capacity <= this.maxSize)
+            if (item.Capacity <= _maxSize)
             {
                 base.Release(item);
             }
@@ -51,7 +51,7 @@ namespace XTask.Utility
         public string ToStringAndRelease(StringBuilder sb)
         {
             string value = sb.ToString();
-            this.Release(sb);
+            Release(sb);
             return value;
         }
     }

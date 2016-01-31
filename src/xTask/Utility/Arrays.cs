@@ -16,7 +16,7 @@ namespace XTask.Utility
         /// </summary>
         public static bool AreEquivalent<T>(T[] left, T[] right)
         {
-            if (Object.ReferenceEquals(left, right)) { return true; }
+            if (ReferenceEquals(left, right)) { return true; }
 
             bool isLeftNullOrEmpty = (left == null) || (left.Length == 0);
             bool isRightNullOrEmpty = (right == null) || (right.Length == 0);
@@ -53,7 +53,7 @@ namespace XTask.Utility
         {
             if (array == null) { return XTaskStrings.NullString; }
             if (array.Length == 0) { return XTaskStrings.EmptyString; }
-            return String.Join(" ", array);
+            return string.Join(" ", array);
         }
     }
 }

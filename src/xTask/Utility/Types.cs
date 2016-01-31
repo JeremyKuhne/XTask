@@ -61,14 +61,14 @@ namespace XTask.Utility
                         // double seems to be more likely to have a valid converter)
                         if (type == typeof(bool))
                         {
-                            double? numericBool = Types.ConvertType<double?>(source);
+                            double? numericBool = ConvertType<double?>(source);
                             if (numericBool.HasValue)
                             {
                                 return (T)Convert.ChangeType(numericBool.Value, type, CultureInfo.InvariantCulture);
                             }
                         }
 
-                        Types.ConversionFailed(source, e);
+                        ConversionFailed(source, e);
                     }
                     else
                     {
@@ -121,7 +121,7 @@ namespace XTask.Utility
                                     || e is FormatException
                                     || e is OverflowException)
                                 {
-                                    Types.ConversionFailed(source, e);
+                                    ConversionFailed(source, e);
                                 }
                                 else
                                 {
@@ -129,7 +129,7 @@ namespace XTask.Utility
                                 }
                             }
                         }
-                        Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "No converter found for type '{0}'", type));
+                        Debug.WriteLine(string.Format(CultureInfo.InvariantCulture, "No converter found for type '{0}'", type));
                     }
                 }
                 catch (Exception e)
@@ -140,7 +140,7 @@ namespace XTask.Utility
                         || e is OverflowException
                         || e is NotSupportedException)
                     {
-                        Types.ConversionFailed(source, e);
+                        ConversionFailed(source, e);
                     }
                     else
                     {
@@ -174,7 +174,7 @@ namespace XTask.Utility
         [Conditional("DEBUG")]
         private static void ConversionFailed(object source, Exception e)
         {
-            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Unable to convert value '{0}'.  Exception follows: \n{1}", source, e));
+            Debug.WriteLine(string.Format(CultureInfo.InvariantCulture, "Unable to convert value '{0}'.  Exception follows: \n{1}", source, e));
         }
     }
 }

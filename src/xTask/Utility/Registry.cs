@@ -74,13 +74,13 @@ namespace XTask.Utility
         /// <param name="valueName">Name of value</param>
         public static T RetrieveRegistryValue<T>(RegistryHive hive, string subkeyName, string valueName)
         {
-            var registrySubkey = Registry.OpenSubkey(Registry.GetHive(hive), subkeyName);
+            var registrySubkey = OpenSubkey(GetHive(hive), subkeyName);
 
             if (registrySubkey != null)
             {
                 using (registrySubkey)
                 {
-                    return Registry.RetrieveRegistryValue<T>(registrySubkey, valueName);
+                    return RetrieveRegistryValue<T>(registrySubkey, valueName);
                 }
             }
 
@@ -91,7 +91,7 @@ namespace XTask.Utility
         {
             object registryValue = null;
 
-            Exception exception = Registry.RegistryExceptionWrapper(() => registryValue = key.GetValue(valueName));
+            Exception exception = RegistryExceptionWrapper(() => registryValue = key.GetValue(valueName));
             if (exception != null)
             {
                 Debug.WriteLine("Unable to get value '{0}'.  Exception follows: \n{1}", valueName, exception);
@@ -109,7 +109,7 @@ namespace XTask.Utility
         {
             Win32.RegistryKey registrySubkey = null;
 
-            Exception exception = Registry.RegistryExceptionWrapper(() => registrySubkey = registryKey.OpenSubKey(subkeyName, writable));
+            Exception exception = RegistryExceptionWrapper(() => registrySubkey = registryKey.OpenSubKey(subkeyName, writable));
             if (exception != null)
             {
                 Debug.WriteLine("Unable to open subkey '{0}'.  Exception follows: \n{1}", subkeyName, exception);
@@ -122,7 +122,7 @@ namespace XTask.Utility
         {
             foreach (string subkeyName in registryKey.GetSubKeyNames())
             {
-                var subkey = Registry.OpenSubkey(registryKey, subkeyName);
+                var subkey = OpenSubkey(registryKey, subkeyName);
                 if (subkey != null)
                 {
                     yield return subkey;
@@ -140,9 +140,9 @@ namespace XTask.Utility
         {
             string[] subkeyNames = null;
 
-            using (Win32.RegistryKey registryKey = Registry.OpenSubkey(Registry.GetHive(hive), subkeyName))
+            using (Win32.RegistryKey registryKey = OpenSubkey(GetHive(hive), subkeyName))
             {
-                Exception exception = Registry.RegistryExceptionWrapper(() => subkeyNames = registryKey.GetSubKeyNames());
+                Exception exception = RegistryExceptionWrapper(() => subkeyNames = registryKey.GetSubKeyNames());
                 if (exception != null)
                 {
                     Debug.WriteLine("Unable to get subkey names for key '{0}'.  Exception follows: \n{1}", registryKey.Name, exception);
@@ -171,18 +171,18 @@ namespace XTask.Utility
         public static IEnumerable<T> RetrieveAllRegistrySubkeyValues<T>(RegistryHive hive, string subkeyName)
         {
             List<T> values = new List<T>();
-            var registrySubkey = Registry.OpenSubkey(Registry.GetHive(hive), subkeyName);
+            var registrySubkey = OpenSubkey(GetHive(hive), subkeyName);
 
             if (registrySubkey != null)
             {
                 using (registrySubkey)
                 {
-                    foreach (var subSubkey in Registry.GetSubkeys(registrySubkey))
+                    foreach (var subSubkey in GetSubkeys(registrySubkey))
                     {
                         using (subSubkey)
                         {
                             string[] registryValueNames = null;
-                            Exception exception = Registry.RegistryExceptionWrapper(() => registryValueNames = subSubkey.GetValueNames());
+                            Exception exception = RegistryExceptionWrapper(() => registryValueNames = subSubkey.GetValueNames());
                             if (exception != null)
                             {
                                 Debug.WriteLine("Unable to get value names for key '{0}'.  Exception follows: \n{1}", subkeyName, exception);
@@ -191,7 +191,7 @@ namespace XTask.Utility
 
                             foreach (string registryValueName in registryValueNames)
                             {
-                                object rawValue = Registry.RetrieveRegistryValue<object>(subSubkey, registryValueName);
+                                object rawValue = RetrieveRegistryValue<object>(subSubkey, registryValueName);
 
                                 if (rawValue != null)
                                 {
@@ -229,9 +229,9 @@ namespace XTask.Utility
         {
             // Causes the behavior detailed in the remarks above
             Win32.RegistryValueKind valueKind = Win32.RegistryValueKind.Unknown;
-            Win32.RegistryKey registryKey = Registry.GetHive(hive);
+            Win32.RegistryKey registryKey = GetHive(hive);
 
-            var registrySubkey = Registry.OpenSubkey(registryKey, subkeyName, writable: true);
+            var registrySubkey = OpenSubkey(registryKey, subkeyName, writable: true);
 
             if (registrySubkey == null)
             {
@@ -242,7 +242,7 @@ namespace XTask.Utility
                     return true;
                 }
 
-                Exception exception = Registry.RegistryExceptionWrapper(() => registrySubkey = registryKey.CreateSubKey(subkeyName));
+                Exception exception = RegistryExceptionWrapper(() => registrySubkey = registryKey.CreateSubKey(subkeyName));
                 if (exception != null)
                 {
                     Debug.WriteLine("Unable to create sub key '{0}'.  Exception follows: \n{1}", subkeyName, exception);
@@ -259,12 +259,12 @@ namespace XTask.Utility
                     if (value == null)
                     {
                         // Value specified is null- delete
-                        exception = Registry.RegistryExceptionWrapper(() => registrySubkey.DeleteValue(valueName, false));
+                        exception = RegistryExceptionWrapper(() => registrySubkey.DeleteValue(valueName, false));
                     }
                     else
                     {
                         // Normal set
-                        exception = Registry.RegistryExceptionWrapper(() => registrySubkey.SetValue(valueName, value, valueKind));
+                        exception = RegistryExceptionWrapper(() => registrySubkey.SetValue(valueName, value, valueKind));
                     }
 
                     if (exception != null)

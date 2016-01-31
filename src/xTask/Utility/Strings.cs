@@ -18,13 +18,13 @@ namespace XTask.Utility
         // Full format specifiers look like this: { index[,alignment][ :formatString] }
         //  Alignment, when specified, will pad spaces on the left (right aligned, positive) or right (left aligned, negative)
 
-        private static Regex newLineRegex = new Regex(
+        private static Regex s_NewLineRegex = new Regex(
             @"(\r\n|[\r\n]){1,}",
             RegexOptions.CultureInvariant
             | RegexOptions.Compiled
             );
 
-        private static Regex whiteSpaceRegex = new Regex(
+        private static Regex s_WhiteSpaceRegex = new Regex(
             @"\s{1,}|\p{C}{1,}",
             RegexOptions.CultureInvariant
             | RegexOptions.Compiled
@@ -35,12 +35,12 @@ namespace XTask.Utility
         /// </summary>
         public static string CompressWhiteSpace(string value)
         {
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
-                return String.Empty;
+                return string.Empty;
             }
 
-            return Strings.whiteSpaceRegex.Replace(value, " ").Trim();
+            return s_WhiteSpaceRegex.Replace(value, " ").Trim();
         }
 
         /// <summary>
@@ -48,12 +48,12 @@ namespace XTask.Utility
         /// </summary>
         public static string ReplaceLineEnds(string value, string replacement)
         {
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
-                return String.Empty;
+                return string.Empty;
             }
 
-            return Strings.newLineRegex.Replace(value, replacement);
+            return s_NewLineRegex.Replace(value, replacement);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace XTask.Utility
         /// </summary>
         public static string TabsToSpaces(string value)
         {
-            if (String.IsNullOrEmpty(value)) { return String.Empty; }
+            if (string.IsNullOrEmpty(value)) { return string.Empty; }
 
             return value.Replace("\t", "   ");
         }
@@ -71,12 +71,12 @@ namespace XTask.Utility
         /// </summary>
         public static string FindLeftmostCommonString(params string[] values)
         {
-            if (values == null || values.Length == 0) { return String.Empty; }
+            if (values == null || values.Length == 0) { return string.Empty; }
 
             string leftmost = null;
             foreach (string value in values)
             {
-                if (String.IsNullOrEmpty(value)) { return String.Empty; }
+                if (string.IsNullOrEmpty(value)) { return string.Empty; }
 
                 if (leftmost == null)
                 {
@@ -92,7 +92,7 @@ namespace XTask.Utility
 
                 if (i == 0)
                 {
-                    return String.Empty;
+                    return string.Empty;
                 }
                 else
                 {
@@ -108,12 +108,12 @@ namespace XTask.Utility
         /// </summary>
         public static string FindRightmostCommonString(params string[] values)
         {
-            if (values == null || values.Length == 0) { return String.Empty; }
+            if (values == null || values.Length == 0) { return string.Empty; }
 
             string rightmost = null;
             foreach (string value in values)
             {
-                if (String.IsNullOrEmpty(value)) { return String.Empty; }
+                if (string.IsNullOrEmpty(value)) { return string.Empty; }
 
                 if (rightmost == null)
                 {
@@ -129,7 +129,7 @@ namespace XTask.Utility
 
                 if (i == 1)
                 {
-                    return String.Empty;
+                    return string.Empty;
                 }
                 else
                 {
@@ -145,7 +145,7 @@ namespace XTask.Utility
         /// </summary>
         public static string ValueOrNone(string value)
         {
-            return String.IsNullOrWhiteSpace(value) ? XTaskStrings.NoValue : value;
+            return string.IsNullOrWhiteSpace(value) ? XTaskStrings.NoValue : value;
         }
 
         /// <summary>
@@ -153,8 +153,8 @@ namespace XTask.Utility
         /// </summary>
         public static bool EqualsOrNone(string a, string b, StringComparison comparisionType = StringComparison.Ordinal)
         {
-            if (String.IsNullOrWhiteSpace(a)) return String.IsNullOrWhiteSpace(b);
-            return String.Equals(a, b, comparisionType);
+            if (string.IsNullOrWhiteSpace(a)) return string.IsNullOrWhiteSpace(b);
+            return string.Equals(a, b, comparisionType);
         }
 
         /// <summary>
@@ -163,9 +163,9 @@ namespace XTask.Utility
         /// <param name="breakCharacter">Character to treat as a break space, if desired. (To create a "words only" underline style)</param>
         public static string Underline(string value, char underlineCharacter = '-', char? breakCharacter = '_')
         {
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
-                return String.Empty;
+                return string.Empty;
             }
 
             int length = value.Length;
@@ -194,7 +194,7 @@ namespace XTask.Utility
         /// </summary>
         public static IEnumerable<string> SplitCommandLine(string commandLine)
         {
-            if (String.IsNullOrWhiteSpace(commandLine)) return Enumerable.Empty<string>();
+            if (string.IsNullOrWhiteSpace(commandLine)) return Enumerable.Empty<string>();
             var args = new List<string>();
             StringBuilder sb = new StringBuilder(commandLine);
             sb.Trim();
@@ -204,7 +204,7 @@ namespace XTask.Utility
             for (int i = 0; i < sb.Length; i++)
             {
                 char current = sb[i];
-                if (Char.IsWhiteSpace(current))
+                if (char.IsWhiteSpace(current))
                 {
                     if (argStart == i)
                     {
@@ -302,7 +302,7 @@ namespace XTask.Utility
         /// </summary>
         public static bool StartsWithCount(string first, string second, int count, StringComparison comparisonType)
         {
-            return String.Compare(first, 0, second, 0, count, comparisonType) == 0;
+            return string.Compare(first, 0, second, 0, count, comparisonType) == 0;
         }
 
         /// <summary>
@@ -311,7 +311,7 @@ namespace XTask.Utility
         public static int FindRightmostCommonCount(string first, int firstIndex, string second, int secondIndex, StringComparison comparisonType)
         {
             int matchCount = 0;
-            while (String.Compare(first, firstIndex, second, secondIndex, 1, comparisonType) == 0)
+            while (string.Compare(first, firstIndex, second, secondIndex, 1, comparisonType) == 0)
             {
                 matchCount++;
                 if (firstIndex == 0 || secondIndex == 0) break;

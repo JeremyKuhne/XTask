@@ -14,13 +14,13 @@ namespace XTask.Utility
     /// </summary>
     public abstract class ComparerBase<T> : IComparer<T>, IEqualityComparer<T>
     {
-        private IComparer<T> comparer;
-        private IEqualityComparer<T> equalityComparer;
+        private IComparer<T> _comparer;
+        private IEqualityComparer<T> _equalityComparer;
 
         protected ComparerBase(IComparerImplementation implementation)
         {
-            this.comparer = (IComparer<T>)implementation;
-            this.equalityComparer = (IEqualityComparer<T>)implementation;
+            _comparer = implementation;
+            _equalityComparer = implementation;
         }
 
         protected interface IComparerImplementation : IComparer<T>, IEqualityComparer<T>
@@ -29,17 +29,17 @@ namespace XTask.Utility
 
         public int Compare(T x, T y)
         {
-            return this.comparer.Compare(x, y);
+            return _comparer.Compare(x, y);
         }
 
         public bool Equals(T x, T y)
         {
-            return this.equalityComparer.Equals(x, y);
+            return _equalityComparer.Equals(x, y);
         }
 
         public int GetHashCode(T obj)
         {
-            return this.equalityComparer.GetHashCode(obj);
+            return _equalityComparer.GetHashCode(obj);
         }
     }
 }

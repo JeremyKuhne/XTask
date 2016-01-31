@@ -19,14 +19,14 @@ namespace XTask.Utility
     {
         public ResolveEventHandler AssemblyResolveFallback;
 
-        protected HashSet<string> resolutionPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        protected HashSet<string> assembliesToResolve = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        protected HashSet<string> _resolutionPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        protected HashSet<string> _assembliesToResolve = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         protected IFileService FileService { get; private set; }
 
         protected AssemblyResolver(IFileService fileService)
         {
-            this.FileService = fileService;
+            FileService = fileService;
         }
 
         public static AssemblyResolver Create(IArgumentProvider arguments, IFileService fileService)
@@ -39,23 +39,23 @@ namespace XTask.Utility
         protected void Initialize(IArgumentProvider arguments)
         {
             string assembliesToResolve = arguments.GetOption<string>(StandardOptions.AssembliesToResolve);
-            if (!String.IsNullOrEmpty(assembliesToResolve))
+            if (!string.IsNullOrEmpty(assembliesToResolve))
             {
                 foreach (string assemblyToResolve in assembliesToResolve.Split(';'))
                 {
-                    this.AddAssemblyToResolve(assemblyToResolve);
+                    AddAssemblyToResolve(assemblyToResolve);
                 }
             }
 
             string resolutionPaths = arguments.GetOption<string>(StandardOptions.AssemblyResolutionPaths);
-            if (!String.IsNullOrEmpty(resolutionPaths))
+            if (!string.IsNullOrEmpty(resolutionPaths))
             {
                 foreach (string resolutionPath in resolutionPaths.Split(';'))
                 {
-                    if (!String.IsNullOrWhiteSpace(resolutionPath))
+                    if (!string.IsNullOrWhiteSpace(resolutionPath))
                     {
                         string expandedResolutionPath = Environment.ExpandEnvironmentVariables(resolutionPath);
-                        this.AddResolutionPath(expandedResolutionPath);
+                        AddResolutionPath(expandedResolutionPath);
                     }
                 }
             }
@@ -63,12 +63,12 @@ namespace XTask.Utility
 
         public void AddResolutionPath(string resolutionPath)
         {
-            this.resolutionPaths.Add(resolutionPath);
+            _resolutionPaths.Add(resolutionPath);
         }
 
         public void AddAssemblyToResolve(string assemblyPattern)
         {
-            this.assembliesToResolve.Add(assemblyPattern);
+            _assembliesToResolve.Add(assemblyPattern);
         }
 
         protected virtual Assembly LoadAssemblyFrom(string fullAssemblyPath)
@@ -83,7 +83,7 @@ namespace XTask.Utility
 
         public Assembly Domain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            if (String.IsNullOrEmpty(args.Name))
+            if (string.IsNullOrEmpty(args.Name))
             {
                 return null;
             }
@@ -91,7 +91,7 @@ namespace XTask.Utility
             AssemblyName assemblyName = new AssemblyName(args.Name);
 
             // Only load assemblies we know of
-            if (!this.assembliesToResolve.Any(assemblyName.Name.StartsWith))
+            if (!_assembliesToResolve.Any(assemblyName.Name.StartsWith))
             {
                 return null;
             }
@@ -99,9 +99,9 @@ namespace XTask.Utility
             string assemblyFileName = assemblyName.Name + ".dll";
 
             // CodeBase is the non shadow copied location of the assembly
-            Uri toolLocation = this.GetToolLocation();
+            Uri toolLocation = GetToolLocation();
 
-            foreach (string path in this.resolutionPaths)
+            foreach (string path in _resolutionPaths)
             {
                 Uri fullAssemblyUri;
                 if (Paths.IsRelative(path))
@@ -118,14 +118,14 @@ namespace XTask.Utility
                 string fullAssemblyPath = Paths.Combine(fullAssemblyUri.LocalPath, assemblyFileName);
                 if (FileService.FileExists(fullAssemblyPath))
                 {
-                    Assembly loadedAssembly = this.LoadAssemblyFrom(fullAssemblyPath);
+                    Assembly loadedAssembly = LoadAssemblyFrom(fullAssemblyPath);
                     return loadedAssembly;
                 }
             }
 
-            if (this.AssemblyResolveFallback != null)
+            if (AssemblyResolveFallback != null)
             {
-                foreach (ResolveEventHandler invoker in this.AssemblyResolveFallback.GetInvocationList())
+                foreach (ResolveEventHandler invoker in AssemblyResolveFallback.GetInvocationList())
                 {
                     Assembly assembly = invoker.Invoke(this, args);
                     if (assembly != null)
