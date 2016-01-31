@@ -11,12 +11,12 @@ namespace XTask.Logging
 
     public class Loggers : ILoggers
     {
-        private Dictionary<LoggerType, ILogger> loggers = new Dictionary<LoggerType, ILogger>();
+        private Dictionary<LoggerType, ILogger> _loggers = new Dictionary<LoggerType, ILogger>();
         private static NullLogger NullLog = new NullLogger();
 
         protected void RegisterLogger(LoggerType loggerType, ILogger logger)
         {
-            this.loggers.Add(loggerType, logger);
+            _loggers.Add(loggerType, logger);
         }
 
         public ILogger this[LoggerType loggerType]
@@ -24,11 +24,11 @@ namespace XTask.Logging
             get
             {
                 ILogger logger;
-                if (this.loggers.TryGetValue(loggerType, out logger))
+                if (_loggers.TryGetValue(loggerType, out logger))
                 {
                     return logger;
                 }
-                return Loggers.NullLog;
+                return NullLog;
             }
         }
 

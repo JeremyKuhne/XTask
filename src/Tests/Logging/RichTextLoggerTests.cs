@@ -17,7 +17,7 @@ namespace XTask.Tests.Logging
         {
             public string RichTextBuffer
             {
-                get { return this.richText.ToString(); }
+                get { return this._richText.ToString(); }
             }
 
             public string TestEscaping(string value)

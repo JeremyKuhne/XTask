@@ -7,6 +7,7 @@
 
 namespace XTask.Tests.Logging
 {
+    using System;
     using FluentAssertions;
     using XTask.Logging;
     using Xunit;
@@ -22,7 +23,14 @@ namespace XTask.Tests.Logging
             ]
         public void TestFormatToString(ClipboardFormat format, string expected)
         {
-            Clipboard.FormatToString(format).Should().Be(expected);
+            Clipboard.GetDataObjectFormatString(format).Should().Be(expected);
+        }
+
+        [Fact]
+        public void AddToClipboardThrowsArgumentNull()
+        {
+            Action action = () => Clipboard.AddToClipboard(null);
+            action.ShouldThrow<ArgumentNullException>();
         }
     }
 }

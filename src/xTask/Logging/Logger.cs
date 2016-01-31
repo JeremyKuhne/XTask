@@ -16,28 +16,28 @@ namespace XTask.Logging
 
         public void Write(string value)
         {
-            this.Write(WriteStyle.Current, value);
+            Write(WriteStyle.Current, value);
         }
 
         public void Write(string format, params object[] args)
         {
-            this.Write(WriteStyle.Current, format, args);
+            Write(WriteStyle.Current, format, args);
         }
 
         public void Write(WriteStyle style, string format, params object[] args)
         {
-            this.Write(style, String.Format(CultureInfo.CurrentUICulture, format, args));
+            Write(style, String.Format(CultureInfo.CurrentUICulture, format, args));
         }
 
         public void Write(WriteStyle style, string value)
         {
             if (style.HasFlag(WriteStyle.Error))
             {
-                this.WriteInternal(style, String.Format(CultureInfo.CurrentUICulture, XTaskStrings.ErrorFormatString, value));
+                WriteInternal(style, String.Format(CultureInfo.CurrentUICulture, XTaskStrings.ErrorFormatString, value));
             }
             else
             {
-                this.WriteInternal(style, value);
+                WriteInternal(style, value);
             }
         }
 
@@ -45,31 +45,31 @@ namespace XTask.Logging
 
         public void WriteLine()
         {
-            this.Write(Logger.NewLine);
+            Write(Logger.NewLine);
         }
 
         public void WriteLine(string value)
         {
-            this.Write(value);
-            this.WriteLine();
+            Write(value);
+            WriteLine();
         }
 
         public void WriteLine(string format, params object[] args)
         {
-            this.Write(format, args);
-            this.WriteLine();
+            Write(format, args);
+            WriteLine();
         }
 
         public void WriteLine(WriteStyle style, string format, params object[] args)
         {
-            this.Write(style, format, args);
-            this.WriteLine();
+            Write(style, format, args);
+            WriteLine();
         }
 
         public void WriteLine(WriteStyle style, string value)
         {
-            this.Write(style, value);
-            this.WriteLine();
+            Write(style, value);
+            WriteLine();
         }
 
         public abstract void Write(ITable table);

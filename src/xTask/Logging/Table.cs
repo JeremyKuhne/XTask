@@ -15,15 +15,15 @@ namespace XTask.Logging
     /// </summary>
     public class Table : ITable
     {
-        private List<string[]> rows = new List<string[]>();
-        public IEnumerable<string[]> Rows { get { return this.rows; } }
+        private List<string[]> _rows = new List<string[]>();
+        public IEnumerable<string[]> Rows { get { return this._rows; } }
         public ColumnFormat[] ColumnFormats { get; private set; }
         public bool HasHeader { get; set; }
 
         protected Table(params ColumnFormat[] rowFormats)
         {
-            this.ColumnFormats = rowFormats;
-            this.HasHeader = true;
+            ColumnFormats = rowFormats;
+            HasHeader = true;
         }
 
         /// <summary>
@@ -47,12 +47,12 @@ namespace XTask.Logging
         /// </summary>
         public void AddRow(params string[] values)
         {
-            string[] row = new string[this.ColumnFormats.Length];
+            string[] row = new string[ColumnFormats.Length];
             for (int i = 0; i < row.Length; i++)
             {
                 row[i] = i < values.Length ? (values[i] ?? String.Empty) : String.Empty;
             }
-            this.rows.Add(row);
+            _rows.Add(row);
         }
     }
 }

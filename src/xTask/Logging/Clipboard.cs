@@ -7,6 +7,7 @@
 
 namespace XTask.Logging
 {
+    using System;
     using Forms = System.Windows.Forms;
 
     public static class Clipboard
@@ -14,13 +15,16 @@ namespace XTask.Logging
         /// <summary>
         /// Adds the specified data to the clipboard
         /// </summary>
+        /// <exception cref="ArgumentNullException">Thrown if <param name="nameof(data)"/> is null.</exception>
         public static void AddToClipboard(params ClipboardData[] data)
         {
+            if (data == null) throw new ArgumentNullException(nameof(data));
+
             Forms.IDataObject dataObject = new Forms.DataObject();
             foreach (var clipboardData in data)
             {
                 if (clipboardData.Data != null)
-                    dataObject.SetData(Clipboard.FormatToString(clipboardData.Format), clipboardData.Data);
+                    dataObject.SetData(GetDataObjectFormatString(clipboardData.Format), clipboardData.Data);
             }
 
             if (dataObject.GetFormats().Length > 1)
@@ -29,7 +33,10 @@ namespace XTask.Logging
             }
         }
 
-        internal static string FormatToString(ClipboardFormat format)
+        /// <summary>
+        /// Gets the proper set/getdata string for the given ClipboardFormat.
+        /// </summary>
+        internal static string GetDataObjectFormatString(ClipboardFormat format)
         {
             switch (format)
             {

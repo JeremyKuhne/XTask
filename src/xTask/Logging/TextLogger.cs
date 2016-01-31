@@ -12,7 +12,7 @@ namespace XTask.Logging
 
     public class TextLogger : TextTableLogger, IClipboardSource
     {
-        private StringBuilder text = new StringBuilder(4096);
+        private StringBuilder _text = new StringBuilder(4096);
 
         protected override int TableWidth
         {
@@ -23,22 +23,22 @@ namespace XTask.Logging
         {
             if (style.HasFlag(WriteStyle.Underline))
             {
-                text.Append(Strings.Underline(value));
+                _text.Append(Strings.Underline(value));
             }
             else
             {
-                text.Append(value);
+                _text.Append(value);
             }
         }
 
         public override string ToString()
         {
-            return this.text.ToString();
+            return _text.ToString();
         }
 
         public ClipboardData GetClipboardData()
         {
-            return new ClipboardData { Data = text.Length > 0 ? this.ToString() : null, Format = ClipboardFormat.Text };
+            return new ClipboardData { Data = _text.Length > 0 ? ToString() : null, Format = ClipboardFormat.Text };
         }
     }
 }

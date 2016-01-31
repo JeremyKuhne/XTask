@@ -16,86 +16,86 @@ namespace XTask.Logging
     // The "rich" logging we're looking for is for Wordpad, Word, Outlook.
     public class HtmlLogger : Logger, IClipboardSource
     {
-        protected StringBuilder htmlText = new StringBuilder(4096);
-        private int initialLength;
+        protected StringBuilder _htmlText = new StringBuilder(4096);
+        private int _initialLength;
 
         public HtmlLogger()
         {
-            this.htmlText.Append(@"<div style='font-size:11.0pt;font-family:Calibri,sans-serif>");
-            this.initialLength = this.htmlText.Length;
+            _htmlText.Append(@"<div style='font-size:11.0pt;font-family:Calibri,sans-serif>");
+            _initialLength = _htmlText.Length;
         }
 
         protected override void WriteInternal(WriteStyle style, string value)
         {
-            this.htmlText.AppendFormat(
+            _htmlText.AppendFormat(
                 @"<span style='font-size:11.0pt;font-family:Calibri,sans-serif;white-space:pre{0}'>",
-                style.HasFlag(WriteStyle.Error) ? @";color:red" : String.Empty);
+                style.HasFlag(WriteStyle.Error) ? @";color:red" : string.Empty);
 
-            this.AppendFormatedString(style, value);
+            AppendFormatedString(style, value);
 
-            this.htmlText.Append(@"</span>");
+            _htmlText.Append(@"</span>");
         }
 
         protected void AppendFormatedString(WriteStyle style, string value)
         {
-            if (style.HasFlag(WriteStyle.Bold)) this.htmlText.Append(@"<b>");
-            if (style.HasFlag(WriteStyle.Italic)) this.htmlText.Append(@"<i>");
-            if (style.HasFlag(WriteStyle.Critical)) this.htmlText.Append(@"<strong>");
-            if (style.HasFlag(WriteStyle.Important)) this.htmlText.Append(@"<em>");
-            if (style.HasFlag(WriteStyle.Underline)) this.htmlText.Append(@"<u>");
-            if (style.HasFlag(WriteStyle.Fixed)) this.htmlText.Append(@"<pre>"); ;
-            this.htmlText.Append(Strings.ReplaceLineEnds(WebUtility.HtmlEncode(value), @"<br>"));
-            if (style.HasFlag(WriteStyle.Fixed)) this.htmlText.Append(@"</pre>"); ;
-            if (style.HasFlag(WriteStyle.Underline)) this.htmlText.Append(@"</u>");
-            if (style.HasFlag(WriteStyle.Important)) this.htmlText.Append(@"</em>");
-            if (style.HasFlag(WriteStyle.Critical)) this.htmlText.Append(@"</strong>");
-            if (style.HasFlag(WriteStyle.Italic)) this.htmlText.Append(@"</i>");
-            if (style.HasFlag(WriteStyle.Bold)) this.htmlText.Append(@"</b>");
+            if (style.HasFlag(WriteStyle.Bold)) _htmlText.Append(@"<b>");
+            if (style.HasFlag(WriteStyle.Italic)) _htmlText.Append(@"<i>");
+            if (style.HasFlag(WriteStyle.Critical)) _htmlText.Append(@"<strong>");
+            if (style.HasFlag(WriteStyle.Important)) _htmlText.Append(@"<em>");
+            if (style.HasFlag(WriteStyle.Underline)) _htmlText.Append(@"<u>");
+            if (style.HasFlag(WriteStyle.Fixed)) _htmlText.Append(@"<pre>"); ;
+            _htmlText.Append(Strings.ReplaceLineEnds(WebUtility.HtmlEncode(value), @"<br>"));
+            if (style.HasFlag(WriteStyle.Fixed)) _htmlText.Append(@"</pre>"); ;
+            if (style.HasFlag(WriteStyle.Underline)) _htmlText.Append(@"</u>");
+            if (style.HasFlag(WriteStyle.Important)) _htmlText.Append(@"</em>");
+            if (style.HasFlag(WriteStyle.Critical)) _htmlText.Append(@"</strong>");
+            if (style.HasFlag(WriteStyle.Italic)) _htmlText.Append(@"</i>");
+            if (style.HasFlag(WriteStyle.Bold)) _htmlText.Append(@"</b>");
         }
 
         public override void Write(ITable table)
         {
-            this.htmlText.Append(@"<table style='border-collapse:collapse' border=0 cellspacing=0 cellpadding=0>");
+            _htmlText.Append(@"<table style='border-collapse:collapse' border=0 cellspacing=0 cellpadding=0>");
             bool headerRow = table.HasHeader;
             foreach (var row in table.Rows)
             {
-                this.htmlText.Append(@"<tr>");
+                _htmlText.Append(@"<tr>");
                 for (int i = 0; i < row.Length; i++)
                 {
-                    this.htmlText.Append(headerRow ? @"<th" : @"<td");
+                    _htmlText.Append(headerRow ? @"<th" : @"<td");
 
                     switch (table.ColumnFormats[i].Justification)
                     {
                         case Justification.Centered:
-                            this.htmlText.Append(@" style='text-align:center'>");
+                            _htmlText.Append(@" style='text-align:center'>");
                             break;
                         case Justification.Right:
-                            this.htmlText.Append(@" style='text-align:right'>");
+                            _htmlText.Append(@" style='text-align:right'>");
                             break;
                         case Justification.Left:
                         default:
-                            this.htmlText.Append(@" style='text-align:left'>");
+                            _htmlText.Append(@" style='text-align:left'>");
                             break;
                     }
 
-                    this.htmlText.AppendFormat("<span style='font-size:11.0pt;font-family:Calibri,sans-serif;white-space:pre'>{0}</span>", row[i]);
-                    this.htmlText.Append(headerRow ? @"</th>" : @"</td>");
+                    _htmlText.AppendFormat("<span style='font-size:11.0pt;font-family:Calibri,sans-serif;white-space:pre'>{0}</span>", row[i]);
+                    _htmlText.Append(headerRow ? @"</th>" : @"</td>");
                 }
 
                 headerRow = false;
-                this.htmlText.Append(@"</tr>");
+                _htmlText.Append(@"</tr>");
             }
-            this.htmlText.Append(@"</table>");
+            _htmlText.Append(@"</table>");
         }
 
         public override string ToString()
         {
-            return this.htmlText.ToString() + @"</div>";
+            return _htmlText.ToString() + @"</div>";
         }
 
         public ClipboardData GetClipboardData()
         {
-            return new ClipboardData { Data = this.htmlText.Length > this.initialLength ? HtmlLogger.FormatForClipboard(this.ToString()) : null, Format = ClipboardFormat.Html };
+            return new ClipboardData { Data = _htmlText.Length > _initialLength ? FormatForClipboard(ToString()) : null, Format = ClipboardFormat.Html };
         }
 
         // Adapted from Mike Stall's MSDN Blog:

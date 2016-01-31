@@ -9,7 +9,6 @@ namespace XTask.Logging
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using XTask.Systems.Console;
     using XTask.Utility;
 
@@ -22,43 +21,43 @@ namespace XTask.Logging
             {
             }
 
-            public WriteStyle WriteStyle { get { return this.Item1; } }
-            public ConsoleColor ConsoleColor { get { return this.Item2; } }
+            public WriteStyle WriteStyle { get { return Item1; } }
+            public ConsoleColor ConsoleColor { get { return Item2; } }
         }
 
-        private static ConsoleLogger instance;
+        private static ConsoleLogger s_Instance;
 
-        private ConsoleColor baseColor;
-        private List<ColorLookup> colorTable;
+        private ConsoleColor _baseColor;
+        private List<ColorLookup> _colorTable;
 
         protected ConsoleLogger()
         {
             // TODO: Allow setting from config
-            this.baseColor = Console.ForegroundColor;
-            this.colorTable = new List<ColorLookup>();
+            _baseColor = Console.ForegroundColor;
+            _colorTable = new List<ColorLookup>();
 
             // Error state first
-            this.colorTable.Add(new ColorLookup(WriteStyle.Critical | WriteStyle.Error, ConsoleColor.Red)); 
-            this.colorTable.Add(new ColorLookup(WriteStyle.Italic | WriteStyle.Bold | WriteStyle.Important, ConsoleColor.Yellow));
+            _colorTable.Add(new ColorLookup(WriteStyle.Critical | WriteStyle.Error, ConsoleColor.Red)); 
+            _colorTable.Add(new ColorLookup(WriteStyle.Italic | WriteStyle.Bold | WriteStyle.Important, ConsoleColor.Yellow));
         }
 
         static ConsoleLogger()
         {
-            ConsoleLogger.instance = new ConsoleLogger();
+            s_Instance = new ConsoleLogger();
         }
 
         public static ILogger Instance
         {
             get
             {
-                return ConsoleLogger.instance;
+                return s_Instance;
             }
         }
 
         protected override void WriteInternal(WriteStyle style, string value)
         {
-            ConsoleColor color = this.baseColor;
-            foreach (var lookup in this.colorTable)
+            ConsoleColor color = _baseColor;
+            foreach (var lookup in _colorTable)
             {
                 if ((lookup.WriteStyle & style) != 0)
                 {
@@ -69,17 +68,17 @@ namespace XTask.Logging
 
             if (style.HasFlag(WriteStyle.Underline))
             {
-                this.WriteColorUnderlined(color, value);
+                WriteColorUnderlined(color, value);
             }
             else
             {
-                this.WriteColor(color, value);
+                WriteColor(color, value);
             }
         }
 
         private void WriteColorUnderlined(ConsoleColor color, string value)
         {
-            this.WriteColor(color, Strings.Underline(value));
+            WriteColor(color, Strings.Underline(value));
         }
 
         protected virtual void WriteColor(ConsoleColor color, string value)

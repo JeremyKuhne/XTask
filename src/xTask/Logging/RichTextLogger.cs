@@ -11,7 +11,6 @@ namespace XTask.Logging
     using System.Globalization;
     using System.IO;
     using System.Text;
-    using XTask.Utility;
 
     public class RichTextLogger : Logger, IClipboardSource
     {
@@ -25,9 +24,9 @@ namespace XTask.Logging
         private const string DoubleFontSize = "22";
         private const int TwipsPerPoint = 20;
 
-        protected StringBuilder richText = new StringBuilder(4096);
-        private StringBuilder escaper = new StringBuilder();
-        private bool priorControlCharacter = true;
+        protected StringBuilder _richText = new StringBuilder(4096);
+        private StringBuilder _escaper = new StringBuilder();
+        private bool _priorControlCharacter = true;
 
         protected override void WriteInternal(WriteStyle style, string value)
         {
@@ -39,19 +38,19 @@ namespace XTask.Logging
             // 1. Output Style start tags (if any) \f1 \ul \b \i
             // 2. Output escaped text
             // 3. Output Style end tags \f0 \ul0 \b0 \i0
-            if (bold) { this.richText.Append(@"\b"); }
-            if (fixedWidth) { this.richText.Append(@"\f1"); }
-            if (underline) { this.richText.Append(@"\ul"); }
-            if (italic) { this.richText.Append(@"\i"); }
-            this.priorControlCharacter |= bold || italic || underline;
+            if (bold) { _richText.Append(@"\b"); }
+            if (fixedWidth) { _richText.Append(@"\f1"); }
+            if (underline) { _richText.Append(@"\ul"); }
+            if (italic) { _richText.Append(@"\i"); }
+            _priorControlCharacter |= bold || italic || underline;
 
-            this.richText.Append(this.Escape(value));
+            _richText.Append(Escape(value));
 
-            if (bold) { this.richText.Append(@"\b0"); }
-            if (fixedWidth) { this.richText.Append(@"\f0"); }
-            if (underline) { this.richText.Append(@"\ul0"); }
-            if (italic) { this.richText.Append(@"\i0"); }
-            this.priorControlCharacter |= bold || italic || underline;
+            if (bold) { _richText.Append(@"\b0"); }
+            if (fixedWidth) { _richText.Append(@"\f0"); }
+            if (underline) { _richText.Append(@"\ul0"); }
+            if (italic) { _richText.Append(@"\i0"); }
+            _priorControlCharacter |= bold || italic || underline;
 
             // Perhaps bracket every Write to scope style? Then resetting fonts isn't necessary {}
         }
@@ -62,7 +61,7 @@ namespace XTask.Logging
             // 2. Escape non-ASCII unicode (to \'hh)
             // 3. Escape '\t' to \tab and '\n' to \par
 
-            this.escaper.Clear();
+            _escaper.Clear();
             foreach (char c in value)
             {
                 if ((uint)c > 128)
@@ -75,7 +74,7 @@ namespace XTask.Logging
                     // It is certainly more compact, but I'm not sure where to find the code to do this.
 
                     // Substitute codepage character needs to follow the unicode character. We're picking the usual '?'.
-                    this.escaper.AppendFormat(CultureInfo.InvariantCulture, @"\u{0}\'3f", (uint)c);
+                    _escaper.AppendFormat(CultureInfo.InvariantCulture, @"\u{0}\'3f", (uint)c);
                     // Don't need?
                     // this.priorControlCharacter = true;
                 }
@@ -88,31 +87,31 @@ namespace XTask.Logging
                         case '{':
                         case '}':
                             // These have special meaning in RTF, need to escape
-                            this.escaper.Append('\\');
-                            this.escaper.Append(c);
-                            this.priorControlCharacter = false;
+                            _escaper.Append('\\');
+                            _escaper.Append(c);
+                            _priorControlCharacter = false;
                             break;
                         case '\n':
-                            this.escaper.Append(@"\par");
-                            this.priorControlCharacter = true;
+                            _escaper.Append(@"\par");
+                            _priorControlCharacter = true;
                             break;
                         case '\t':
-                            this.escaper.Append(@"\tab");
-                            this.priorControlCharacter = true;
+                            _escaper.Append(@"\tab");
+                            _priorControlCharacter = true;
                             break;
                         default:
-                            if (this.priorControlCharacter)
+                            if (_priorControlCharacter)
                             {
-                                this.escaper.Append(' ');
-                                this.priorControlCharacter = false;
+                                _escaper.Append(' ');
+                                _priorControlCharacter = false;
                             }
-                            this.escaper.Append(c);
+                            _escaper.Append(c);
                             break;
                     }
                 }
             }
 
-            return this.escaper.ToString();
+            return _escaper.ToString();
         }
 
         // Font Colors:
@@ -159,8 +158,8 @@ namespace XTask.Logging
             StringBuilder rowHeader = new StringBuilder(128);
 
             rowHeader.AppendFormat(@"{{\trowd\trgaph{0}\trrh-{1}\trpaddl{0}\trpaddr{0}\trpaddfl3\trpaddfr3",
-                RichTextLogger.FontSize / 2 * RichTextLogger.TwipsPerPoint,      // Padding of half the font size
-                (RichTextLogger.FontSize + 2) * RichTextLogger.TwipsPerPoint);   // Row height, negative to make "exactly"
+                FontSize / 2 * TwipsPerPoint,      // Padding of half the font size
+                (FontSize + 2) * TwipsPerPoint);   // Row height, negative to make "exactly"
 
             int totalWidth = 0;
             for (int i = 0; i < columnWidths.Length; i++)
@@ -171,11 +170,11 @@ namespace XTask.Logging
             }
 
             bool headerRow = table.HasHeader;
-            this.priorControlCharacter = false;
+            _priorControlCharacter = false;
             foreach (var row in table.Rows)
             {
-                this.richText.Append(rowHeader);
-                if (headerRow) this.richText.Append(@"\b");
+                this._richText.Append(rowHeader);
+                if (headerRow) _richText.Append(@"\b");
                 for (int i = 0; i < row.Length; i++)
                 {
                     string alignment;
@@ -192,34 +191,34 @@ namespace XTask.Logging
                             alignment = @"\ql";
                             break;
                     }
-                    this.richText.AppendFormat(@"\pard\intbl\widctlpar{0} {1}\cell", alignment, this.Escape(row[i]));
+                    _richText.AppendFormat(@"\pard\intbl\widctlpar{0} {1}\cell", alignment, this.Escape(row[i]));
                 }
 
                 if (headerRow)
                 {
-                    this.richText.Append(@"\b0");
+                    _richText.Append(@"\b0");
                     headerRow = false;
                 }
-                this.richText.Append(@"\row}");
+                _richText.Append(@"\row}");
             }
-            this.priorControlCharacter = true;
+            this._priorControlCharacter = true;
         }
 
         public void Save(string path)
         {
-            File.WriteAllText(path, this.ToString(), Encoding.ASCII);
+            File.WriteAllText(path, ToString(), Encoding.ASCII);
         }
 
         public override string ToString()
         {
             // {Header}{Body}
             // We don't close out the scope in GetHeader(), so we have to close it here (escaped to '}}' for formatting).
-            return String.Format(CultureInfo.InvariantCulture, "{0}{1}}}", this.GetHeader(), this.richText.ToString());
+            return string.Format(CultureInfo.InvariantCulture, "{0}{1}}}", GetHeader(), _richText.ToString());
         }
 
         public ClipboardData GetClipboardData()
         {
-            return new ClipboardData { Data = this.richText.Length > 0 ? this.ToString() : null, Format = ClipboardFormat.RichText };
+            return new ClipboardData { Data = _richText.Length > 0 ? ToString() : null, Format = ClipboardFormat.RichText };
         }
 
         private string GetHeader()

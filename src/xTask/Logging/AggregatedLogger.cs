@@ -15,18 +15,18 @@ namespace XTask.Logging
     /// </summary>
     public class AggregatedLogger : Logger
     {
-        private IEnumerable<ILogger> loggers;
+        private IEnumerable<ILogger> _loggers;
 
         public AggregatedLogger(params ILogger[] loggers)
         {
-            if (loggers == null) throw new ArgumentNullException("loggers");
+            if (loggers == null) throw new ArgumentNullException(nameof(loggers));
 
-            this.loggers = loggers;
+            _loggers = loggers;
         }
 
         protected override void WriteInternal(WriteStyle style, string value)
         {
-            foreach (ILogger logger in this.loggers)
+            foreach (ILogger logger in _loggers)
             {
                 logger.Write(style, value);
             }
@@ -34,7 +34,7 @@ namespace XTask.Logging
 
         public override void Write(ITable table)
         {
-            foreach (ILogger logger in this.loggers)
+            foreach (ILogger logger in _loggers)
             {
                 logger.Write(table: table);
             }

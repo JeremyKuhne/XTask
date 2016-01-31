@@ -14,10 +14,10 @@ namespace XTask.Logging
 
     public class XmlSpreadsheetLogger : Logger, IClipboardSource, IDisposable
     {
-        private bool anyData;
+        private bool _anyData;
 
         // Excel is super picky about the format of the XML, unable to make XDocument output that made it happy.
-        private StreamWriter streamWriter = new StreamWriter(new MemoryStream(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        private StreamWriter _streamWriter = new StreamWriter(new MemoryStream(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
         protected override void WriteInternal(WriteStyle style, string value)
         {
@@ -27,7 +27,7 @@ namespace XTask.Logging
 
         private void Initialize()
         {
-            this.streamWriter.WriteLine(
+            _streamWriter.WriteLine(
 @"<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 <?mso-application progid='Excel.Sheet'?>
 <Workbook xmlns='urn:schemas-microsoft-com:office:spreadsheet'
@@ -40,50 +40,50 @@ namespace XTask.Logging
 
         public override void Write(ITable table)
         {
-            if (!this.anyData) this.Initialize();
-            this.streamWriter.WriteLine(@"  <Table>");
+            if (!_anyData) Initialize();
+            _streamWriter.WriteLine(@"  <Table>");
             foreach (var row in table.Rows)
             {
-                this.streamWriter.WriteLine(@"   <Row>");
+                _streamWriter.WriteLine(@"   <Row>");
                 foreach (var cell in row)
                 {
-                    this.streamWriter.WriteLine("    <Cell><Data ss:Type='String'>{0}</Data></Cell>", SecurityElement.Escape(cell));
+                    _streamWriter.WriteLine("    <Cell><Data ss:Type='String'>{0}</Data></Cell>", SecurityElement.Escape(cell));
                 }
-                this.streamWriter.WriteLine(@"   </Row>");
+                _streamWriter.WriteLine(@"   </Row>");
             }
-            this.streamWriter.WriteLine(@"  </Table>");
+            _streamWriter.WriteLine(@"  </Table>");
 
-            this.anyData = true;
-            this.streamWriter.Flush();
+            _anyData = true;
+            _streamWriter.Flush();
         }
 
         public ClipboardData GetClipboardData()
         {
-            if (!this.anyData)
+            if (!_anyData)
             {
                 return new ClipboardData { Data = null, Format = ClipboardFormat.XmlSpreadsheet };
             }
 
-            this.streamWriter.WriteLine(
+            _streamWriter.WriteLine(
 @" </Worksheet>
 </Workbook>");
-            this.streamWriter.Flush();
+            _streamWriter.Flush();
 
-            return new ClipboardData { Data = this.streamWriter.BaseStream, Format = ClipboardFormat.XmlSpreadsheet };
+            return new ClipboardData { Data = _streamWriter.BaseStream, Format = ClipboardFormat.XmlSpreadsheet };
         }
 
         private void Dispose(bool disposing)
         {
             if (disposing)
             {
-                this.streamWriter.Dispose();
+                _streamWriter.Dispose();
             }
         }
 
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            this.Dispose(true);
+            Dispose(true);
         }
     }
 }

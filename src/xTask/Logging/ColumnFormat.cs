@@ -12,15 +12,15 @@ namespace XTask.Logging
 
     public struct ColumnFormat
     {
-        public int Width;
-        public Justification Justification;
-        public ContentVisibility Visibility;
+        public int Width { get; set; }
+        public Justification Justification { get; set; }
+        public ContentVisibility Visibility { get; set; }
 
         public ColumnFormat(int width, ContentVisibility visibility = ContentVisibility.Default, Justification justification = Justification.Left)
         {
-            this.Width = width == 0 ? 1 : Math.Abs(width);
-            this.Justification = justification;
-            this.Visibility = visibility;
+            Width = width == 0 ? 1 : Math.Abs(width);
+            Justification = justification;
+            Visibility = visibility;
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace XTask.Logging
         /// </summary>
         public static ColumnFormat[] FromWidths(params int[] widths)
         {
-            return ColumnFormat.Helper(firstColumnMustBeVisible: true, widths: widths);
+            return Helper(firstColumnMustBeVisible: true, widths: widths);
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace XTask.Logging
         /// </summary>
         public static ColumnFormat[] FromCount(int columns)
         {
-            return ColumnFormat.Helper(firstColumnMustBeVisible: true, widths: new int[columns]);
+            return Helper(firstColumnMustBeVisible: true, widths: new int[columns]);
         }
 
         private static ColumnFormat[] Helper(bool firstColumnMustBeVisible, params int[] widths)
@@ -61,10 +61,10 @@ namespace XTask.Logging
             fullWidth = Math.Abs(fullWidth);
 
             // Two small to fit anything in
-            if (fullWidth < columnFormats.Length) { throw new ArgumentOutOfRangeException("fullWidth"); }
+            if (fullWidth < columnFormats.Length) { throw new ArgumentOutOfRangeException(nameof(fullWidth)); }
 
             int[] specifiedWidths = columnFormats.Select(c => c.Width).ToArray();
-            return ColumnFormat.ScaleWidths(fullWidth, specifiedWidths);
+            return ScaleWidths(fullWidth, specifiedWidths);
         }
 
         private static int[] ScaleWidths(int fullWidth, int[] widths)

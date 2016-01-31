@@ -19,18 +19,18 @@ namespace XTask.Logging
         // from assemblies with versions in their names (such as Microsoft.Build.Utilities.v4.0.dll)
         // as you cannot retarget from one assembly name to another (v4.0.dll -> v12.0.dll).
 
-        private string taskName;
-        private bool hasLoggedErrors;
-        private IBuildEngine buildEngine;
+        private string _taskName;
+        private bool _hasLoggedErrors;
+        private IBuildEngine _buildEngine;
 
         public BuildLogger(IBuildEngine buildEngine, string taskName)
         {
-            this.buildEngine = buildEngine;
-            this.taskName = taskName;
+            _buildEngine = buildEngine;
+            _taskName = taskName;
         }
 
         // Consider adding this concept to ILogger to allow for easier build aborts
-        public bool HasLoggedErrors { get { return this.hasLoggedErrors; } }
+        public bool HasLoggedErrors { get { return _hasLoggedErrors; } }
 
         protected override void WriteInternal(WriteStyle style, string value)
         {
@@ -38,15 +38,15 @@ namespace XTask.Logging
 
             // MSBuild ALWAYS is a "Writeline"
             value = value.Trim('\f', '\n', '\r');
-            if (String.IsNullOrWhiteSpace(value)) { return; }
+            if (string.IsNullOrWhiteSpace(value)) { return; }
 
             if (style.HasFlag(WriteStyle.Error))
             {
-                this.LogError(value);
+                LogError(value);
             }
             else if (style.HasFlag(WriteStyle.Critical))
             {
-                this.LogWarning(value);
+                LogWarning(value);
             }
             else
             {
@@ -59,10 +59,10 @@ namespace XTask.Logging
                 BuildMessageEventArgs message = new BuildMessageEventArgs(
                     message: value,
                     helpKeyword: null,
-                    senderName: this.taskName,
+                    senderName: _taskName,
                     importance: importance);
 
-                this.buildEngine.LogMessageEvent(message);
+                _buildEngine.LogMessageEvent(message);
             }
         }
 
@@ -71,17 +71,17 @@ namespace XTask.Logging
             BuildWarningEventArgs warning = new BuildWarningEventArgs(
                 subcategory: null,
                 code: null,
-                file: this.buildEngine.ProjectFileOfTaskNode,
-                lineNumber: this.buildEngine.LineNumberOfTaskNode,
-                columnNumber: this.buildEngine.ColumnNumberOfTaskNode,
+                file: _buildEngine.ProjectFileOfTaskNode,
+                lineNumber: _buildEngine.LineNumberOfTaskNode,
+                columnNumber: _buildEngine.ColumnNumberOfTaskNode,
                 endLineNumber: 0,
                 endColumnNumber: 0,
                 message: value,
                 helpKeyword: null,
-                senderName: this.taskName,
+                senderName: _taskName,
                 eventTimestamp: DateTime.UtcNow);
 
-            this.buildEngine.LogWarningEvent(warning);
+            _buildEngine.LogWarningEvent(warning);
         }
 
         private void LogError(string value)
@@ -89,18 +89,18 @@ namespace XTask.Logging
             BuildErrorEventArgs error = new BuildErrorEventArgs(
                 subcategory: null,
                 code: null,
-                file: this.buildEngine.ProjectFileOfTaskNode,
-                lineNumber: this.buildEngine.LineNumberOfTaskNode,
-                columnNumber: this.buildEngine.ColumnNumberOfTaskNode,
+                file: _buildEngine.ProjectFileOfTaskNode,
+                lineNumber: _buildEngine.LineNumberOfTaskNode,
+                columnNumber: _buildEngine.ColumnNumberOfTaskNode,
                 endLineNumber: 0,
                 endColumnNumber: 0,
                 message: value,
                 helpKeyword: null,
-                senderName: this.taskName,
+                senderName: _taskName,
                 eventTimestamp: DateTime.UtcNow);
 
-            this.buildEngine.LogErrorEvent(error);
-            this.hasLoggedErrors = true;
+            _buildEngine.LogErrorEvent(error);
+            _hasLoggedErrors = true;
         }
 
         protected override int TableWidth

@@ -126,7 +126,7 @@ namespace XTask.Logging
 
             bool headerRow = table.HasHeader;
 
-            StringBuilder rowBuilder = new StringBuilder(this.TableWidth + 1);
+            StringBuilder rowBuilder = new StringBuilder(TableWidth + 1);
             foreach (var row in rowsCopy)
             {
                 rowBuilder.Clear();
@@ -150,12 +150,12 @@ namespace XTask.Logging
 
                 if (headerRow)
                 {
-                    this.WriteLine(WriteStyle.Underline, rowBuilder.ToString());
+                    WriteLine(WriteStyle.Underline, rowBuilder.ToString());
                     headerRow = false;
                 }
                 else
                 {
-                    this.WriteLine(rowBuilder.ToString());
+                    WriteLine(rowBuilder.ToString());
                 }
             }
         }

@@ -17,7 +17,7 @@ namespace XTask.Tests.Logging
         {
             public string HtmlTextBuffer
             {
-                get { return this.htmlText.ToString(); }
+                get { return this._htmlText.ToString(); }
             }
 
             public void TestAppendFormatedString(WriteStyle style, string value)

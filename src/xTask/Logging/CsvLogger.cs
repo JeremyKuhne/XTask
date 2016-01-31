@@ -13,7 +13,7 @@ namespace XTask.Logging
 
     public class CsvLogger : Logger, IClipboardSource, IDisposable
     {
-        private StreamWriter streamWriter = new StreamWriter(new MemoryStream(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        private StreamWriter _streamWriter = new StreamWriter(new MemoryStream(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
         protected override void WriteInternal(WriteStyle style, string value)
         {
@@ -24,38 +24,38 @@ namespace XTask.Logging
         public override void Write(ITable table)
         {
             // We can't write more than one table, start from a clean slate
-            this.streamWriter.BaseStream.Position = 0;
-            this.streamWriter.BaseStream.SetLength(0);
+            _streamWriter.BaseStream.Position = 0;
+            _streamWriter.BaseStream.SetLength(0);
 
             foreach (var row in table.Rows)
             {
                 for (int i = 0; i < row.Length - 1; ++i)
                 {
-                    this.streamWriter.Write("\"{0}\",", row[i]);
+                    _streamWriter.Write("\"{0}\",", row[i]);
                 }
-                this.streamWriter.WriteLine("\"{0}\"", row[row.Length - 1]);
+                _streamWriter.WriteLine("\"{0}\"", row[row.Length - 1]);
             }
 
-            this.streamWriter.Flush();
+            _streamWriter.Flush();
         }
 
         public ClipboardData GetClipboardData()
         {
-            return new ClipboardData { Data = this.streamWriter.BaseStream.Length > 0 ? this.streamWriter.BaseStream : null, Format = ClipboardFormat.CommaSeparatedValues };
+            return new ClipboardData { Data = _streamWriter.BaseStream.Length > 0 ? _streamWriter.BaseStream : null, Format = ClipboardFormat.CommaSeparatedValues };
         }
 
         private void Dispose(bool disposing)
         {
             if (disposing)
             {
-                this.streamWriter.Dispose();
+                _streamWriter.Dispose();
             }
         }
 
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            this.Dispose(true);
+            Dispose(true);
         }
     }
 }
