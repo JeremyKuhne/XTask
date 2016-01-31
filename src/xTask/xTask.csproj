@@ -74,7 +74,6 @@
     <Compile Include="Interop\SafeHandleZeroIsInvalid.cs" />
     <Compile Include="Interop\SafeLibraryHandle.cs" />
     <Compile Include="Interop\StringBufferCache.cs" />
-    <Compile Include="Services\IConfigurationService.cs" />
     <Compile Include="Services\SimpleServiceProvider.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationManager.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationSectionGroupWrapper.cs" />

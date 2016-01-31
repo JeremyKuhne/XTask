@@ -12,17 +12,17 @@ namespace XTask.Services
 
     public class SimpleServiceProvider : ITypedServiceProvider
     {
-        private Dictionary<Type, object> services = new Dictionary<Type, object>();
+        private Dictionary<Type, object> _services = new Dictionary<Type, object>();
 
         public void AddService<T>(T service) where T : class
         {
-            this.services.Add(typeof(T), service);
+            _services.Add(typeof(T), service);
         }
 
         public T GetService<T>() where T : class
         {
             object value;
-            this.services.TryGetValue(typeof(T), out value);
+            _services.TryGetValue(typeof(T), out value);
             return value as T;
         }
     }

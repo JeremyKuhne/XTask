@@ -27,7 +27,7 @@ namespace XTask.Settings
             for (int i = 0; i < arguments.Length; i++)
             {
                 string argument = arguments[i];
-                if (String.IsNullOrWhiteSpace(argument)) { continue; }
+                if (string.IsNullOrWhiteSpace(argument)) { continue; }
 
                 argument = argument.Trim();
 
@@ -39,15 +39,15 @@ namespace XTask.Settings
                         int colonIndex = argument.IndexOf(':');
                         if (colonIndex == -1)
                         {
-                            this.AddOrUpdateOption(argument);
+                            AddOrUpdateOption(argument);
                         }
                         else
                         {
-                            this.AddOrUpdateOption(argument.Substring(0, colonIndex), argument.Substring(colonIndex + 1));
+                            AddOrUpdateOption(argument.Substring(0, colonIndex), argument.Substring(colonIndex + 1));
                         }
                         break;
                     default:
-                        this.AddTarget(argument);
+                        AddTarget(argument);
                         break;
                 }
             }

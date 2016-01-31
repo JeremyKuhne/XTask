@@ -21,12 +21,12 @@ namespace XTask.Settings
 
         public string Name
         {
-            get { return this.Item1; }
+            get { return Item1; }
         }
 
         public string Value
         {
-            get { return this.Item2; }
+            get { return Item2; }
         }
     }
 }

@@ -19,7 +19,7 @@ namespace XTask.Settings
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            var typedEnumerator = this.GetEnumerator();
+            var typedEnumerator = GetEnumerator();
             while (typedEnumerator.MoveNext())
             {
                 yield return typedEnumerator.Current;

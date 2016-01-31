@@ -20,23 +20,23 @@ namespace XTask.Services
     /// </summary>
     public static class FlexServiceProvider
     {
-        private static SimpleServiceProvider concreteServices;
+        private static SimpleServiceProvider _concreteServices;
 
         static FlexServiceProvider()
         {
-            concreteServices = new SimpleServiceProvider();
+            _concreteServices = new SimpleServiceProvider();
             var extendedFileService = new ExtendedFileService();
-            concreteServices.AddService<IExtendedFileService>(extendedFileService);
-            concreteServices.AddService<IFileService>(new FileService(extendedFileService));
-            concreteServices.AddService<IConsoleService>(new ConcreteConsoleService());
-            concreteServices.AddService<IConfigurationManager>(new ConfigurationManager());
+            _concreteServices.AddService<IExtendedFileService>(extendedFileService);
+            _concreteServices.AddService<IFileService>(new FileService(extendedFileService));
+            _concreteServices.AddService<IConsoleService>(new ConcreteConsoleService());
+            _concreteServices.AddService<IConfigurationManager>(new ConfigurationManager());
         }
 
         public static ITypedServiceProvider Services
         {
             get
             {
-                return FlexServiceProvider.concreteServices;
+                return _concreteServices;
             }
         }
     }

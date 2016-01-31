@@ -16,22 +16,22 @@ namespace XTask.Metrics
     /// </summary>
     public class TrackedTask : ImplementedServiceProvider, IUsageTrackedTask, ITask
     {
-        private IFeatureUsageTracker usageTracker;
-        private ITask task;
+        private IFeatureUsageTracker _usageTracker;
+        private ITask _task;
 
         public TrackedTask(ITask task, int featureIdentifier, IFeatureUsageTracker usageTracker)
         {
-            this.task = task;
-            this.usageTracker = usageTracker;
-            this.TaskFeatureIdentifier = featureIdentifier;
+            _task = task;
+            _usageTracker = usageTracker;
+            TaskFeatureIdentifier = featureIdentifier;
         }
 
         public int TaskFeatureIdentifier { get; private set; }
 
         public ExitCode Execute(ITaskInteraction interaction)
         {
-            this.usageTracker.RecordUsage(this.TaskFeatureIdentifier);
-            ITaskExecutor executor = this.task.GetService<ITaskExecutor>();
+            _usageTracker.RecordUsage(TaskFeatureIdentifier);
+            ITaskExecutor executor = _task.GetService<ITaskExecutor>();
             if (executor != null)
             {
                 return executor.Execute(interaction);
@@ -42,7 +42,7 @@ namespace XTask.Metrics
 
         public override T GetService<T>()
         {
-            return base.GetService<T>() ?? this.task.GetService<T>();
+            return base.GetService<T>() ?? _task.GetService<T>();
         }
     }
 }

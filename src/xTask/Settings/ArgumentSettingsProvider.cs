@@ -11,7 +11,6 @@ namespace XTask.Settings
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using Services;
     using XTask.Utility;
     using Systems.Configuration;
     using Systems.File;
@@ -21,16 +20,16 @@ namespace XTask.Settings
     /// </summary>
     public class ArgumentSettingsProvider : IArgumentProvider, IClientSettings
     {
-        private IClientSettings clientSettings;
-        private IArgumentProvider argumentProvider;
-        private string settingsSection;
+        private IClientSettings _clientSettings;
+        private IArgumentProvider _argumentProvider;
+        private string _settingsSection;
 
         protected ArgumentSettingsProvider(string settingsSection, IArgumentProvider argumentProvider, IClientSettings clientSettings)
             : base()
         {
-            this.settingsSection = settingsSection;
-            this.argumentProvider = argumentProvider;
-            this.clientSettings = clientSettings;
+            _settingsSection = settingsSection;
+            _argumentProvider = argumentProvider;
+            _clientSettings = clientSettings;
         }
 
         public static ArgumentSettingsProvider Create(IArgumentProvider argumentProvider, IConfigurationManager configurationManager, IFileService fileService, string settingsSection = null)
@@ -40,34 +39,34 @@ namespace XTask.Settings
             return settingsProvider;
         }
 
-        public bool SaveSetting(SettingsLocation location, string name, string value) { return this.clientSettings.SaveSetting(location, name, value); }
-        public bool RemoveSetting(SettingsLocation location, string name) { return this.clientSettings.RemoveSetting(location, name); }
-        public string GetSetting(string name) { return this.clientSettings.GetSetting(name); }
-        public IEnumerable<ClientSetting> GetAllSettings() { return this.clientSettings.GetAllSettings(); }
-        public string GetConfigurationPath(SettingsLocation location) { return this.clientSettings.GetConfigurationPath(location); }
+        public bool SaveSetting(SettingsLocation location, string name, string value) { return _clientSettings.SaveSetting(location, name, value); }
+        public bool RemoveSetting(SettingsLocation location, string name) { return _clientSettings.RemoveSetting(location, name); }
+        public string GetSetting(string name) { return _clientSettings.GetSetting(name); }
+        public IEnumerable<ClientSetting> GetAllSettings() { return _clientSettings.GetAllSettings(); }
+        public string GetConfigurationPath(SettingsLocation location) { return _clientSettings.GetConfigurationPath(location); }
 
-        public string Target { get { return this.argumentProvider.Target; } }
-        public string Command { get { return this.argumentProvider.Command; } }
-        public string[] Targets { get { return this.argumentProvider.Targets; } }
-        public bool HelpRequested { get { return this.argumentProvider.HelpRequested; } }
+        public string Target { get { return _argumentProvider.Target; } }
+        public string Command { get { return _argumentProvider.Command; } }
+        public string[] Targets { get { return _argumentProvider.Targets; } }
+        public bool HelpRequested { get { return _argumentProvider.HelpRequested; } }
 
         // We don't consider deafult options to be set unless we're explicitly looking for them by name
-        public IReadOnlyDictionary<string, string> Options { get { return this.argumentProvider.Options; } }
+        public IReadOnlyDictionary<string, string> Options { get { return _argumentProvider.Options; } }
 
         public T GetOption<T>(params string[] optionNames)
         {
             if (optionNames == null || optionNames.Length == 0) { return default(T); }
 
             // Return the explict setting, if found
-            object argumentValue = this.argumentProvider.GetOption<object>(optionNames);
+            object argumentValue = _argumentProvider.GetOption<object>(optionNames);
             if (argumentValue != null)
             {
                 return Types.ConvertType<T>(argumentValue);
             }
 
             // Don't have an explicit, look for a default
-            string defaultSetting = this.GetSetting(optionNames[0]);
-            if (!String.IsNullOrWhiteSpace(defaultSetting))
+            string defaultSetting = GetSetting(optionNames[0]);
+            if (!string.IsNullOrWhiteSpace(defaultSetting))
             {
                 defaultSetting = Environment.ExpandEnvironmentVariables(defaultSetting);
             }

@@ -14,7 +14,7 @@ namespace XTask.Settings
         public ClientSetting(string name, string value, SettingsLocation location)
             : base (name, value)
         {
-            this.Location = location;
+            Location = location;
         }
     }
 }

@@ -16,11 +16,11 @@ namespace XTask.Settings
     /// </summary>
     public class PropertyViewProvider : IPropertyViewProvider
     {
-        private Dictionary<Type, object> propertyViewers = new Dictionary<Type, object>();
+        private Dictionary<Type, object> _propertyViewers = new Dictionary<Type, object>();
 
         public void RegisterPropertyViewer<T>(PropertyViewConstructor<T> propertyViewer)
         {
-            this.propertyViewers.Add(typeof(T), propertyViewer);
+            _propertyViewers.Add(typeof(T), propertyViewer);
         }
 
         public IPropertyView GetTypeView<T>(T value)
@@ -31,7 +31,7 @@ namespace XTask.Settings
 
             object propertyViewer;
             Type valueType = value.GetType();
-            if (this.propertyViewers.TryGetValue(valueType, out propertyViewer))
+            if (_propertyViewers.TryGetValue(valueType, out propertyViewer))
             {
                 Delegate constructor = (Delegate)propertyViewer;
                 return (IPropertyView)constructor.DynamicInvoke(value);

@@ -24,18 +24,18 @@ namespace XTask.Settings
     {
         private const string UserSettingsGroupName = "userSettings";
 
-        private IConfiguration configuration;
-        private ClientSettingsSection clientSettings;
+        private IConfiguration _configuration;
+        private ClientSettingsSection _clientSettings;
 
         protected IConfigurationManager ConfigurationManager{ get; private set; }
         protected IFileService FileService { get; private set; }
 
         protected ClientSettingsView(string settingsSection, SettingsLocation settingsLocation, IConfigurationManager configurationManager, IFileService fileService)
         {
-            this.ConfigurationManager = configurationManager;
-            this.FileService = fileService;
-            this.SettingsSection = settingsSection;
-            this.SettingsLocation = settingsLocation;
+            ConfigurationManager = configurationManager;
+            FileService = fileService;
+            SettingsSection = settingsSection;
+            SettingsLocation = settingsLocation;
         }
 
         public string SettingsSection { get; private set; }
@@ -69,7 +69,7 @@ namespace XTask.Settings
             // As we want to handle the consolodation ourselves we need to open twice. Once to get the actual user config
             // path, then again with the path explicitly specified with "None" for our user level. (Values are lazily
             // loaded so this isn't a terrible perf issue.)
-            IConfiguration configuration = this.ConfigurationManager.OpenConfiguration(userLevel);
+            IConfiguration configuration = ConfigurationManager.OpenConfiguration(userLevel);
 
             if (userLevel == ConfigurationUserLevel.None)
             {
@@ -77,13 +77,13 @@ namespace XTask.Settings
             }
             else
             {
-                return this.ConfigurationManager.OpenConfiguration(configuration.FilePath);
+                return ConfigurationManager.OpenConfiguration(configuration.FilePath);
             }
         }
 
         protected IConfiguration GetContainingConfigurationIfDifferent()
         {
-            IConfiguration configuration = this.GetConfiguration(ConfigurationUserLevel.None);
+            IConfiguration configuration = GetConfiguration(ConfigurationUserLevel.None);
 
             // Only create this type if we don't match
             string codeBase = typeof(ClientSettingsView).Assembly.CodeBase;
@@ -92,7 +92,7 @@ namespace XTask.Settings
 
             string assemblyConfig = codeBaseUri.LocalPath + ".config";
             if (!String.Equals(configuration.FilePath, assemblyConfig, StringComparison.OrdinalIgnoreCase)
-                && this.FileService.FileExists(assemblyConfig))
+                && FileService.FileExists(assemblyConfig))
             {
                 // We don't match and exist, go ahead and try to create
                 return ConfigurationManager.OpenConfiguration(assemblyConfig);
@@ -106,13 +106,13 @@ namespace XTask.Settings
             switch (location)
             {
                 case SettingsLocation.Local:
-                    return this.GetConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal);
+                    return GetConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal);
                 case SettingsLocation.Roaming:
-                    return this.GetConfiguration(ConfigurationUserLevel.PerUserRoaming);
+                    return GetConfiguration(ConfigurationUserLevel.PerUserRoaming);
                 case SettingsLocation.RunningExecutable:
-                    return this.GetConfiguration(ConfigurationUserLevel.None);
+                    return GetConfiguration(ConfigurationUserLevel.None);
                 case SettingsLocation.ContainingExecutable:
-                    return this.GetContainingConfigurationIfDifferent();
+                    return GetContainingConfigurationIfDifferent();
             }
             return null;
         }
@@ -122,7 +122,7 @@ namespace XTask.Settings
         /// </summary>
         public string GetConfigurationPath(SettingsLocation location)
         {
-            IConfiguration configuration = this.GetConfiguration(location);
+            IConfiguration configuration = GetConfiguration(location);
             if (configuration != null)
             {
                 return configuration.FilePath;
@@ -135,62 +135,62 @@ namespace XTask.Settings
 
         private bool Initialize()
         {
-            IConfiguration configuration = this.GetConfiguration(this.SettingsLocation);
+            IConfiguration configuration = GetConfiguration(SettingsLocation);
 
             if (configuration == null) { return false; }
 
-            this.configuration = configuration;
-            IConfigurationSectionGroup userGroup = this.configuration.GetSectionGroup(ClientSettingsView.UserSettingsGroupName);
+            _configuration = configuration;
+            IConfigurationSectionGroup userGroup = this._configuration.GetSectionGroup(UserSettingsGroupName);
             if (userGroup == null)
             {
-                userGroup = configuration.AddSectionGroup(ClientSettingsView.UserSettingsGroupName);
+                userGroup = configuration.AddSectionGroup(UserSettingsGroupName);
             }
 
-            ClientSettingsSection clientSettings = userGroup.Get(this.SettingsSection) as ClientSettingsSection;
+            ClientSettingsSection clientSettings = userGroup.Get(SettingsSection) as ClientSettingsSection;
  
             if (clientSettings == null)
             {
                 clientSettings = new ClientSettingsSection();
                 clientSettings.SectionInformation.AllowExeDefinition = ConfigurationAllowExeDefinition.MachineToLocalUser;
                 clientSettings.SectionInformation.RequirePermission = false;
-                userGroup.Add(this.SettingsSection, clientSettings);
+                userGroup.Add(SettingsSection, clientSettings);
             }
 
-            this.clientSettings = clientSettings;
+            _clientSettings = clientSettings;
             return true;
         }
 
         public string GetSetting(string name)
         {
-            IStringProperty property = ClientSettingsView.SettingToProperty(this.GetSettingInternal(name));
+            IStringProperty property = SettingToProperty(GetSettingInternal(name));
             return property == null ? null : property.Value;
         }
 
         public IEnumerable<ClientSetting> GetAllSettings()
         {
-            return this.clientSettings.Settings.OfType<SettingElement>().Select(this.SettingToClientSetting).ToList();
+            return _clientSettings.Settings.OfType<SettingElement>().Select(SettingToClientSetting).ToList();
         }
 
         public bool SaveSetting(string name, string value)
         {
             try
             {
-                SettingElement element = this.GetSettingInternal(name);
-                XmlNode valueXml = ClientSettingsView.SerializeToXmlElement(value);
+                SettingElement element = GetSettingInternal(name);
+                XmlNode valueXml = SerializeToXmlElement(value);
                 if (element == null)
                 {
                     element = new SettingElement(name, SettingsSerializeAs.String);
-                    this.clientSettings.Settings.Add(element);
+                    _clientSettings.Settings.Add(element);
                 }
 
-                element.Value.ValueXml = ClientSettingsView.SerializeToXmlElement(value);
-                this.configuration.Save();
+                element.Value.ValueXml = SerializeToXmlElement(value);
+                _configuration.Save();
                 return true;
             }
             catch (Exception e)
             {
                 // We don't have rights most likely, go ahead and fail gracefully
-                Debug.WriteLine("Could not save setting for '{0}': {1}", this.SettingsLocation, e.Message);
+                Debug.WriteLine("Could not save setting for '{0}': {1}", SettingsLocation, e.Message);
                 return false;
             }
         }
@@ -199,24 +199,24 @@ namespace XTask.Settings
         {
             try
             {
-                SettingElement element = this.GetSettingInternal(name);
+                SettingElement element = GetSettingInternal(name);
                 if (element == null) { return true; }
 
-                this.clientSettings.Settings.Remove(element);
-                this.configuration.Save();
+                _clientSettings.Settings.Remove(element);
+                _configuration.Save();
                 return true;
             }
             catch (Exception e)
             {
                 // We don't have rights most likely, go ahead and fail gracefully
-                Debug.WriteLine("Could not remove setting for '{0}': {1}", this.SettingsLocation, e.Message);
+                Debug.WriteLine("Could not remove setting for '{0}': {1}", SettingsLocation, e.Message);
                 return false;
             }
         }
 
         private ClientSetting SettingToClientSetting(SettingElement setting)
         {
-            IStringProperty property = ClientSettingsView.SettingToProperty(setting);
+            IStringProperty property = SettingToProperty(setting);
 
             if (property == null)
             {
@@ -225,7 +225,7 @@ namespace XTask.Settings
             }
             else
             {
-                return new ClientSetting(property.Name, property.Value, this.SettingsLocation);
+                return new ClientSetting(property.Name, property.Value, SettingsLocation);
             }
         }
 
@@ -237,9 +237,9 @@ namespace XTask.Settings
 
         private SettingElement GetSettingInternal(string name)
         {
-            foreach (SettingElement setting in this.clientSettings.Settings)
+            foreach (SettingElement setting in _clientSettings.Settings)
             {
-                if (String.Equals(setting.Name, name, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(setting.Name, name, StringComparison.OrdinalIgnoreCase))
                 {
                     return setting;
                 }
@@ -255,7 +255,7 @@ namespace XTask.Settings
 
             if (serializedValue == null)
             {
-                serializedValue = String.Empty;
+                serializedValue = string.Empty;
             }
 
             // We need to escape string serialized values

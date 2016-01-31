@@ -18,7 +18,7 @@ namespace XTask.Settings
         /// </summary>
         public static string[] GetDirectories(this IArgumentProvider arguments, IFileService fileService)
         {
-            return ArgumentProviderExtensions.SplitAndValidateDirectories(fileService, arguments.Targets);
+            return SplitAndValidateDirectories(fileService, arguments.Targets);
         }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace XTask.Settings
         /// </summary>
         public static string[] GetDirectoriesFromArgument(this IArgumentProvider arguments, IFileService fileService, params string[] optionAliases)
         {
-            return ArgumentProviderExtensions.SplitAndValidateDirectories(fileService, arguments.GetOption<string>(optionAliases));
+            return SplitAndValidateDirectories(fileService, arguments.GetOption<string>(optionAliases));
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace XTask.Settings
         /// </summary>
         public static string[] GetFilesFromArgument(this IArgumentProvider arguments, IFileService fileService, params string[] optionAliases)
         {
-            return ArgumentProviderExtensions.SplitFiles(fileService, arguments.GetOption<string>(optionAliases));
+            return SplitFiles(fileService, arguments.GetOption<string>(optionAliases));
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace XTask.Settings
         /// </summary>
         public static string[] GetExtensionsFromArgument(this IArgumentProvider arguments, params string[] optionAliases)
         {
-            return ArgumentProviderExtensions.SplitExtensions(arguments.GetOption<string>(optionAliases));
+            return SplitExtensions(arguments.GetOption<string>(optionAliases));
         }
 
         private static string[] SplitAndValidateDirectories(IFileService fileService, params string[] directoryLists)
