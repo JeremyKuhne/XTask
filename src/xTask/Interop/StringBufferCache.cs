@@ -15,7 +15,7 @@ namespace XTask.Interop
     /// </summary>
     public sealed class StringBufferCache : Cache<StringBuffer>
     {
-        private static readonly StringBufferCache instance = new StringBufferCache(0);
+        private static readonly StringBufferCache _instance = new StringBufferCache(0);
 
         public StringBufferCache(int maxBuffers) : base(maxBuffers)
         {
@@ -23,14 +23,14 @@ namespace XTask.Interop
 
         public StringBuffer Acquire(uint minCapacity)
         {
-            StringBuffer item = this.Acquire();
+            StringBuffer item = Acquire();
             item.EnsureCharCapacity(minCapacity: minCapacity);
             return item;
         }
 
         public static StringBufferCache Instance
         {
-            get { return instance; }
+            get { return _instance; }
         }
 
         public override void Release(StringBuffer item)
@@ -43,7 +43,7 @@ namespace XTask.Interop
         public string ToStringAndRelease(StringBuffer item)
         {
             string returnValue = item.ToString();
-            this.Release(item);
+            Release(item);
             return returnValue;
         }
 

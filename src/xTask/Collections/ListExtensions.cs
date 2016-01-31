@@ -9,13 +9,10 @@ namespace XTask.Collections
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     public static class ListExtensions
     {
-        private static Random random = new Random();
+        private static Random s_Random = new Random();
 
         /// <summary>
         /// Shuffles the elements in the given list. (Fisher-Yates)
@@ -29,7 +26,7 @@ namespace XTask.Collections
 
             for (int i = 0; i < source.Count; i++)
             {
-                int j = ListExtensions.random.Next(i, source.Count);
+                int j = s_Random.Next(i, source.Count);
                 TSource temp = source[i];
                 source[i] = source[j];
                 source[j] = temp;

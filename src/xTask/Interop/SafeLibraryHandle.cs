@@ -18,7 +18,7 @@ namespace XTask.Interop
         protected override bool ReleaseHandle()
         {
             bool success = NativeMethods.FreeLibrary(this);
-            this.handle = IntPtr.Zero;
+            handle = IntPtr.Zero;
             return success;
         }
     }

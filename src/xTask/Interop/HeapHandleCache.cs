@@ -15,21 +15,21 @@ namespace XTask.Interop
     /// </summary>
     public sealed class HeapHandleCache : Cache<HeapHandle>
     {
-        private ulong minSize;
-        private ulong maxSize;
+        private ulong _minSize;
+        private ulong _maxSize;
 
-        private static readonly HeapHandleCache instance = new HeapHandleCache();
+        private static readonly HeapHandleCache s_Instance = new HeapHandleCache();
 
         public HeapHandleCache(ulong minSize = 64, ulong maxSize = 1024 * 2, int maxHandles = 0)
             : base (cacheSpace: maxHandles)
         {
-            this.minSize = minSize;
-            this.maxSize = maxSize;
+            _minSize = minSize;
+            _maxSize = maxSize;
         }
 
         public static HeapHandleCache Instance
         {
-            get { return instance; }
+            get { return s_Instance; }
         }
 
         /// <summary>
@@ -37,8 +37,8 @@ namespace XTask.Interop
         /// </summary>
         public HeapHandle Acquire(ulong minSize)
         {
-            HeapHandle handle = this.Acquire();
-            if (minSize < this.minSize) minSize = this.minSize;
+            HeapHandle handle = Acquire();
+            if (minSize < _minSize) minSize = _minSize;
             if (handle.ByteLength < minSize)
             {
                 handle.Resize(minSize);
@@ -49,7 +49,7 @@ namespace XTask.Interop
 
         public override void Release(HeapHandle item)
         {
-            if (item.ByteLength <= this.maxSize)
+            if (item.ByteLength <= _maxSize)
                 base.Release(item);
         }
     }

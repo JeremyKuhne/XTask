@@ -74,7 +74,6 @@ namespace XTask.Interop
                 case WinError.ERROR_FILE_EXISTS:
                 default:
                     return new IOException(errorText, NativeErrorHelper.GetHResultForWindowsError(error));
-                    
             }
         }
     }

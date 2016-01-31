@@ -88,7 +88,7 @@ namespace XTask.Interop
             if (HRESULT_FACILITY(result) == FACILITY_WIN32)
             {
                 // Win32 Error, extract the code
-                message = NativeErrorHelper.FormatMessage(HRESULT_CODE(result));
+                message = FormatMessage(HRESULT_CODE(result));
             }
             else
             {
@@ -97,7 +97,7 @@ namespace XTask.Interop
                 message = exception.Message;
             }
 
-            return String.Format(
+            return string.Format(
                 CultureInfo.CurrentUICulture,
                 "HRESULT {0:D} [0x{0:X}]: {1}",
                 result,
@@ -109,11 +109,11 @@ namespace XTask.Interop
         /// </summary>
         public static string LastErrorToString(int error)
         {
-            return String.Format(
+            return string.Format(
                 CultureInfo.CurrentUICulture,
                 "Error {0}: {1}",
                 error,
-                NativeErrorHelper.FormatMessage(error));
+                FormatMessage(error));
         }
 
         private static string FormatMessage(int error)

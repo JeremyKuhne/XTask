@@ -31,7 +31,7 @@ namespace XTask.Tests.Collections
 
             public TestItem[] Cache
             {
-                get { return this.itemsCache; }
+                get { return this._itemsCache; }
             }
 
             public int CachedCount

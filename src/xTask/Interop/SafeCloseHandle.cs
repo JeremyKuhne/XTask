@@ -16,12 +16,12 @@ namespace XTask.Interop
 
         public SafeCloseHandle(IntPtr handle) : base(ownsHandle: true)
         {
-            this.SetHandle(handle);
+            SetHandle(handle);
         }
 
         protected override bool ReleaseHandle()
         {
-            NativeMethods.CloseHandle(this.handle);
+            NativeMethods.CloseHandle(handle);
             return true;
         }
     }

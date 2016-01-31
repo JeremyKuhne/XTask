@@ -20,8 +20,8 @@ namespace XTask.Interop
             {
                 p = Privileges.UnknownPrivilege;
             }
-            this.Privilege = p;
-            this.State = state;
+            Privilege = p;
+            State = state;
         }
 
         public Privileges Privilege;

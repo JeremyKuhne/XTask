@@ -16,7 +16,7 @@ namespace XTask.Collections
     public class Cache<T> : IDisposable where T : class, new()
     {
         // Protected for testing
-        protected readonly T[] itemsCache;
+        protected readonly T[] _itemsCache;
 
         /// <summary>
         /// Create a cache with space for the specified number of items.
@@ -24,7 +24,7 @@ namespace XTask.Collections
         public Cache(int cacheSpace)
         {
             if (cacheSpace < 1) cacheSpace = Environment.ProcessorCount * 4;
-            this.itemsCache = new T[cacheSpace];
+            _itemsCache = new T[cacheSpace];
         }
 
         /// <summary>
@@ -34,9 +34,9 @@ namespace XTask.Collections
         {
             T item;
 
-            for (int i = 0; i < this.itemsCache.Length; i++)
+            for (int i = 0; i < _itemsCache.Length; i++)
             {
-                item = Interlocked.Exchange(ref this.itemsCache[i], null);
+                item = Interlocked.Exchange(ref _itemsCache[i], null);
                 if (item != null) return item;
             }
 
@@ -48,9 +48,9 @@ namespace XTask.Collections
         /// </summary>
         public virtual void Release(T item)
         {
-            for (int i = 0; i < this.itemsCache.Length; i++)
+            for (int i = 0; i < _itemsCache.Length; i++)
             {
-                item = Interlocked.Exchange(ref this.itemsCache[i], item);
+                item = Interlocked.Exchange(ref _itemsCache[i], item);
                 if (item == null) return;
             }
 
@@ -59,17 +59,17 @@ namespace XTask.Collections
 
         public void Dispose()
         {
-            this.Dispose(disposing: true);
+            Dispose(disposing: true);
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                for (int i = 0; i < this.itemsCache.Length; i++)
+                for (int i = 0; i < _itemsCache.Length; i++)
                 {
-                    (this.itemsCache[i] as IDisposable)?.Dispose();
-                    this.itemsCache[i] = null;
+                    (_itemsCache[i] as IDisposable)?.Dispose();
+                    _itemsCache[i] = null;
                 }
             }
         }

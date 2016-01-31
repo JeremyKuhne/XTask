@@ -95,17 +95,17 @@ namespace XTask.Interop
         {
             if (byteLength > 0)
             {
-                this.Resize(byteLength, zeroMemory);
+                Resize(byteLength, zeroMemory);
             }
             else
             {
-                this.Initialize(0);
+                Initialize(0);
             }
         }
 
         public override bool IsInvalid
         {
-            get { return this.handle == IntPtr.Zero; }
+            get { return handle == IntPtr.Zero; }
         }
 
         /// <summary>
@@ -116,36 +116,36 @@ namespace XTask.Interop
         /// <exception cref="ArgumentOutOfRangeException">Thrown if size is greater than the maximum memory size.</exception>
         public void Resize(ulong byteLength, bool zeroMemory = false)
         {
-            if (this.IsClosed) throw new ObjectDisposedException("HeapHandle");
+            if (IsClosed) throw new ObjectDisposedException("HeapHandle");
 
             uint flags = zeroMemory ? NativeMethods.HEAP_ZERO_MEMORY : 0;
 
-            if (this.handle == IntPtr.Zero)
+            if (handle == IntPtr.Zero)
             {
-                this.handle = NativeMethods.HeapAlloc(ProcessHeap, flags, (UIntPtr)byteLength);
+                handle = NativeMethods.HeapAlloc(ProcessHeap, flags, (UIntPtr)byteLength);
             }
             else
             {
                 // This may or may not be the same handle, Windows may realloc in place. If the
                 // handle changes Windows will deal with the old handle, trying to free it will
                 // cause an error.
-                this.handle = NativeMethods.HeapReAlloc(ProcessHeap, flags, this.handle, (UIntPtr)byteLength);
+                handle = NativeMethods.HeapReAlloc(ProcessHeap, flags, handle, (UIntPtr)byteLength);
             }
 
-            if (this.handle == IntPtr.Zero)
+            if (handle == IntPtr.Zero)
             {
                 // Only real plausible answer
                 throw new OutOfMemoryException();
             }
 
-            this.Initialize(byteLength);
+            Initialize(byteLength);
         }
 
         protected override bool ReleaseHandle()
         {
-            bool success = NativeMethods.HeapFree(ProcessHeap, 0, this.handle);
+            bool success = NativeMethods.HeapFree(ProcessHeap, 0, handle);
             Debug.Assert(success);
-            this.handle = IntPtr.Zero;
+            handle = IntPtr.Zero;
             return success;
         }
     }

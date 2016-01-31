@@ -167,27 +167,27 @@ namespace XTask.Interop
                     STREAM_SPARSE_ATTRIBUTE = 0x00000008
                 }
 
-                private IntPtr context = IntPtr.Zero;
-                private SafeFileHandle fileHandle;
-                private NativeBuffer buffer = new NativeBuffer(4096);
-                private uint structureSize = (uint)Marshal.SizeOf(typeof(WIN32_STREAM_ID));
+                private IntPtr _context = IntPtr.Zero;
+                private SafeFileHandle _fileHandle;
+                private NativeBuffer _buffer = new NativeBuffer(4096);
+                private static uint WIN32_STREAM_ID_SIZE = (uint)Marshal.SizeOf(typeof(WIN32_STREAM_ID));
 
                 public BackupReader(SafeFileHandle fileHandle)
                 {
-                    this.fileHandle = fileHandle;
+                    _fileHandle = fileHandle;
                 }
 
                 public StreamInfo? GetNextInfo()
                 {
                     uint bytesRead;
                     if (!BackupRead(
-                        hFile: fileHandle,
-                        lpBuffer: buffer,
-                        nNumberOfBytesToRead: structureSize,
+                        hFile: _fileHandle,
+                        lpBuffer: _buffer,
+                        nNumberOfBytesToRead: WIN32_STREAM_ID_SIZE,
                         lpNumberOfBytesRead: out bytesRead,
                         bAbort: false,
                         bProcessSecurity: true,
-                        context: ref this.context))
+                        context: ref _context))
                     {
                         int error = Marshal.GetLastWin32Error();
                         throw GetIoExceptionForError(error);
@@ -196,24 +196,24 @@ namespace XTask.Interop
                     // Exit if at the end
                     if (bytesRead == 0) return null;
 
-                    WIN32_STREAM_ID streamId = (WIN32_STREAM_ID)Marshal.PtrToStructure(buffer.DangerousGetHandle(), typeof(WIN32_STREAM_ID));
+                    WIN32_STREAM_ID streamId = (WIN32_STREAM_ID)Marshal.PtrToStructure(_buffer.DangerousGetHandle(), typeof(WIN32_STREAM_ID));
                     string name = null;
                     if (streamId.dwStreamNameSize > 0)
                     {
-                        buffer.EnsureByteCapacity(streamId.dwStreamNameSize);
+                        _buffer.EnsureByteCapacity(streamId.dwStreamNameSize);
                         if (!BackupRead(
-                            hFile: fileHandle,
-                            lpBuffer: buffer,
+                            hFile: _fileHandle,
+                            lpBuffer: _buffer,
                             nNumberOfBytesToRead: streamId.dwStreamNameSize,
                             lpNumberOfBytesRead: out bytesRead,
                             bAbort: false,
                             bProcessSecurity: true,
-                            context: ref this.context))
+                            context: ref _context))
                         {
                             int error = Marshal.GetLastWin32Error();
                             throw GetIoExceptionForError(error);
                         }
-                        name = Marshal.PtrToStringUni(buffer.DangerousGetHandle(), (int)bytesRead / 2);
+                        name = Marshal.PtrToStringUni(_buffer.DangerousGetHandle(), (int)bytesRead / 2);
                     }
 
                     if (streamId.Size > 0)
@@ -221,12 +221,12 @@ namespace XTask.Interop
                         // Move to the next header, if any
                         uint low, high;
                         if (!BackupSeek(
-                            hFile: fileHandle,
+                            hFile: _fileHandle,
                             dwLowBytesToSeek: uint.MaxValue,
                             dwHighBytesToSeek: int.MaxValue,
                             lpdwLowByteSeeked: out low,
                             lpdwHighByteSeeked: out high,
-                            context: ref context))
+                            context: ref _context))
                         {
                             int error = Marshal.GetLastWin32Error();
                             if (error != WinError.ERROR_SEEK)
@@ -246,26 +246,26 @@ namespace XTask.Interop
 
                 public void Dispose()
                 {
-                    this.Dispose(true);
+                    Dispose(true);
                     GC.SuppressFinalize(this);
                 }
 
                 private void Dispose(bool disposing)
                 {
-                    this.buffer.Dispose();
-                    this.buffer = null;
+                    _buffer.Dispose();
+                    _buffer = null;
 
-                    if (context != IntPtr.Zero)
+                    if (_context != IntPtr.Zero)
                     {
                         uint bytesRead;
                         if (!BackupRead(
-                            hFile: fileHandle,
+                            hFile: _fileHandle,
                             lpBuffer: EmptySafeHandle.Instance,
                             nNumberOfBytesToRead: 0,
                             lpNumberOfBytesRead: out bytesRead,
                             bAbort: true,
                             bProcessSecurity: false,
-                            context: ref this.context))
+                            context: ref _context))
                         {
                             int error = Marshal.GetLastWin32Error();
                             throw GetIoExceptionForError(error);
@@ -275,7 +275,7 @@ namespace XTask.Interop
 
                 ~BackupReader()
                 {
-                    this.Dispose(false);
+                    Dispose(false);
                 }
             }
 

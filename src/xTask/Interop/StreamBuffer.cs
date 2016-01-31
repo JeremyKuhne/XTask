@@ -20,124 +20,124 @@ namespace XTask.Interop
     /// </summary>
     public class StreamBuffer : Stream
     {
-        private NativeBuffer buffer;
-        private UnmanagedMemoryStream stream;
-        private bool disposed;
+        private NativeBuffer _buffer;
+        private UnmanagedMemoryStream _stream;
+        private bool _disposed;
 
         public StreamBuffer(uint initialLength = 0, uint initialCapacity = 0)
         {
             if (initialCapacity < initialLength) initialCapacity = initialLength;
-            this.buffer = new NativeBuffer(initialCapacity);
-            this.SetLength(initialLength);
+            _buffer = new NativeBuffer(initialCapacity);
+            SetLength(initialLength);
         }
 
         public override bool CanRead
         {
-            get { return this.stream?.CanRead ?? !disposed; }
+            get { return _stream?.CanRead ?? !_disposed; }
         }
 
         public override bool CanSeek
         {
-            get { return this.stream?.CanSeek ?? !disposed; }
+            get { return _stream?.CanSeek ?? !_disposed; }
         }
 
         public override bool CanWrite
         {
-            get { return this.stream?.CanWrite ?? !disposed; }
+            get { return _stream?.CanWrite ?? !_disposed; }
         }
 
         public override long Length
         {
-            get { return this.stream?.Length ?? 0; }
+            get { return _stream?.Length ?? 0; }
         }
 
         public override long Position
         {
             get
             {
-                return this.stream?.Position ?? 0;
+                return _stream?.Position ?? 0;
             }
             set
             {
                 if (value < 0 || value > Length) throw new ArgumentOutOfRangeException(nameof(value));
-                if (this.Position != value)
-                    this.stream.Position = value;
+                if (Position != value)
+                    _stream.Position = value;
             }
         }
 
         public static implicit operator SafeHandle(StreamBuffer buffer)
         {
-            return buffer.buffer;
+            return buffer._buffer;
         }
 
         public void EnsureLength(long value)
         {
             if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
-            if (this.Length < value) this.SetLength(value);
+            if (Length < value) SetLength(value);
         }
 
         public override void SetLength(long value)
         {
             if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
-            if (value == this.Length) return;
+            if (value == Length) return;
 
-            this.Resize(value);
-            this.stream.SetLength(value);
+            Resize(value);
+            _stream.SetLength(value);
         }
 
         private unsafe void Resize(long size)
         {
             Debug.Assert(size >= 0);
 
-            if (this.stream != null && this.buffer.ByteCapacity >= (ulong)size) return;
-            this.buffer.EnsureByteCapacity((ulong)size);
+            if (_stream != null && _buffer.ByteCapacity >= (ulong)size) return;
+            _buffer.EnsureByteCapacity((ulong)size);
 
-            long oldLength = this.Length;
-            long oldPosition = this.Position;
-            this.stream?.Dispose();
+            long oldLength = Length;
+            long oldPosition = Position;
+            _stream?.Dispose();
 
-            this.stream = new UnmanagedMemoryStream(
-                pointer: (byte*)this.buffer.DangerousGetHandle().ToPointer(),
+            _stream = new UnmanagedMemoryStream(
+                pointer: (byte*)_buffer.DangerousGetHandle().ToPointer(),
                 length: oldLength,
                 capacity: size,
                 access: FileAccess.ReadWrite);
 
-            if (oldPosition <= size) { this.Position = oldPosition; }
+            if (oldPosition <= size) { Position = oldPosition; }
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "stream")]
         protected override void Dispose(bool disposing)
         {
-            disposed = true;
-            this.buffer.Dispose();
+            _disposed = true;
+            _buffer.Dispose();
 
             if (disposing)
             {
-                this.stream?.Dispose();
-                this.stream = null;
+                _stream?.Dispose();
+                _stream = null;
             }
         }
 
         public override void Flush()
         {
-            this.stream?.Flush();
+            _stream?.Flush();
         }
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            if (this.stream == null)
+            if (_stream == null)
             {
                 // Only 0 makes any sense, otherwise throw IOException like UnmanagedMemoryStream would
                 if (offset != 0) throw new IOException();
                 else return 0;
             }
 
-            return this.stream.Seek(offset, origin);
+            return _stream.Seek(offset, origin);
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if (this.stream == null)
+            if (_stream == null)
             {
                 // Mimic UnmanagedMemoryStream with a 0 length buffer
                 if (buffer == null) throw new ArgumentNullException(nameof(buffer));
@@ -147,7 +147,7 @@ namespace XTask.Interop
                 return 0;
             }
 
-            return this.stream.Read(buffer, offset, count);
+            return _stream.Read(buffer, offset, count);
         }
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -158,14 +158,14 @@ namespace XTask.Interop
 
             if (count == 0) return;
 
-            if (this.stream == null)
+            if (_stream == null)
             {
                 // Mimic UnmanagedMemoryStream with a 0 length buffer
                 if (offset != 0) throw new ArgumentException();
             }
 
-            this.EnsureLength(this.Length + count);
-            this.stream.Write(buffer, offset, count);
+            EnsureLength(Length + count);
+            _stream.Write(buffer, offset, count);
         }
     }
 }

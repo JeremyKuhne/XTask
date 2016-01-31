@@ -197,7 +197,7 @@ namespace XTask.Interop
                     {
                         case WinError.ERROR_ACCESS_DENIED:
                         case WinError.ERROR_NETWORK_ACCESS_DENIED:
-                            throw new UnauthorizedAccessException(String.Format(CultureInfo.InvariantCulture, "{0} : '{1}'", NativeErrorHelper.LastErrorToString(error), path));
+                            throw new UnauthorizedAccessException(string.Format(CultureInfo.InvariantCulture, "{0} : '{1}'", NativeErrorHelper.LastErrorToString(error), path));
                     }
                 }
 
@@ -214,7 +214,7 @@ namespace XTask.Interop
             /// <returns>'false' if the path is not valid or doesn't exist.</returns>
             internal static bool TryGetFileAttributes(string path, out FileAttributes attributes)
             {
-                attributes = FileManagement.TryGetFileAttributesPrivate(path);
+                attributes = TryGetFileAttributesPrivate(path);
                 return attributes != InvalidFileAttributes;
             }
 
@@ -228,7 +228,7 @@ namespace XTask.Interop
             internal static bool PathExists(string path)
             {
                 // If we didn't get invalid file attributes it must actually exist
-                return FileManagement.TryGetFileAttributesPrivate(path) != InvalidFileAttributes;
+                return TryGetFileAttributesPrivate(path) != InvalidFileAttributes;
             }
 
             /// <summary>
@@ -240,7 +240,7 @@ namespace XTask.Interop
             /// <exception cref="System.UnauthorizedAccessException">Thrown if the current user does not have rights to the specified path.</exception>
             internal static bool FileExists(string path)
             {
-                FileAttributes attributes = FileManagement.TryGetFileAttributesPrivate(path);
+                FileAttributes attributes = TryGetFileAttributesPrivate(path);
                 if (attributes == InvalidFileAttributes)
                 {
                     // Nothing there or bad path name
@@ -258,7 +258,7 @@ namespace XTask.Interop
             /// <exception cref="System.UnauthorizedAccessException">Thrown if the current user does not have rights to the specified path.</exception>
             internal static bool DirectoryExists(string path)
             {
-                FileAttributes attributes = FileManagement.TryGetFileAttributesPrivate(path);
+                FileAttributes attributes = TryGetFileAttributesPrivate(path);
                 if (attributes == InvalidFileAttributes)
                 {
                     // Nothing there or bad path name
@@ -292,7 +292,7 @@ namespace XTask.Interop
                     {
                         case WinError.ERROR_ACCESS_DENIED:
                         case WinError.ERROR_NETWORK_ACCESS_DENIED:
-                            throw new UnauthorizedAccessException(String.Format(CultureInfo.InvariantCulture, "{0} : '{1}'", NativeErrorHelper.LastErrorToString(lastError), path));
+                            throw new UnauthorizedAccessException(string.Format(CultureInfo.InvariantCulture, "{0} : '{1}'", NativeErrorHelper.LastErrorToString(lastError), path));
                     }
 
                     return false;
@@ -303,12 +303,12 @@ namespace XTask.Interop
 
             internal static string GetLongPathName(string path)
             {
-                return NativeMethods.BufferPathInvoke(path, (value, buffer) => Private.GetLongPathNameW(value, buffer, buffer.CharCapacity));
+                return BufferPathInvoke(path, (value, buffer) => Private.GetLongPathNameW(value, buffer, buffer.CharCapacity));
             }
 
             internal static string GetShortPathName(string path)
             {
-                return NativeMethods.BufferPathInvoke(path, (value, buffer) => Private.GetShortPathNameW(value, buffer, buffer.CharCapacity));
+                return BufferPathInvoke(path, (value, buffer) => Private.GetShortPathNameW(value, buffer, buffer.CharCapacity));
             }
 
             /// <summary>
@@ -318,7 +318,7 @@ namespace XTask.Interop
             /// </summary>
             internal static string GetFullPathName(string path)
             {
-                return NativeMethods.BufferPathInvoke(path, (value, buffer) => Private.GetFullPathNameW(value, buffer.CharCapacity, buffer, IntPtr.Zero), utilizeExtendedSyntax: false);
+                return BufferPathInvoke(path, (value, buffer) => Private.GetFullPathNameW(value, buffer.CharCapacity, buffer, IntPtr.Zero), utilizeExtendedSyntax: false);
             }
 
             [Flags]
@@ -428,7 +428,7 @@ namespace XTask.Interop
 
             internal static string GetFinalPathName(SafeFileHandle fileHandle, FinalPathFlags finalPathFlags)
             {
-                return NativeMethods.BufferInvoke((buffer) => Private.GetFinalPathNameByHandleW(fileHandle, buffer, buffer.CharCapacity, finalPathFlags));
+                return BufferInvoke((buffer) => Private.GetFinalPathNameByHandleW(fileHandle, buffer, buffer.CharCapacity, finalPathFlags));
             }
 
             [SuppressMessage("Microsoft.Interoperability", "CA1404:CallGetLastErrorImmediatelyAfterPInvoke")]
@@ -457,7 +457,7 @@ namespace XTask.Interop
                         throw GetIoExceptionForError(error, path);
                     }
 
-                    finalPath = NativeMethods.BufferInvoke((buffer) => Private.GetFinalPathNameByHandleW(file, buffer, buffer.CharCapacity, finalPathFlags), path);
+                    finalPath = BufferInvoke((buffer) => Private.GetFinalPathNameByHandleW(file, buffer, buffer.CharCapacity, finalPathFlags), path);
                 }
 
                 // GetFinalPathNameByHandle will use the legacy drive for the volume (e.g. \\?\C:\). We may have started with \\?\Volume({GUID}) or some
