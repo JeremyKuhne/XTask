@@ -21,14 +21,14 @@ namespace XTask.Build
         public BuildArgumentParser(string taskName, string[] targets, string options, IFileService fileService)
             : base (fileService)
         {
-            this.AddTarget(taskName);
+            AddTarget(taskName);
             if (targets != null)
             {
                 foreach (string target in targets)
-                    this.AddTarget(target);
+                    AddTarget(target);
             }
 
-            if (String.IsNullOrWhiteSpace(options)) { return; }
+            if (string.IsNullOrWhiteSpace(options)) { return; }
 
             // Options are in xml format <Option>value</Option> or <Option/> for default
             XmlReaderSettings settings = new XmlReaderSettings
@@ -42,7 +42,7 @@ namespace XTask.Build
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
-                        this.AddOrUpdateOption(
+                        AddOrUpdateOption(
                             optionName: reader.Name,
                             optionValue: reader.ReadString());
                     }

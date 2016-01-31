@@ -16,8 +16,8 @@ namespace XTask.Build
 
     public sealed class BuildTaskInteraction : TaskInteraction
     {
-        private ITaskOutputHandler outputHandler;
-        private Lazy<BuildTaskLoggers> loggers;
+        private ITaskOutputHandler _outputHandler;
+        private Lazy<BuildTaskLoggers> _loggers;
 
         private BuildTaskInteraction(
             ITask task,
@@ -27,8 +27,8 @@ namespace XTask.Build
             ITypedServiceProvider services)
             : base (arguments, services)
         {
-            this.outputHandler = outputHandler;
-            this.loggers = new Lazy<BuildTaskLoggers>(() => new BuildTaskLoggers(buildEngine, task, arguments));
+            _outputHandler = outputHandler;
+            _loggers = new Lazy<BuildTaskLoggers>(() => new BuildTaskLoggers(buildEngine, task, arguments));
         }
 
         public static ITaskInteraction Create(
@@ -43,12 +43,12 @@ namespace XTask.Build
 
         public override void Output(object value)
         {
-            this.outputHandler.HandleOutput(value);
+            _outputHandler.HandleOutput(value);
         }
 
         protected override ILoggers GetDefaultLoggers()
         {
-            return this.loggers.Value;
+            return _loggers.Value;
         }
 
         private sealed class BuildTaskLoggers : Loggers
@@ -56,8 +56,8 @@ namespace XTask.Build
             public BuildTaskLoggers(MSBuildFramework.IBuildEngine buildEngine, ITask task, IArgumentProvider arguments)
             {
                 BuildLogger logger = new BuildLogger(buildEngine, task.GetType().ToString());
-                this.RegisterLogger(LoggerType.Result, logger);
-                this.RegisterLogger(LoggerType.Status, logger);
+                RegisterLogger(LoggerType.Result, logger);
+                RegisterLogger(LoggerType.Status, logger);
             }
         }
     }

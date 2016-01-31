@@ -9,7 +9,6 @@ namespace XTask.Build
 {
     using System.Collections.Generic;
     using System.Threading;
-    using Services;
     using XTask.Settings;
     using XTask.Tasks;
     using XTask.Utility;
@@ -22,13 +21,13 @@ namespace XTask.Build
     /// </summary>
     public abstract class BuildTaskBridge : MSBuildFramework.ITask, ITaskOutputHandler
     {
-        private List<MSBuildFramework.ITaskItem> output = new List<MSBuildFramework.ITaskItem>();
-        private IFileService fileService;
+        private List<MSBuildFramework.ITaskItem> _output = new List<MSBuildFramework.ITaskItem>();
+        private IFileService _fileService;
 
         protected BuildTaskBridge(IFileService fileService)
         {
-            this.fileService = fileService;
-            this.PropertyViewProvider = new PropertyViewProvider();
+            _fileService = fileService;
+            PropertyViewProvider = new PropertyViewProvider();
         }
 
         // BuildEngine and HostObject are set by MSBuild
@@ -63,7 +62,7 @@ namespace XTask.Build
         /// Output from the task, if any.
         /// </summary>
         [MSBuildFramework.Output]
-        public MSBuildFramework.ITaskItem[] Output { get { return this.output.ToArray(); } }
+        public MSBuildFramework.ITaskItem[] Output { get { return _output.ToArray(); } }
 
         public abstract ITaskService GetTaskService(ref IArgumentProvider argumentProvider);
 
@@ -72,12 +71,12 @@ namespace XTask.Build
             // The equivalent of Main() for console access
             ExitCode result = Utility.ExitCode.GeneralFailure;
 
-            IArgumentProvider argumentProvider = new BuildArgumentParser(this.TaskName, this.Targets, this.Options, fileService);
+            IArgumentProvider argumentProvider = new BuildArgumentParser(TaskName, Targets, Options, _fileService);
 
-            using (ITaskService taskService = this.GetTaskService(ref argumentProvider))
+            using (ITaskService taskService = GetTaskService(ref argumentProvider))
             {
                 BuildTaskExecution execution = new BuildTaskExecution(
-                    buildEngine: this.BuildEngine,
+                    buildEngine: BuildEngine,
                     outputHandler: this,
                     argumentProvider: argumentProvider,
                     taskRegistry: taskService.TaskRegistry);
@@ -91,7 +90,7 @@ namespace XTask.Build
                 thread.Join();
             }
 
-            this.ExitCode = ((int)result).ToString();
+            ExitCode = ((int)result).ToString();
             return result == Utility.ExitCode.Success;
         }
 
@@ -99,7 +98,7 @@ namespace XTask.Build
         {
             // Transform the output objects to MSBuild ITaskItems
 
-            IPropertyView view = this.PropertyViewProvider.GetTypeView(value);
+            IPropertyView view = PropertyViewProvider.GetTypeView(value);
 
             MSBuildFramework.ITaskItem taskItem = new TaskItem { ItemSpec = view.ToString() };
             foreach (var property in view)
@@ -107,7 +106,7 @@ namespace XTask.Build
                 taskItem.SetMetadata(property.Name, property.Value.ToString());
             }
 
-            this.output.Add(taskItem);
+            _output.Add(taskItem);
         }
     }
 }

@@ -14,8 +14,8 @@ namespace XTask.Build
 
     public class BuildTaskExecution : TaskExecution
     {
-        private MSBuildFramework.IBuildEngine buildEngine;
-        private ITaskOutputHandler outputHandler;
+        private MSBuildFramework.IBuildEngine _buildEngine;
+        private ITaskOutputHandler _outputHandler;
 
         /// <summary>
         /// Execution handler for tasks running under MSBuild.
@@ -24,13 +24,13 @@ namespace XTask.Build
         public BuildTaskExecution(MSBuildFramework.IBuildEngine buildEngine, ITaskOutputHandler outputHandler, IArgumentProvider argumentProvider, ITaskRegistry taskRegistry, ITypedServiceProvider services = null)
             : base(argumentProvider, taskRegistry, services)
         {
-            this.outputHandler = outputHandler;
-            this.buildEngine = buildEngine;
+            _outputHandler = outputHandler;
+            _buildEngine = buildEngine;
         }
 
         protected override ITaskInteraction GetInteraction(ITask task)
         {
-            return BuildTaskInteraction.Create(this.buildEngine, this.outputHandler, task, this.ArgumentProvider, this.Services);
+            return BuildTaskInteraction.Create(_buildEngine, _outputHandler, task, ArgumentProvider, Services);
         }
     }
 }

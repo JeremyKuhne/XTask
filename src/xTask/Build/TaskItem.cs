@@ -16,16 +16,16 @@ namespace XTask.Build
 
     public class TaskItem : MarshalByRefObject, MSBuildFramework.ITaskItem
     {
-        ConcurrentDictionary<string, string> metadata = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        ConcurrentDictionary<string, string> _metadata = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public IDictionary CloneCustomMetadata()
         {
-            return new Dictionary<string, string>(this.metadata);
+            return new Dictionary<string, string>(_metadata);
         }
 
         public void CopyMetadataTo(MSBuildFramework.ITaskItem destinationItem)
         {
-            foreach (var keyPair in this.metadata.ToArray())
+            foreach (var keyPair in _metadata.ToArray())
             {
                 destinationItem.SetMetadata(keyPair.Key, keyPair.Value);
             }
@@ -34,7 +34,7 @@ namespace XTask.Build
         public string GetMetadata(string metadataName)
         {
             string value;
-            this.metadata.TryGetValue(metadataName, out value);
+            _metadata.TryGetValue(metadataName, out value);
             return value;
         }
 
@@ -42,23 +42,23 @@ namespace XTask.Build
 
         public int MetadataCount
         {
-            get { return this.metadata.Count; }
+            get { return _metadata.Count; }
         }
 
         public ICollection MetadataNames
         {
-            get { return this.metadata.Keys.ToArray(); }
+            get { return _metadata.Keys.ToArray(); }
         }
 
         public void RemoveMetadata(string metadataName)
         {
             string value;
-            this.metadata.TryRemove(metadataName, out value);
+            _metadata.TryRemove(metadataName, out value);
         }
 
         public void SetMetadata(string metadataName, string metadataValue)
         {
-            this.metadata.AddOrUpdate(metadataName, metadataValue, (key, existing) => metadataValue);
+            _metadata.AddOrUpdate(metadataName, metadataValue, (key, existing) => metadataValue);
         }
     }
 }
