@@ -14,17 +14,17 @@ namespace XTask.Systems.Console.Concrete
     /// </summary>
     public class ConcreteConsoleService : IConsoleService
     {
-        private static object syncLock;
+        private static object s_SyncLock;
 
         static ConcreteConsoleService()
         {
-            ConcreteConsoleService.syncLock = new object();
+            s_SyncLock = new object();
         }
 
         public void Write(string value)
         {
             // Need to lock to prevent interleaved output from multiple threads (and messed up colors)
-            lock (ConcreteConsoleService.syncLock)
+            lock (s_SyncLock)
             {
                 Console.Write(value);
             }

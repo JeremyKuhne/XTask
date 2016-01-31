@@ -15,29 +15,29 @@ namespace XTask.Systems.File.Concrete.DotNet
     /// </summary>
     public class FileInformation : FileSystemInformation, IFileInformation
     {
-        private FileInfo fileInfo;
-        private byte[] md5Hash;
-        private IDirectoryInformation directoryInformation;
+        private FileInfo _fileInfo;
+        private byte[] _md5Hash;
+        private IDirectoryInformation _directoryInformation;
 
         public FileInformation(FileInfo fileInfo, IFileService fileService) : base(fileInfo, fileService)
         {
-            this.fileInfo = fileInfo;
+            _fileInfo = fileInfo;
         }
 
         public virtual ulong Length
         {
-            get { return (ulong)this.fileInfo.Length; }
+            get { return (ulong)_fileInfo.Length; }
         }
 
         public virtual IDirectoryInformation Directory
         {
             get
             {
-                if (this.directoryInformation == null)
+                if (_directoryInformation == null)
                 {
-                    this.directoryInformation = new DirectoryInformation(this.fileInfo.Directory, this.FileService);
+                    _directoryInformation = new DirectoryInformation(_fileInfo.Directory, FileService);
                 }
-                return this.directoryInformation;
+                return _directoryInformation;
             }
         }
 
@@ -45,17 +45,17 @@ namespace XTask.Systems.File.Concrete.DotNet
         {
             get
             {
-                if (this.md5Hash == null)
+                if (_md5Hash == null)
                 {
-                    this.md5Hash = this.FileService.GetHash(this.Path);
+                    _md5Hash = FileService.GetHash(Path);
                 }
-                return this.md5Hash;
+                return _md5Hash;
             }
         }
 
         public override void Refresh()
         {
-            this.md5Hash = null;
+            _md5Hash = null;
             base.Refresh();
         }
     }

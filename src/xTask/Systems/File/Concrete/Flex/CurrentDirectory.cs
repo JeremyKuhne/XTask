@@ -15,18 +15,17 @@ namespace XTask.Systems.File.Concrete.Flex
 
     public class CurrentDirectory
     {
-        private IExtendedFileService extendedFileService;
-        private IFileService fileService;
+        private IExtendedFileService _extendedFileService;
+        private IFileService _fileService;
+        private Dictionary<string, string> _volumeDirectories = new Dictionary<string, string>();
+        private string _lastVolume;
 
         public CurrentDirectory(IFileService fileService, IExtendedFileService extendedFileService)
         {
-            this.fileService = fileService;
-            this.extendedFileService = extendedFileService;
-            this.SetCurrentDirectory(Environment.CurrentDirectory);
+            _fileService = fileService;
+            _extendedFileService = extendedFileService;
+            SetCurrentDirectory(Environment.CurrentDirectory);
         }
-
-        private Dictionary<string, string> volumeDirectories = new Dictionary<string, string>();
-        private string lastVolume;
 
         public void SetCurrentDirectory(string directory)
         {
@@ -35,28 +34,28 @@ namespace XTask.Systems.File.Concrete.Flex
                 throw new ArgumentException("Argument cannot be relative", nameof(directory));
             }
 
-            this.lastVolume = AddEntry(directory);
+            _lastVolume = AddEntry(directory);
         }
 
         private string AddEntry(string directory, string canonicalRoot = null)
         {
             string root = Paths.GetRoot(directory);
-            canonicalRoot = canonicalRoot ?? extendedFileService.GetCanonicalRoot(fileService, directory);
+            canonicalRoot = canonicalRoot ?? _extendedFileService.GetCanonicalRoot(_fileService, directory);
 
             // If the directory has vanished, walk up
-            while (!fileService.DirectoryExists(directory)
-                && !String.Equals((directory = Paths.GetDirectory(directory)), root, StringComparison.Ordinal))
+            while (!_fileService.DirectoryExists(directory)
+                && !string.Equals((directory = Paths.GetDirectory(directory)), root, StringComparison.Ordinal))
             {
                 Debug.Assert(directory != null);
             }
 
-            if (this.volumeDirectories.ContainsKey(canonicalRoot))
+            if (_volumeDirectories.ContainsKey(canonicalRoot))
             {
-                this.volumeDirectories[canonicalRoot] = directory;
+                _volumeDirectories[canonicalRoot] = directory;
             }
             else
             {
-                this.volumeDirectories.Add(canonicalRoot, directory);
+                _volumeDirectories.Add(canonicalRoot, directory);
             }
 
             return canonicalRoot;
@@ -64,10 +63,10 @@ namespace XTask.Systems.File.Concrete.Flex
 
         public string GetCurrentDirectory(string path = null)
         {
-            string volume = path == null ? lastVolume : extendedFileService.GetCanonicalRoot(fileService, path);
+            string volume = path == null ? _lastVolume : _extendedFileService.GetCanonicalRoot(_fileService, path);
 
             string directory;
-            if (this.volumeDirectories.TryGetValue(volume, out directory))
+            if (_volumeDirectories.TryGetValue(volume, out directory))
             {
                 AddEntry(directory, volume);
                 return directory;
@@ -75,7 +74,7 @@ namespace XTask.Systems.File.Concrete.Flex
             else
             {
                 // Try to get the hidden environment variable (e.g. "=C:") for the given drive if available
-                string driveLetter = extendedFileService.GetDriveLetter(fileService, path);
+                string driveLetter = _extendedFileService.GetDriveLetter(_fileService, path);
                 if (driveLetter != null)
                 {
                     string environmentPath = NativeMethods.GetEnvironmentVariable("=" + driveLetter.Substring(0, 2));

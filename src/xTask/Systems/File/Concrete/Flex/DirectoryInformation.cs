@@ -107,7 +107,7 @@ namespace XTask.Systems.File.Concrete.Flex
                     && findInfo.FileName != "."
                     && findInfo.FileName != "..")
                 {
-                    IFileSystemInformation childDirectory = DirectoryInformation.Create(findInfo, fileService);
+                    IFileSystemInformation childDirectory = Create(findInfo, fileService);
                     foreach (var child in EnumerateChildrenInternal(childDirectory.Path, childType, searchPattern, searchOption, excludeAttributes, fileService))
                     {
                         yield return child;

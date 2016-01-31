@@ -91,7 +91,7 @@ namespace XTask.Tests.FileSystem
         {
             get
             {
-                return this.fileServiceProvider;
+                return this._fileServiceProvider;
             }
         }
 

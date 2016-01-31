@@ -34,21 +34,21 @@ namespace XTask.Systems.File.Concrete
 
         public string GetVolumeName(string volumeMountPoint)
         {
-            if (String.IsNullOrWhiteSpace(volumeMountPoint)) throw new ArgumentNullException(nameof(volumeMountPoint));
+            if (string.IsNullOrWhiteSpace(volumeMountPoint)) throw new ArgumentNullException(nameof(volumeMountPoint));
 
             return NativeMethods.VolumeManagement.GetVolumeNameForVolumeMountPoint(volumeMountPoint);
         }
 
         public string GetMountPoint(string path)
         {
-            if (String.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
+            if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
 
             return NativeMethods.VolumeManagement.GetVolumePathName(path);
         }
 
         public IEnumerable<string> GetVolumeMountPoints(string volumeName)
         {
-            if (String.IsNullOrWhiteSpace(volumeName)) throw new ArgumentNullException(nameof(volumeName));
+            if (string.IsNullOrWhiteSpace(volumeName)) throw new ArgumentNullException(nameof(volumeName));
 
             return NativeMethods.VolumeManagement.GetVolumePathNamesForVolumeName(volumeName);
         }
@@ -78,7 +78,7 @@ namespace XTask.Systems.File.Concrete
             // Assuming that the current thread can replicate rights from the process
             using (var processToken = NativeMethods.Authorization.OpenProcessToken(TokenAccessLevels.Query | TokenAccessLevels.Read))
             {
-                return Interop.NativeMethods.Authorization.HasPrivilege(processToken, Privileges.SeCreateSymbolicLinkPrivilege);
+                return NativeMethods.Authorization.HasPrivilege(processToken, Privileges.SeCreateSymbolicLinkPrivilege);
             }
         }
     }

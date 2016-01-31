@@ -18,12 +18,12 @@ namespace XTask.Systems.File
         /// <exception cref="System.IO.IOException">Thrown if unable to get the root from the OS.</exception>
         public static string GetCanonicalRoot(this IExtendedFileService extendedFileService, IFileService fileService, string path)
         {
-            if (Paths.IsRelative(path)) throw new ArgumentException();
+            if (Paths.IsRelative(path)) throw new ArgumentException(nameof(path));
 
             path = fileService.GetFullPath(path);
             int rootLength;
             var format = Paths.GetPathFormat(path, out rootLength);
-            if (format == PathFormat.UnknownFormat) throw new ArgumentException();
+            if (format == PathFormat.UnknownFormat) throw new ArgumentException(nameof(format));
 
             string root = path.Substring(0, rootLength);
             string simpleRoot = root;
@@ -58,46 +58,13 @@ namespace XTask.Systems.File
             foreach (var drive in extendedFileService.GetLogicalDriveStrings())
             {
                 string driveCanonicalRoot = extendedFileService.GetCanonicalRoot(fileService, drive);
-                if (String.Equals(pathCanonicalRoot, driveCanonicalRoot))
+                if (string.Equals(pathCanonicalRoot, driveCanonicalRoot))
                 {
                     return drive;
                 }
             }
 
             return null;
-            //int rootLength;
-            //switch (Paths.GetPathFormat(path, out rootLength))
-            //{
-            //    case PathFormat.UnknownFormat:
-            //    case PathFormat.CurrentDirectoryRelative:
-            //    case PathFormat.CurrentVolumeRelative:
-            //    case PathFormat.UniformNamingConvention:
-            //    case PathFormat.UniformNamingConventionExtended:
-            //        return null;
-            //    case PathFormat.DriveAbsolute:
-            //    case PathFormat.DriveRelative:
-            //        // Already in the "C:" form
-            //        return path.Substring(0, 1);
-            //    case PathFormat.Device:
-            //    case PathFormat.VolumeAbsoluteExtended:
-            //        // Get the DOS alias for this path
-            //        string root = path.Substring(0, rootLength);
-            //        string deviceAlias = fileService.QueryDosDeviceNames(root).FirstOrDefault();
-            //        if (deviceAlias == null) return null;
-
-            //        // We have to walk drives
-            //        foreach (var drive in fileService.GetLogicalDriveStrings())
-            //        {
-            //            string driveAlias = fileService.QueryDosDeviceNames(drive).FirstOrDefault();
-            //            if (String.Equals(deviceAlias, driveAlias))
-            //            {
-            //                return driveAlias;
-            //            }
-            //        }
-            //        break;
-            //}
-
-            //return null;
         }
     }
 }

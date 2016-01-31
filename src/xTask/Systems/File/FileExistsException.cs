@@ -18,7 +18,7 @@ namespace XTask.Systems.File
     public class FileExistsException : IOException
     {
         public FileExistsException(string format, params object[] args)
-            : base (String.Format(CultureInfo.CurrentCulture, format, args))
+            : base (string.Format(CultureInfo.CurrentCulture, format, args))
         {
         }
     }

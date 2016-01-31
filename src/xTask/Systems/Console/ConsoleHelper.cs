@@ -50,24 +50,24 @@ namespace XTask.Systems.Console
         /// </summary>
         public static IDisposable AppendConsoleTitle(this IConsoleService console, string format, params object[] args)
         {
-            return new StatusAppender(console, String.Format(CultureInfo.CurrentUICulture, format, args));
+            return new StatusAppender(console, string.Format(CultureInfo.CurrentUICulture, format, args));
         }
 
         private class StatusAppender : IDisposable
         {
-            private string originalTitle;
-            private IConsoleService console;
+            private string _originalTitle;
+            private IConsoleService _console;
 
             public StatusAppender(IConsoleService console, string status)
             {
-                this.console = console;
-                this.originalTitle = this.console.Title;
-                this.console.Title = String.Format(CultureInfo.CurrentUICulture, "{0}: {1}", this.originalTitle, status);
+                _console = console;
+                _originalTitle = _console.Title;
+                _console.Title = string.Format(CultureInfo.CurrentUICulture, "{0}: {1}", _originalTitle, status);
             }
 
             public void Dispose()
             {
-                this.console.Title = originalTitle;
+                _console.Title = _originalTitle;
             }
         }
 
@@ -76,7 +76,7 @@ namespace XTask.Systems.Console
         /// </summary>
         public static bool QueryYesNo(this IConsoleService console, string format, params object[] args)
         {
-            return console.QueryYesNo(String.Format(CultureInfo.CurrentUICulture, format, args));
+            return console.QueryYesNo(string.Format(CultureInfo.CurrentUICulture, format, args));
         }
 
         /// <summary>
@@ -84,11 +84,11 @@ namespace XTask.Systems.Console
         /// </summary>
         public static bool QueryYesNo(this IConsoleService console, string value)
         {
-            string queryString = String.Format(CultureInfo.CurrentUICulture, XTaskStrings.YesNoQueryStringFormat, value) + "\n";
+            string queryString = string.Format(CultureInfo.CurrentUICulture, XTaskStrings.YesNoQueryStringFormat, value) + "\n";
             console.WriteLockedColor(console.ForegroundColor, queryString);
             string answer = console.ReadLine().Trim();
-            return String.Equals(answer, XTaskStrings.YesResponse, StringComparison.CurrentCultureIgnoreCase)
-                || String.Equals(answer, XTaskStrings.YesShortResponse, StringComparison.CurrentCultureIgnoreCase);
+            return string.Equals(answer, XTaskStrings.YesResponse, StringComparison.CurrentCultureIgnoreCase)
+                || string.Equals(answer, XTaskStrings.YesShortResponse, StringComparison.CurrentCultureIgnoreCase);
         }
     }
 }

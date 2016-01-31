@@ -11,21 +11,21 @@ namespace XTask.Systems.Configuration.Concrete
 
     public class ConfigurationSectionGroupWrapper : IConfigurationSectionGroup
     {
-        ConfigurationSectionGroup sectionGroup;
+        ConfigurationSectionGroup _sectionGroup;
 
         public ConfigurationSectionGroupWrapper(ConfigurationSectionGroup sectionGroup)
         {
-            this.sectionGroup = sectionGroup;
+            _sectionGroup = sectionGroup;
         }
 
         public ClientSettingsSection Get(string name)
         {
-            return this.sectionGroup.Sections.Get(name) as ClientSettingsSection;
+            return _sectionGroup.Sections.Get(name) as ClientSettingsSection;
         }
 
         public void Add(string name, ClientSettingsSection section)
         {
-            this.sectionGroup.Sections.Add(name, section);
+            _sectionGroup.Sections.Add(name, section);
         }
     }
 }

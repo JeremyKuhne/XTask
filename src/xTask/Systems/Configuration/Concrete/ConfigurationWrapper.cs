@@ -14,35 +14,35 @@ namespace XTask.Systems.Configuration.Concrete
     /// </summary>
     public class ConfigurationWrapper : IConfiguration
     {
-        private Configuration configuration;
+        private Configuration _configuration;
 
         public ConfigurationWrapper(Configuration configuration)
         {
-            this.configuration = configuration;
+            _configuration = configuration;
         }
 
         public IConfigurationSectionGroup GetSectionGroup(string sectionGroupName)
         {
-            ConfigurationSectionGroup sectionGroup = this.configuration.GetSectionGroup(sectionGroupName);
+            ConfigurationSectionGroup sectionGroup = _configuration.GetSectionGroup(sectionGroupName);
             return sectionGroup == null ? null : new ConfigurationSectionGroupWrapper(sectionGroup);
         }
 
         public string FilePath
         {
-            get { return this.configuration.FilePath; }
+            get { return _configuration.FilePath; }
         }
 
         public IConfigurationSectionGroup AddSectionGroup(string sectionGroupName)
         {
             UserSettingsGroup userGroup = new UserSettingsGroup();
-            this.configuration.SectionGroups.Add(sectionGroupName, userGroup);
+            _configuration.SectionGroups.Add(sectionGroupName, userGroup);
 
             return new ConfigurationSectionGroupWrapper(userGroup);
         }
 
         public void Save()
         {
-            this.configuration.Save();
+            _configuration.Save();
         }
     }
 }

@@ -18,38 +18,38 @@ namespace XTask.Systems.File
     public class FileCleaner : IDisposable
     {
         protected const string XTaskFlagFileName = @"%XTaskFlagFile%";
-        protected ConcurrentBag<string> filesToClean = new ConcurrentBag<string>();
-        private StreamWriter flagFile;
-        private string rootTempFolder;
-        protected IFileService fileServiceProvider;
-        private static object cleanLock;
+        protected ConcurrentBag<string> _filesToClean = new ConcurrentBag<string>();
+        private StreamWriter _flagFile;
+        private string _rootTempFolder;
+        protected IFileService _fileServiceProvider;
+        private static object s_CleanLock;
 
         static FileCleaner()
         {
-            cleanLock = new object();
+            s_CleanLock = new object();
         }
 
         /// <param name="tempRootDirectoryName">The subdirectory to use for temp files "MyApp"</param>
         public FileCleaner(string tempRootDirectoryName, IFileService fileServiceProvider)
         {
-            if (String.IsNullOrWhiteSpace(tempRootDirectoryName)) throw new ArgumentNullException("tempRootDirectoryName");
+            if (string.IsNullOrWhiteSpace(tempRootDirectoryName)) throw new ArgumentNullException("tempRootDirectoryName");
             if (fileServiceProvider == null) throw new ArgumentNullException("fileServiceProvider");
 
-            this.fileServiceProvider = fileServiceProvider;
-            this.rootTempFolder = Paths.Combine(Path.GetTempPath(), tempRootDirectoryName);
-            this.TempFolder = Paths.Combine(this.rootTempFolder, Path.GetRandomFileName());
-            string flagFile = Paths.Combine(this.TempFolder, FileCleaner.XTaskFlagFileName);
+            _fileServiceProvider = fileServiceProvider;
+            _rootTempFolder = Paths.Combine(Path.GetTempPath(), tempRootDirectoryName);
+            TempFolder = Paths.Combine(_rootTempFolder, Path.GetRandomFileName());
+            string flagFile = Paths.Combine(TempFolder, XTaskFlagFileName);
 
-            lock (cleanLock)
+            lock (s_CleanLock)
             {
                 // Make sure we fully lock the directory before allowing cleaning
-                this.fileServiceProvider.CreateDirectory(this.TempFolder);
+                _fileServiceProvider.CreateDirectory(TempFolder);
 
                 // Create a flag file and leave it open- this way we can track and clean abandoned (crashed/terminated) processes
-                Stream flagStream = this.fileServiceProvider.CreateFileStream(flagFile, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
-                this.flagFile = new StreamWriter(flagStream);
-                this.flagFile.WriteLine(XTaskStrings.FlagFileContent);
-                this.flagFile.Flush();
+                Stream flagStream = _fileServiceProvider.CreateFileStream(flagFile, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
+                _flagFile = new StreamWriter(flagStream);
+                _flagFile.WriteLine(XTaskStrings.FlagFileContent);
+                _flagFile.Flush();
             }
         }
 
@@ -57,16 +57,16 @@ namespace XTask.Systems.File
 
         public void TrackFile(string path)
         {
-            if (!String.IsNullOrEmpty(path) && !path.StartsWith(this.TempFolder, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(path) && !path.StartsWith(TempFolder, StringComparison.OrdinalIgnoreCase))
             {
-                this.filesToClean.Add(path);
+                _filesToClean.Add(path);
             }
         }
 
         protected virtual void CleanOrphanedTempFolders()
         {
             // Clean up orphaned temp folders
-            IDirectoryInformation rootInfo = this.fileServiceProvider.GetPathInfo(this.rootTempFolder) as IDirectoryInformation;
+            IDirectoryInformation rootInfo = _fileServiceProvider.GetPathInfo(_rootTempFolder) as IDirectoryInformation;
 
             if (rootInfo != null)
             {
@@ -74,7 +74,7 @@ namespace XTask.Systems.File
                 {
                     var flagFiles = 
                         from directory in rootInfo.EnumerateDirectories()
-                        from file in directory.EnumerateFiles(FileCleaner.XTaskFlagFileName)
+                        from file in directory.EnumerateFiles(XTaskFlagFileName)
                         select new { Directory = directory.Path, File = file.Path };
 
                     foreach (var flagFile in flagFiles.ToArray())
@@ -82,8 +82,8 @@ namespace XTask.Systems.File
                         try
                         {
                             // If we can't delete the flag file (open handle) we'll throw and move on
-                            this.fileServiceProvider.DeleteFile(flagFile.File);
-                            this.fileServiceProvider.DeleteDirectory(flagFile.Directory, deleteChildren: true);
+                            _fileServiceProvider.DeleteFile(flagFile.File);
+                            _fileServiceProvider.DeleteDirectory(flagFile.Directory, deleteChildren: true);
                         }
                         catch (Exception)
                         {
@@ -99,7 +99,7 @@ namespace XTask.Systems.File
 
         public void Dispose()
         {
-            this.Dispose(disposing: true);
+            Dispose(disposing: true);
         }
 
         protected virtual bool ThrowOnCleanSelf
@@ -111,15 +111,15 @@ namespace XTask.Systems.File
         {
             if (disposing)
             {
-                lock (cleanLock)
+                lock (s_CleanLock)
                 {
-                    this.flagFile.Dispose();
-                    this.flagFile = null;
+                    _flagFile.Dispose();
+                    _flagFile = null;
 
                     // Delete our own temp folder
                     try
                     {
-                        this.fileServiceProvider.DeleteDirectory(this.TempFolder, deleteChildren: true);
+                        _fileServiceProvider.DeleteDirectory(TempFolder, deleteChildren: true);
                     }
                     catch (Exception)
                     {
@@ -127,13 +127,13 @@ namespace XTask.Systems.File
                     }
 
                     // Clean any loose files we're tracking
-                    foreach (string file in this.filesToClean.Distinct(StringComparer.OrdinalIgnoreCase))
+                    foreach (string file in _filesToClean.Distinct(StringComparer.OrdinalIgnoreCase))
                     {
-                        if (String.IsNullOrWhiteSpace(file)) { continue; }
+                        if (string.IsNullOrWhiteSpace(file)) { continue; }
 
                         try
                         {
-                            this.fileServiceProvider.DeleteFile(file);
+                            _fileServiceProvider.DeleteFile(file);
                         }
                         catch (Exception)
                         {
@@ -141,7 +141,7 @@ namespace XTask.Systems.File
                         }
                     }
 
-                    this.CleanOrphanedTempFolders();
+                    CleanOrphanedTempFolders();
                 }
             }
         }

@@ -13,9 +13,9 @@ namespace XTask.Systems.File.Concrete.Flex
 
     internal class FileInformation : FileSystemInformation, IFileInformation
     {
-        private byte[] md5Hash;
-        private IDirectoryInformation directoryInformation;
-        private string directory;
+        private byte[] _md5Hash;
+        private IDirectoryInformation _directoryInformation;
+        private string _directory;
 
         private FileInformation(IFileService fileService)
             : base (fileService)
@@ -43,15 +43,15 @@ namespace XTask.Systems.File.Concrete.Flex
         protected override void PopulateData(NativeMethods.FileManagement.FindResult findResult)
         {
             base.PopulateData(findResult);
-            this.Length = findResult.Length;
-            this.directory = findResult.BasePath;
+            Length = findResult.Length;
+            _directory = findResult.BasePath;
         }
 
         protected override void PopulateData(string originalPath, SafeFileHandle fileHandle, NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info)
         {
             base.PopulateData(originalPath, fileHandle, info);
-            this.Length = NativeMethods.HighLowToLong(info.nFileSizeHigh, info.nFileSizeLow);
-            this.directory = Paths.GetDirectory(this.Path);
+            Length = NativeMethods.HighLowToLong(info.nFileSizeHigh, info.nFileSizeLow);
+            _directory = Paths.GetDirectory(Path);
         }
 
         public ulong Length { get; private set; }
@@ -60,11 +60,11 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             get
             {
-                if (this.directoryInformation == null)
+                if (_directoryInformation == null)
                 {
-                    this.directoryInformation = (IDirectoryInformation)FileSystemInformation.Create(this.directory, this.FileService);
+                    _directoryInformation = (IDirectoryInformation)Create(_directory, FileService);
                 }
-                return this.directoryInformation;
+                return _directoryInformation;
             }
         }
 
@@ -72,18 +72,18 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             get
             {
-                if (this.md5Hash == null)
+                if (_md5Hash == null)
                 {
-                    this.md5Hash = this.FileService.GetHash(this.Path);
+                    _md5Hash = FileService.GetHash(Path);
                 }
-                return this.md5Hash;
+                return _md5Hash;
             }
         }
 
         public override void Refresh()
         {
-            this.md5Hash = null;
-            this.directoryInformation = null;
+            _md5Hash = null;
+            _directoryInformation = null;
             base.Refresh();
         }
     }

@@ -20,34 +20,34 @@ namespace XTask.Systems.File.Concrete.Flex
             FileInfo
         }
 
-        protected Source source;
+        protected Source _source;
 
         protected IFileService FileService { get; private set; }
 
         protected FileSystemInformation(IFileService fileService)
         {
-            this.FileService = fileService;
+            FileService = fileService;
         }
 
         protected virtual void PopulateData(NativeMethods.FileManagement.FindResult findResult)
         {
-            this.source = Source.FindResult;
-            this.Path = Paths.Combine(findResult.BasePath, findResult.FileName);
-            this.Attributes = findResult.Attributes;
-            this.CreationTime = findResult.Creation;
-            this.LastAccessTime = findResult.LastAccess;
-            this.LastWriteTime = findResult.LastWrite;
-            this.Name = findResult.FileName;
-            this.Exists = true;
+            _source = Source.FindResult;
+            Path = Paths.Combine(findResult.BasePath, findResult.FileName);
+            Attributes = findResult.Attributes;
+            CreationTime = findResult.Creation;
+            LastAccessTime = findResult.LastAccess;
+            LastWriteTime = findResult.LastWrite;
+            Name = findResult.FileName;
+            Exists = true;
         }
 
         protected void PopulateData(string path, System.IO.FileAttributes attributes)
         {
-            this.source = Source.Attributes;
-            this.Path = path;
-            this.Name = path;
-            this.Attributes = attributes;
-            this.Exists = true;
+            _source = Source.Attributes;
+            Path = path;
+            Name = path;
+            Attributes = attributes;
+            Exists = true;
         }
 
         private static SafeFileHandle GetFileHandle(string path)
@@ -64,23 +64,23 @@ namespace XTask.Systems.File.Concrete.Flex
 
         protected virtual void PopulateData(string originalPath, SafeFileHandle fileHandle, NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info)
         {
-            this.source = Source.FileInfo;
+            _source = Source.FileInfo;
 
             string originalRoot = Paths.GetRoot(originalPath);
             string finalPath = NativeMethods.FileManagement.GetFinalPathName(fileHandle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED);
             finalPath = Paths.ReplaceRoot(originalPath, finalPath);
 
-            this.source = Source.FindResult;
-            this.Path = finalPath;
-            this.Attributes = info.dwFileAttributes;
-            this.CreationTime = NativeMethods.GetDateTime(info.ftCreationTime);
-            this.LastAccessTime = NativeMethods.GetDateTime(info.ftLastAccessTime);
-            this.LastWriteTime = NativeMethods.GetDateTime(info.ftLastWriteTime);
-            this.Name = Paths.GetFileOrDirectoryName(finalPath) ?? finalPath;
-            this.FileIndex = NativeMethods.HighLowToLong(info.nFileIndexHigh, info.nFileSizeLow);
-            this.NumberOfLinks = info.nNumberOfLinks;
-            this.VolumeSerialNumber = info.dwVolumeSerialNumber;
-            this.Exists = true;
+            _source = Source.FindResult;
+            Path = finalPath;
+            Attributes = info.dwFileAttributes;
+            CreationTime = NativeMethods.GetDateTime(info.ftCreationTime);
+            LastAccessTime = NativeMethods.GetDateTime(info.ftLastAccessTime);
+            LastWriteTime = NativeMethods.GetDateTime(info.ftLastWriteTime);
+            Name = Paths.GetFileOrDirectoryName(finalPath) ?? finalPath;
+            FileIndex = NativeMethods.HighLowToLong(info.nFileIndexHigh, info.nFileSizeLow);
+            NumberOfLinks = info.nNumberOfLinks;
+            VolumeSerialNumber = info.dwVolumeSerialNumber;
+            Exists = true;
         }
 
         internal static IFileSystemInformation Create(NativeMethods.FileManagement.FindResult findResult, IFileService fileService)
@@ -187,29 +187,29 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             try
             {
-                switch (this.source)
+                switch (_source)
                 {
                     case Source.Attributes:
-                        System.IO.FileAttributes attributes = NativeMethods.FileManagement.GetFileAttributes(this.Path);
-                        this.PopulateData(this.Path, attributes);
+                        System.IO.FileAttributes attributes = NativeMethods.FileManagement.GetFileAttributes(Path);
+                        PopulateData(Path, attributes);
                         break;
                     case Source.FindResult:
-                        var findResult = NativeMethods.FileManagement.FindFirstFile(this.Path);
-                        this.PopulateData(findResult);
+                        var findResult = NativeMethods.FileManagement.FindFirstFile(Path);
+                        PopulateData(findResult);
                         findResult.FindHandle.Close();
                         break;
                     case Source.FileInfo:
-                        using (SafeFileHandle fileHandle = GetFileHandle(this.Path))
+                        using (SafeFileHandle fileHandle = GetFileHandle(Path))
                         {
                             NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info = NativeMethods.FileManagement.GetFileInformationByHandle(fileHandle);
-                            this.PopulateData(this.Path, fileHandle, info);
+                            PopulateData(Path, fileHandle, info);
                         }
                         break;
                 }
             }
             catch (System.IO.FileNotFoundException)
             {
-                this.Exists = false;
+                Exists = false;
             }
         }
     }

@@ -60,7 +60,7 @@ namespace XTask.Systems.File
         // "Naming Files, Paths, and Namespaces"
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247.aspx
         //
-        private static readonly char[] directorySeparatorCharacters = new char[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar };
+        private static readonly char[] s_DirectorySeparatorCharacters = new char[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar };
 
         /// <summary>
         /// The default directory separator
@@ -115,7 +115,7 @@ namespace XTask.Systems.File
         /// </summary>
         public static bool HasExtension(string path, params string[] extensions)
         {
-            string pathExtension = Paths.GetExtension(path);
+            string pathExtension = GetExtension(path);
             return extensions.Any(extension => string.Equals(pathExtension, extension, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -124,11 +124,11 @@ namespace XTask.Systems.File
         /// </summary>
         public static string GetExtension(string pathOrFileName)
         {
-            int extensionIndex = Paths.FindExtensionOffset(pathOrFileName);
+            int extensionIndex = FindExtensionOffset(pathOrFileName);
             if (extensionIndex == -1)
             {
                 // Nothing valid- return nothing
-                return String.Empty;
+                return string.Empty;
             }
             else
             {
@@ -142,7 +142,7 @@ namespace XTask.Systems.File
         /// <returns>The index of the period</returns>
         private static int FindExtensionOffset(string pathOrFileName)
         {
-            if (String.IsNullOrEmpty(pathOrFileName)) { return -1; }
+            if (string.IsNullOrEmpty(pathOrFileName)) { return -1; }
 
             int length = pathOrFileName.Length;
 
@@ -184,13 +184,13 @@ namespace XTask.Systems.File
             if (directoryLength < 0) return null;
 
             path = path.Substring(0, directoryLength);
-            return Paths.AddTrailingSeparator(path);
+            return AddTrailingSeparator(path);
         }
 
         private static int GetDirectoryOrRootLength(string path, bool skipTrailingSlash = false)
         {
             int rootLength;
-            PathFormat pathFormat = Paths.GetPathFormat(path, out rootLength);
+            PathFormat pathFormat = GetPathFormat(path, out rootLength);
             if (pathFormat == PathFormat.UnknownFormat) return -1;
 
             int length = path.Length;
@@ -230,9 +230,9 @@ namespace XTask.Systems.File
 
             foreach (string path in paths)
             {
-                if (String.IsNullOrWhiteSpace(path)) continue;
+                if (string.IsNullOrWhiteSpace(path)) continue;
 
-                string directory = Paths.GetDirectory(path);
+                string directory = GetDirectory(path);
                 if (!roots.Contains(directory))
                 {
                     // Remove any directories that start with this directory
@@ -338,7 +338,7 @@ namespace XTask.Systems.File
 
             fixed (char* start = path)
             {
-                return Paths.GetPathFormat(start, path.Length, out rootLength);
+                return GetPathFormat(start, path.Length, out rootLength);
             }
         }
 
@@ -463,12 +463,12 @@ namespace XTask.Systems.File
         /// </summary>
         public static bool BeginsWithDirectorySeparator(string path)
         {
-            if (String.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
             {
                 return false;
             }
 
-            return Paths.IsDirectorySeparator(path[0]);
+            return IsDirectorySeparator(path[0]);
         }
 
         /// <summary>
@@ -481,7 +481,7 @@ namespace XTask.Systems.File
                 return false;
             }
 
-            return Paths.IsDirectorySeparator(path[0]);
+            return IsDirectorySeparator(path[0]);
         }
 
         /// <summary>
@@ -489,13 +489,13 @@ namespace XTask.Systems.File
         /// </summary>
         public static bool EndsInDirectorySeparator(string path)
         {
-            if (String.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
             {
                 return false;
             }
 
             char lastChar = path[path.Length - 1];
-            return Paths.IsDirectorySeparator(lastChar);
+            return IsDirectorySeparator(lastChar);
         }
 
         /// <summary>
@@ -509,7 +509,7 @@ namespace XTask.Systems.File
             }
 
             char lastChar = path[path.Length - 1];
-            return Paths.IsDirectorySeparator(lastChar);
+            return IsDirectorySeparator(lastChar);
         }
 
         /// <summary>
@@ -529,7 +529,7 @@ namespace XTask.Systems.File
         public static string AddTrailingSeparator(string path)
         {
             if (path == null) { throw new ArgumentNullException(nameof(path)); }
-            if (Paths.EndsInDirectorySeparator(path))
+            if (EndsInDirectorySeparator(path))
             {
                 return path;
             }
@@ -547,9 +547,9 @@ namespace XTask.Systems.File
         public static string RemoveTrailingSeparators(string path)
         {
             if (path == null) { throw new ArgumentNullException(nameof(path)); }
-            if (Paths.EndsInDirectorySeparator(path))
+            if (EndsInDirectorySeparator(path))
             {
-                return path.TrimEnd(Paths.directorySeparatorCharacters);
+                return path.TrimEnd(s_DirectorySeparatorCharacters);
             }
             else
             {
@@ -563,7 +563,7 @@ namespace XTask.Systems.File
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsExtended(string path)
         {
-            return path != null && path.StartsWith(Paths.ExtendedPathPrefix, StringComparison.Ordinal);
+            return path != null && path.StartsWith(ExtendedPathPrefix, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -573,14 +573,14 @@ namespace XTask.Systems.File
         public static string AddExtendedPrefix(string path, bool addIfUnderLegacyMaxPath = false)
         {
             if (IsExtended(path)
-                || (!addIfUnderLegacyMaxPath && path.Length <= Paths.MaxPath))
+                || (!addIfUnderLegacyMaxPath && path.Length <= MaxPath))
             {
                 return path;
             }
 
-            if (!path.StartsWith(Paths.UncPrefix, StringComparison.OrdinalIgnoreCase))
+            if (!path.StartsWith(UncPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                return Paths.ExtendedPathPrefix + path;
+                return ExtendedPathPrefix + path;
             }
 
             // Given \\server\share in longpath becomes \\?\UNC\server\share
@@ -603,7 +603,7 @@ namespace XTask.Systems.File
             if (path1 == null) throw new ArgumentNullException(nameof(path1));
 
             // Add nothing to something is something
-            if (String.IsNullOrEmpty(path2)) return path1;
+            if (string.IsNullOrEmpty(path2)) return path1;
 
             StringBuilder sb = StringBuilderCache.Instance.Acquire();
             if (!EndsInDirectorySeparator(path1) && !BeginsWithDirectorySeparator(path2))
@@ -672,13 +672,13 @@ namespace XTask.Systems.File
                 current = path[i];
 
                 // If we have a separator
-                if (Paths.IsDirectorySeparator(current))
+                if (IsDirectorySeparator(current))
                 {
                     if (
                         // And it isn't the default
-                        current != Paths.DirectorySeparator
+                        current != DirectorySeparator
                         // or it isn't the first char and the next is also a separator (to allow for UNC & extended syntax which begin with \\)
-                        || (i > 0 && i < path.Length - 1 && Paths.IsDirectorySeparator(path[i + 1])))
+                        || (i > 0 && i < path.Length - 1 && IsDirectorySeparator(path[i + 1])))
                     {
                         normalized = false;
                         break;
@@ -694,27 +694,27 @@ namespace XTask.Systems.File
 
             // Keep an initial separator if we start with separators
             int startSeparators = 0;
-            while (startSeparators < path.Length && Paths.IsDirectorySeparator(path[startSeparators])) startSeparators++;
-            if (startSeparators > 0) builder.Append(Paths.DirectorySeparator);
+            while (startSeparators < path.Length && IsDirectorySeparator(path[startSeparators])) startSeparators++;
+            if (startSeparators > 0) builder.Append(DirectorySeparator);
 
             // This is a special case- we want to keep *two* if we have *just* two to allow for UNCs and extended paths
-            if (startSeparators == 2) builder.Append(Paths.DirectorySeparator);
+            if (startSeparators == 2) builder.Append(DirectorySeparator);
 
             for (int i = startSeparators; i < path.Length; i++)
             {
                 current = path[i];
 
                 // If we have a separator
-                if (Paths.IsDirectorySeparator(current))
+                if (IsDirectorySeparator(current))
                 {
                     // If the next is a separator, skip adding this
-                    if (i < path.Length - 1 && Paths.IsDirectorySeparator(path[i + 1]))
+                    if (i < path.Length - 1 && IsDirectorySeparator(path[i + 1]))
                     {
                         continue;
                     }
 
                     // Ensure it is the primary separator
-                    current = Paths.DirectorySeparator;
+                    current = DirectorySeparator;
                 }
 
                 builder.Append(current);

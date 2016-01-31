@@ -21,22 +21,22 @@ namespace XTask.Systems.File.Concrete.Flex
     /// </remarks>
     internal class FileService : IFileService
     {
-        private CurrentDirectory directory;
+        private CurrentDirectory _directory;
 
         public FileService(IExtendedFileService extendedFileService)
         {
-            this.directory = new Flex.CurrentDirectory(this, extendedFileService);
+            _directory = new CurrentDirectory(this, extendedFileService);
         }
 
         public string CurrentDirectory
         {
             get
             {
-                return this.directory.GetCurrentDirectory();
+                return _directory.GetCurrentDirectory();
             }
             set
             {
-                this.directory.SetCurrentDirectory(value);
+                _directory.SetCurrentDirectory(value);
             }
         }
 
@@ -58,7 +58,7 @@ namespace XTask.Systems.File.Concrete.Flex
         public void CreateDirectory(string path)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
-            path = this.GetFullPath(path);
+            path = GetFullPath(path);
             int pathRootLength = Paths.GetRootLength(path);
             if (pathRootLength < 0) throw NativeMethods.GetIoExceptionForError(NativeMethods.WinError.ERROR_BAD_PATHNAME);
 
@@ -136,7 +136,7 @@ namespace XTask.Systems.File.Concrete.Flex
                     excludeAttributes: 0,
                     fileService: this))
                 {
-                    this.DeleteFile(file.Path);
+                    DeleteFile(file.Path);
                 }
 
                 foreach (var directory in DirectoryInformation.EnumerateChildrenInternal(
@@ -147,7 +147,7 @@ namespace XTask.Systems.File.Concrete.Flex
                     excludeAttributes: 0,
                     fileService: this))
                 {
-                    this.DeleteDirectoryRecursive(directory.Path);
+                    DeleteDirectoryRecursive(directory.Path);
                 }
             }
 
@@ -164,7 +164,7 @@ namespace XTask.Systems.File.Concrete.Flex
 
             if (deleteChildren)
             {
-                this.DeleteDirectoryRecursive(path);
+                DeleteDirectoryRecursive(path);
             }
             else
             {
@@ -185,7 +185,7 @@ namespace XTask.Systems.File.Concrete.Flex
                 case PathFormat.DriveRelative:
                     // Get the directory for the specified drive, and remove the drive specifier
                     string drive = Paths.AddTrailingSeparator(path.Substring(0, 2));
-                    basePath = directory.GetCurrentDirectory(drive);
+                    basePath = _directory.GetCurrentDirectory(drive);
                     path = path.Substring(2);
                     break;
             }

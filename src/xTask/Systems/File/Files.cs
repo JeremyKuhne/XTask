@@ -15,12 +15,11 @@ namespace XTask.Systems.File
     using System.Security.Cryptography;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
-    using XTask.Collections;
     using XTask.Utility;
 
     public static class Files
     {
-        private static MD5 MD5 = new MD5CryptoServiceProvider();
+        private static MD5 s_MD5 = new MD5CryptoServiceProvider();
 
         /// <summary>
         /// Finds all files in a given set of paths that contain the specified string
@@ -161,12 +160,12 @@ namespace XTask.Systems.File
             try
             {
                 // Console.WriteLine("Hashing {0}...", localPath);
-                if (!String.IsNullOrEmpty(path) & fileService.FileExists(path))
+                if (!string.IsNullOrEmpty(path) & fileService.FileExists(path))
                 {
                     using (Stream fileStream = fileService.CreateFileStream
                         (path, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
-                        return Files.MD5.ComputeHash(fileStream);
+                        return s_MD5.ComputeHash(fileStream);
                     }
                 }
             }

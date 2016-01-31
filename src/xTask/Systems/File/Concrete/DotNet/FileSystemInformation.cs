@@ -12,60 +12,60 @@ namespace XTask.Systems.File.Concrete.DotNet
 
     public abstract class FileSystemInformation : IFileSystemInformation
     {
-        private FileSystemInfo fileSystemInfo;
+        private FileSystemInfo _fileSystemInfo;
         protected IFileService FileService { get; private set; }
 
         protected FileSystemInformation(FileSystemInfo fileSystemInfo, IFileService fileService)
         {
-            this.FileService = fileService;
-            this.fileSystemInfo = fileSystemInfo;
+            FileService = fileService;
+            _fileSystemInfo = fileSystemInfo;
         }
 
         public virtual string Path
         {
-            get { return this.fileSystemInfo.FullName; }
+            get { return _fileSystemInfo.FullName; }
         }
 
         public virtual string Name
         {
-            get { return this.fileSystemInfo.Name; }
+            get { return _fileSystemInfo.Name; }
         }
 
         public virtual bool Exists
         {
-            get { return this.fileSystemInfo.Exists; }
+            get { return _fileSystemInfo.Exists; }
         }
 
         public virtual DateTime CreationTime
         {
-            get { return this.fileSystemInfo.CreationTime; }
+            get { return _fileSystemInfo.CreationTime; }
         }
 
         public virtual DateTime LastAccessTime
         {
-            get { return this.fileSystemInfo.LastAccessTime; }
+            get { return _fileSystemInfo.LastAccessTime; }
         }
 
         public virtual DateTime LastWriteTime
         {
-            get { return this.fileSystemInfo.LastWriteTime; }
+            get { return _fileSystemInfo.LastWriteTime; }
         }
 
         public virtual FileAttributes Attributes
         {
             get
             {
-                return this.fileSystemInfo.Attributes;
+                return _fileSystemInfo.Attributes;
             }
             set
             {
-                this.fileSystemInfo.Attributes = value;
+                _fileSystemInfo.Attributes = value;
             }
         }
 
         public virtual void Refresh()
         {
-            this.fileSystemInfo.Refresh();
+            _fileSystemInfo.Refresh();
         }
     }
 }
