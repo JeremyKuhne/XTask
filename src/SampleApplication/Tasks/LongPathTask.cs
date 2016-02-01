@@ -7,14 +7,13 @@
 
 namespace XFile.Tasks
 {
-    using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class LongPathTask : FileTaskWithTarget
     {
         protected override ExitCode ExecuteFileTask()
         {
-            this.Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetLongPath(GetFullTargetPath()));
+            ResultLog.WriteLine(ExtendedFileService.GetLongPath(GetFullTargetPath()));
             return ExitCode.Success;
         }
 

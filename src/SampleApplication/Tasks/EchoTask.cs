@@ -9,20 +9,20 @@ namespace XFile.Tasks
 {
     using System;
     using System.Linq;
-    using XTask.Systems.File;
     using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Systems.File;
+    using XTask.Tasks;
 
     public class EchoTask : FileTaskWithTarget
     {
         protected override ExitCode ExecuteFileTask()
         {
             string target = Arguments.GetOption<string>("target", "t");
-            int redirector = Array.IndexOf<string>(Arguments.Targets, ">");
+            int redirector = Array.IndexOf(Arguments.Targets, ">");
 
             if (target == null && redirector == -1)
             {
-                ResultLog.WriteLine(String.Join(" ", Arguments.Targets));
+                ResultLog.WriteLine(string.Join(" ", Arguments.Targets));
                 return ExitCode.Success;
             }
 
@@ -38,7 +38,7 @@ namespace XFile.Tasks
             }
 
             target = GetFullPath(target);
-            FileService.WriteAllText(target, String.Join(" ", redirector == -1 ? Arguments.Targets : Arguments.Targets.Take(redirector)));
+            FileService.WriteAllText(target, string.Join(" ", redirector == -1 ? Arguments.Targets : Arguments.Targets.Take(redirector)));
 
             return ExitCode.Success;
         }

@@ -7,9 +7,7 @@
 
 namespace XFile.Tasks
 {
-    using System;
-    using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class ListStreamsTask : FileTaskWithTarget
     {
@@ -17,7 +15,7 @@ namespace XFile.Tasks
         {
             foreach (var stream in ExtendedFileService.GetAlternateStreamInformation(GetFullTargetPath()))
             {
-                this.Loggers[LoggerType.Result].WriteLine($"Stream '{stream.Name}', Size {stream.Size}");
+                ResultLog.WriteLine($"Stream '{stream.Name}', Size {stream.Size}");
             }
 
             return ExitCode.Success;

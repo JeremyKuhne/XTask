@@ -7,14 +7,13 @@
 
 namespace XFile.Tasks
 {
-    using XTask.Systems.File;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class ChangeDirectoryTask : FileTask
     {
         protected override ExitCode ExecuteFileTask()
         {
-            string target = this.Arguments.Target;
+            string target = Arguments.Target;
             if (target == null)
             {
                 target = ".";

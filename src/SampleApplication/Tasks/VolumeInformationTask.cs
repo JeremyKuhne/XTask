@@ -8,9 +8,9 @@
 namespace XFile.Tasks
 {
     using System;
-    using XTask.Systems.File;
     using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Systems.File;
+    using XTask.Tasks;
 
     public class VolumeInformationTask : FileTaskWithTarget
     {
@@ -37,7 +37,7 @@ namespace XFile.Tasks
                 }
             }
 
-            this.Loggers[LoggerType.Result].Write(table);
+            ResultLog.Write(table);
             return ExitCode.Success;
         }
 

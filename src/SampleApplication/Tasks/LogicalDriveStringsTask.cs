@@ -7,8 +7,7 @@
 
 namespace XFile.Tasks
 {
-    using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class LogicalDriveStringsTask : FileTask
     {
@@ -16,7 +15,7 @@ namespace XFile.Tasks
         {
             foreach (string drive in ExtendedFileService.GetLogicalDriveStrings())
             {
-                this.Loggers[LoggerType.Result].WriteLine(drive);
+                ResultLog.WriteLine(drive);
             }
 
             return ExitCode.Success;

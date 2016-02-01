@@ -7,9 +7,8 @@
 
 namespace XFile.Tasks
 {
-    using System;
     using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class CopyTask : FileTask
     {

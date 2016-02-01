@@ -5,7 +5,7 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace XTask.Utility
+namespace XTask.Tasks
 {
     // Trying to follow standard windows error codes here
     public enum ExitCode : int

@@ -16,6 +16,7 @@ namespace XFile.Tasks
     using XTask.Logging;
     using XTask.Systems.File;
     using XTask.Systems.File.Concrete.Flex;
+    using XTask.Tasks;
     using XTask.Utility;
 
     [XTask.Tasks.Hidden]
@@ -23,7 +24,7 @@ namespace XFile.Tasks
     {
         protected override ExitCode ExecuteFileTask()
         {
-            Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetDriveLetter(this.FileService, GetFullTargetPath()));
+            ResultLog.WriteLine(ExtendedFileService.GetDriveLetter(FileService, GetFullTargetPath()));
 
             return ExitCode.Success;
         }

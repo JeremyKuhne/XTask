@@ -8,6 +8,7 @@
 namespace XTask.Utility
 {
     using System;
+    using Tasks;
 
     /// <summary>
     /// Used to centrally handle app failure state

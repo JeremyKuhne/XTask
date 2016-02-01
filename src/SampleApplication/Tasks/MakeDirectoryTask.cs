@@ -7,8 +7,7 @@
 
 namespace XFile.Tasks
 {
-    using System;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class MakeDirectoryTask : FileTaskWithTarget
     {

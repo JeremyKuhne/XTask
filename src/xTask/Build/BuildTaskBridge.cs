@@ -9,11 +9,10 @@ namespace XTask.Build
 {
     using System.Collections.Generic;
     using System.Threading;
-    using XTask.Settings;
-    using XTask.Tasks;
-    using XTask.Utility;
-    using MSBuildFramework = Microsoft.Build.Framework;
     using Systems.File;
+    using Settings;
+    using Tasks;
+    using MSBuildFramework = Microsoft.Build.Framework;
 
     /// <summary>
     /// Core implementation of MSBuild support for tasks, derive and provide the task service and
@@ -69,7 +68,7 @@ namespace XTask.Build
         public bool Execute()
         {
             // The equivalent of Main() for console access
-            ExitCode result = Utility.ExitCode.GeneralFailure;
+            ExitCode result = Tasks.ExitCode.GeneralFailure;
 
             IArgumentProvider argumentProvider = new BuildArgumentParser(TaskName, Targets, Options, _fileService);
 
@@ -91,7 +90,7 @@ namespace XTask.Build
             }
 
             ExitCode = ((int)result).ToString();
-            return result == Utility.ExitCode.Success;
+            return result == Tasks.ExitCode.Success;
         }
 
         public void HandleOutput(object value)

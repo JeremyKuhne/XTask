@@ -7,15 +7,13 @@
 
 namespace XFile.Tasks
 {
-    using System;
-    using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class MountPointTask : FileTaskWithTarget
     {
         protected override ExitCode ExecuteFileTask()
         {
-            this.Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetMountPoint(GetFullTargetPath()));
+            ResultLog.WriteLine(ExtendedFileService.GetMountPoint(GetFullTargetPath()));
             return ExitCode.Success;
         }
 

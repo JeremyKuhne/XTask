@@ -7,15 +7,13 @@
 
 namespace XFile.Tasks
 {
-    using Utility;
-    using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class PrintCurrentDirectoryTask : FileTask
     {
         protected override ExitCode ExecuteFileTask()
         {
-            this.Loggers[LoggerType.Result].WriteLine(FileService.CurrentDirectory);
+            ResultLog.WriteLine(FileService.CurrentDirectory);
             return ExitCode.Success;
         }
 

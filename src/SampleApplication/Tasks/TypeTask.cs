@@ -8,8 +8,7 @@
 namespace XFile.Tasks
 {
     using XTask.Systems.File;
-    using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class TypeTask : FileTaskWithTarget
     {
@@ -20,7 +19,7 @@ namespace XFile.Tasks
                 string nextLine = null;
                 while ((nextLine = reader.ReadLine()) != null)
                 {
-                    this.Loggers[LoggerType.Result].WriteLine(nextLine);
+                    ResultLog.WriteLine(nextLine);
                 }
             }
 

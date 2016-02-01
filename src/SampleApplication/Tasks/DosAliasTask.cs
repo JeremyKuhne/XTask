@@ -7,17 +7,15 @@
 
 namespace XFile.Tasks
 {
-    using System;
     using System.Linq;
-    using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class DosAliasTask : FileTask
     {
         protected override ExitCode ExecuteFileTask()
         {
-            string target = this.Arguments.Target;
-            target = String.IsNullOrWhiteSpace(target) ? null : target;
+            string target = Arguments.Target;
+            target = string.IsNullOrWhiteSpace(target) ? null : target;
 
             var targetPaths =
                 from path in ExtendedFileService.QueryDosDeviceNames(target)
@@ -28,10 +26,10 @@ namespace XFile.Tasks
             foreach (string path in targetPaths)
             {
                 count++;
-                this.Loggers[LoggerType.Result].WriteLine(path);
+                ResultLog.WriteLine(path);
             }
 
-            this.Loggers[LoggerType.Status].WriteLine("\nFound {0} paths", count);
+            StatusLog.WriteLine("\nFound {0} paths", count);
 
             return ExitCode.Success;
         }

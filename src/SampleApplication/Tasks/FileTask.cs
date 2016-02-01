@@ -8,12 +8,11 @@
 namespace XFile.Tasks
 {
     using System;
-    using Utility;
-    using XTask.Systems.File;
     using XTask.Logging;
+    using XTask.Systems.Console;
+    using XTask.Systems.File;
     using XTask.Tasks;
     using XTask.Utility;
-    using XTask.Systems.Console;
 
     public abstract class FileTask : Task
     {
@@ -31,17 +30,17 @@ namespace XFile.Tasks
 
         protected IFileService FileService
         {
-            get { return this.GetService<IFileService>(); }
+            get { return GetService<IFileService>(); }
         }
 
         protected IConsoleService ConsoleService
         {
-            get { return this.GetService<IConsoleService>(); }
+            get { return GetService<IConsoleService>(); }
         }
 
         protected IExtendedFileService ExtendedFileService
         {
-            get { return this.GetService<IExtendedFileService>();  }
+            get { return GetService<IExtendedFileService>();  }
         }
 
         protected sealed override ExitCode ExecuteInternal()
@@ -51,11 +50,11 @@ namespace XFile.Tasks
 
             try
             {
-                this.ExecuteFileTask();
+                ExecuteFileTask();
             }
             catch (Exception e) when (Exceptions.IsIoException(e))
             {
-                this.Loggers[LoggerType.Status].WriteLine(WriteStyle.Error, e.Message);
+                StatusLog.WriteLine(WriteStyle.Error, e.Message);
                 return ExitCode.GeneralFailure;
             }
 

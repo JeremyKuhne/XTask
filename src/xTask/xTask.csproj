@@ -200,7 +200,7 @@
     <Compile Include="Systems\Console\ConsoleHelper.cs" />
     <Compile Include="Utility\Enums.cs" />
     <Compile Include="Utility\Exceptions.cs" />
-    <Compile Include="Utility\ExitCode.cs" />
+    <Compile Include="Tasks\ExitCode.cs" />
     <Compile Include="Systems\File\FileCleaner.cs" />
     <Compile Include="Systems\File\Files.cs" />
     <Compile Include="Systems\File\IFileService.cs" />

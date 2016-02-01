@@ -8,10 +8,9 @@
 namespace XFile.Tasks
 {
     using System.Linq;
-    using Utility;
-    using XTask.Systems.File;
     using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Systems.File;
+    using XTask.Tasks;
 
     public class DirectoryTask : FileTask
     {
@@ -20,7 +19,7 @@ namespace XFile.Tasks
 
         protected override ExitCode ExecuteFileTask()
         {
-            var fileService = this.GetService<IFileService>();
+            var fileService = GetService<IFileService>();
 
             Table output = Table.Create(
                 new ColumnFormat(1),
@@ -37,21 +36,21 @@ namespace XFile.Tasks
             foreach (var subdir in directory.EnumerateDirectories().OrderBy(i => i.Name))
             {
                 directoryCount++;
-                this.AddToTable(output, subdir);
+                AddToTable(output, subdir);
             }
 
             foreach (var file in directory.EnumerateFiles().OrderBy(i => i.Name))
             {
                 fileCount++;
                 totalSize += file.Length;
-                this.AddToTable(output, file);
+                AddToTable(output, file);
             }
 
-            this.Loggers[LoggerType.Status].WriteLine($" Directory of {directory.Path}");
-            this.Loggers[LoggerType.Status].WriteLine();
-            this.Loggers[LoggerType.Result].Write(output);
-            this.Loggers[LoggerType.Status].WriteLine();
-            this.Loggers[LoggerType.Status].WriteLine($" {directoryCount} Dir(s) {fileCount} File(s) {totalSize:N0} bytes");
+            StatusLog.WriteLine($" Directory of {directory.Path}");
+            StatusLog.WriteLine();
+            ResultLog.Write(output);
+            StatusLog.WriteLine();
+            StatusLog.WriteLine($" {directoryCount} Dir(s) {fileCount} File(s) {totalSize:N0} bytes");
             return ExitCode.Success;
         }
 

@@ -7,15 +7,13 @@
 
 namespace XFile.Tasks
 {
-    using System;
-    using XTask.Logging;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class VolumeNameTask : FileTaskWithTarget
     {
         protected override ExitCode ExecuteFileTask()
         {
-            this.Loggers[LoggerType.Result].WriteLine(ExtendedFileService.GetVolumeName(Arguments.Target));
+            ResultLog.WriteLine(ExtendedFileService.GetVolumeName(Arguments.Target));
 
             return ExitCode.Success;
         }

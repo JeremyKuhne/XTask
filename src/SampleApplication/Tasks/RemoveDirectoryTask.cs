@@ -8,7 +8,7 @@
 namespace XFile.Tasks
 {
     using XTask.Systems.Console;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class RemoveDirectoryTask : FileTaskWithTarget
     {

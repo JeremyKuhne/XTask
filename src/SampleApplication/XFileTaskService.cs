@@ -7,7 +7,6 @@
 
 namespace XFile
 {
-    using System.Diagnostics;
     using XFile.Tasks;
     using XTask.Tasks;
 
@@ -30,7 +29,7 @@ namespace XFile
 
         public override void Initialize()
         {
-            SimpleTaskRegistry registry = this.GetTaskRegistry();
+            SimpleTaskRegistry registry = GetTaskRegistry();
 
             // Debugger.Launch();
 

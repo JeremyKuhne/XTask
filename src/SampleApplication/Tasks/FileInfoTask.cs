@@ -9,7 +9,7 @@ namespace XFile.Tasks
 {
     using XTask.Logging;
     using XTask.Systems.File;
-    using XTask.Utility;
+    using XTask.Tasks;
 
     public class FileInfoTask : FileTaskWithTarget
     {
@@ -31,7 +31,7 @@ namespace XFile.Tasks
             table.AddRow("Volume Serial Number", extendedInfo.VolumeSerialNumber.ToString());
             table.AddRow("File Index", extendedInfo.FileIndex.ToString());
             table.AddRow("Number of Links", extendedInfo.NumberOfLinks.ToString());
-            Loggers[LoggerType.Result].Write(table);
+            ResultLog.Write(table);
             return ExitCode.Success;
         }
 
