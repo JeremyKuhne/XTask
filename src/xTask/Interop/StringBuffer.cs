@@ -467,11 +467,11 @@ namespace XTask.Interop
         {
             if (values == null || values.Length == 0 || _length == 0) return;
 
-            char* end = CharPointer + Length - 1;
+            char* end = CharPointer + _length - 1;
 
-            while (ContainsChar(values, *end))
+            while (_length > 0 && ContainsChar(values, *end))
             {
-                Length--;
+                Length = _length - 1;
                 end--;
             }
         }
