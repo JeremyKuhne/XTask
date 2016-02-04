@@ -29,7 +29,7 @@ namespace XTask.Interop
     public class NativeBuffer : IDisposable
     {
         private HeapHandle _handle;
-        private ulong _capacity;
+        private ulong _byteCapacity;
 
         /// <summary>
         /// Create a buffer with at least the specified initial capacity in bytes.
@@ -80,7 +80,7 @@ namespace XTask.Interop
         /// </summary>
         public ulong ByteCapacity
         {
-            get { return _capacity; }
+            get { return _byteCapacity; }
         }
 
         /// <summary>
@@ -90,10 +90,10 @@ namespace XTask.Interop
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(minCapacity)"/> to a value that is larger than the maximum addressable memory.</exception>
         public void EnsureByteCapacity(ulong minCapacity)
         {
-            if (_capacity < minCapacity)
+            if (_byteCapacity < minCapacity)
             {
                 Resize(minCapacity);
-                _capacity = minCapacity;
+                _byteCapacity = minCapacity;
             }
         }
 
@@ -101,12 +101,12 @@ namespace XTask.Interop
         {
             get
             {
-                if (index >= _capacity) throw new ArgumentOutOfRangeException();
+                if (index >= _byteCapacity) throw new ArgumentOutOfRangeException();
                 return BytePointer[index];
             }
             set
             {
-                if (index >= _capacity) throw new ArgumentOutOfRangeException();
+                if (index >= _byteCapacity) throw new ArgumentOutOfRangeException();
                 BytePointer[index] = value;
             }
         }
@@ -135,7 +135,7 @@ namespace XTask.Interop
             {
                 HeapHandleCache.Instance.Release(_handle);
                 _handle = null;
-                _capacity = 0;
+                _byteCapacity = 0;
             }
         }
 

@@ -74,24 +74,6 @@ namespace XTask.Interop
         /// Get/set the character at the given index.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to index outside of the buffer length.</exception>
-        public new unsafe char this[ulong index]
-        {
-            get
-            {
-                if (index >= _length) throw new ArgumentOutOfRangeException(nameof(index));
-                return CharPointer[index];
-            }
-            set
-            {
-                if (index >= _length) throw new ArgumentOutOfRangeException(nameof(index));
-                CharPointer[index] = value;
-            }
-        }
-
-        /// <summary>
-        /// Get/set the character at the given index.
-        /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to index outside of the buffer length.</exception>
         public unsafe char this[uint index]
         {
             get
@@ -114,7 +96,8 @@ namespace XTask.Interop
             get
             {
                 ulong byteCapacity = ByteCapacity;
-                return byteCapacity == 0 ? 0 : (uint)(byteCapacity / sizeof(char));
+                ulong charCapacity = byteCapacity == 0 ? 0 : byteCapacity / sizeof(char);
+                return charCapacity > uint.MaxValue ? uint.MaxValue : (uint)charCapacity ;
             }
         }
 

@@ -17,21 +17,35 @@ namespace XTask.Tests.Interop
     {
         const string testString = "The quick brown fox jumped over the lazy dog.";
 
-        [Fact]
-        public void CanIndexChar()
+        [Theory
+            InlineData(0)
+            InlineData(1)
+            InlineData(10)
+            ]
+        public void ConstructWithInitialCapacity(uint capacity)
         {
-            using (var buffer = new StringBuffer())
+            using (var buffer = new StringBuffer(capacity))
             {
-                buffer.Length = 1;
-                buffer[0] = 'Q';
-                buffer[0].Should().Be('Q');
+                buffer.CharCapacity.Should().Be(capacity);
             }
         }
 
         [Fact]
-        public unsafe void CreateFromString()
+        public void ConstructFromEmptyString()
         {
-            string testString = "Test";
+            using (var buffer = new StringBuffer(""))
+            {
+                buffer.ByteCapacity.Should().Be(0);
+                buffer.CharCapacity.Should().Be(0);
+            }
+        }
+
+        [Theory
+            InlineData("a")
+            InlineData("Test")
+            ]
+        public unsafe void ConstructFromString(string testString)
+        {
             using (var buffer = new StringBuffer(testString))
             {
                 buffer.Length.Should().Be((uint)testString.Length);
@@ -39,7 +53,7 @@ namespace XTask.Tests.Interop
 
                 for (int i = 0; i < testString.Length; i++)
                 {
-                    buffer[(ulong)i].Should().Be(testString[i]);
+                    buffer[(uint)i].Should().Be(testString[i]);
                 }
 
                 buffer.CharPointer[testString.Length].Should().Be('\0', "should be null terminated");
@@ -48,15 +62,33 @@ namespace XTask.Tests.Interop
             }
         }
 
-        [Fact]
-        public void ReduceLength()
+        [Theory
+            InlineData("a")
+            InlineData("foo")
+            ]
+        public void ReduceLength(string testString)
         {
-            using (var buffer = new StringBuffer("Food"))
+            using (var buffer = new StringBuffer(testString))
             {
-                buffer.CharCapacity.Should().Be(5);
-                buffer.Length = 3;
-                buffer.ToString().Should().Be("Foo");
-                buffer.CharCapacity.Should().Be(5, "shouldn't reduce capacity when dropping length");
+                buffer.CharCapacity.Should().Be((uint)testString.Length + 1);
+
+                for (int i = 1; i <= testString.Length; i++)
+                {
+                    buffer.Length = (uint)(testString.Length - i);
+                    buffer.ToString().Should().Be(testString.Substring(0, testString.Length - i));
+                    buffer.CharCapacity.Should().Be((uint)testString.Length + 1, "shouldn't reduce capacity when dropping length");
+                }
+            }
+        }
+
+        [Fact]
+        public void CanIndexChar()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                buffer.Length = 1;
+                buffer[0] = 'Q';
+                buffer[0].Should().Be('Q');
             }
         }
 
@@ -77,6 +109,49 @@ namespace XTask.Tests.Interop
             {
                 Action action = () => { buffer[0] = 'Q'; };
                 action.ShouldThrow<ArgumentOutOfRangeException>();
+            }
+        }
+
+        [Fact]
+        public void CharCapacityHasUintMax()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                var length = typeof(NativeBuffer).GetField("_byteCapacity", BindingFlags.NonPublic | BindingFlags.Instance);
+                for (uint i = 0; i < 4; i++)
+                {
+                    length.SetValue(buffer, (ulong)uint.MaxValue * 2 + i);
+                    buffer.CharCapacity.Should().Be(uint.MaxValue);
+                }
+            }
+        }
+
+        [Theory
+            InlineData(0, 0)
+            InlineData(1, 0)
+            InlineData(2, 1)
+            InlineData(3, 1)
+            ]
+        public void CharCapacityFromByte(ulong byteCapacity, uint charCapacity)
+        {
+            using (var buffer = new StringBuffer())
+            {
+                buffer.EnsureByteCapacity(byteCapacity);
+                buffer.CharCapacity.Should().Be(charCapacity);
+            }
+        }
+
+        [Theory
+            InlineData(0)
+            InlineData(1)
+            InlineData(2)
+            ]
+        public void EnsureCharCapacity(uint charCapacity)
+        {
+            using (var buffer = new StringBuffer())
+            {
+                buffer.EnsureCharCapacity(charCapacity);
+                buffer.CharCapacity.Should().Be(charCapacity);
             }
         }
 
