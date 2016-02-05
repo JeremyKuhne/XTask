@@ -312,11 +312,21 @@ namespace XTask.Tests.Interop
         }
 
         [Fact]
-        public void AppendNullStringBufferThrows()
+        public void AppendNullStringBufferIndexThrows()
         {
             using (var buffer = new StringBuffer())
             {
-                Action action = () => buffer.Append((StringBuffer)null);
+                Action action = () => buffer.Append((StringBuffer)null, 0);
+                action.ShouldThrow<ArgumentNullException>();
+            }
+        }
+
+        [Fact]
+        public void AppendNullStringBufferIndexCountThrows()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                Action action = () => buffer.Append((StringBuffer)null, 0, 0);
                 action.ShouldThrow<ArgumentNullException>();
             }
         }
@@ -666,6 +676,7 @@ namespace XTask.Tests.Interop
 
         [Theory
             InlineData(@"Foo", @"Bar", 0, 0, 3, "Bar")
+            InlineData(@"Foo", @"Bar", 0, 0, 0, "Foo")
             InlineData(@"Foo", @"Bar", 3, 0, 3, "FooBar")
             InlineData(@"", @"Bar", 0, 0, 3, "Bar")
             InlineData(@"Foo", @"Bar", 1, 0, 3, "FBar")
@@ -678,6 +689,17 @@ namespace XTask.Tests.Interop
             {
                 buffer.CopyTo(bufferIndex, destinationBuffer, destinationIndex, count);
                 destinationBuffer.ToString().Should().Be(expected);
+            }
+        }
+
+        [Fact]
+        public void CopyToBufferOutOfRangeThrows()
+        {
+            using (var buffer = new StringBuffer())
+            using (var destinationBuffer = new StringBuffer())
+            {
+                Action action = () => buffer.CopyTo(0, destinationBuffer, 1, 0);
+                action.ShouldThrow<ArgumentOutOfRangeException>().And.ParamName.Should().Be("destinationIndex");
             }
         }
 
@@ -711,11 +733,16 @@ namespace XTask.Tests.Interop
         [Fact]
         public void AppendChar()
         {
+            string testString = "Fo\0o";
+
             using (var buffer = new StringBuffer())
             {
-                buffer.Append("a");
-                buffer.Append("b");
-                buffer.ToString().Should().Be("ab");
+                for (int i = 0; i < testString.Length; i++)
+                {
+                    buffer.Append(testString[i]);
+                    buffer.Length.Should().Be((uint)i + 1);
+                    buffer.ToString().Should().Be(testString.Substring(0, i + 1));
+                }
             }
         }
 
@@ -726,6 +753,7 @@ namespace XTask.Tests.Interop
             InlineData("", 'a', 1, 1, false)
             InlineData("aa", 'a', 0, 0, true)
             InlineData("aa", 'a', 1, 1, true)
+            InlineData("ab", 'b', 0, 1, true)
             ]
         public void IndexOfTests(string source, char value, uint skip, uint expectedIndex, bool expectedValue)
         {

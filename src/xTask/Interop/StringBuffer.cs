@@ -227,6 +227,8 @@ namespace XTask.Interop
         /// </summary>
         public unsafe void Append(char value)
         {
+            if (_length == 0) EnsureCharCapacity(1);
+
             CharPointer[_length] = value;
             Length++;
         }
@@ -252,17 +254,6 @@ namespace XTask.Interop
         }
 
         /// <summary>
-        /// Append the given buffer.
-        /// </summary>
-        /// <param name="nameof(value)">The buffer to append.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="nameof(value)"/> is null.</exception>
-        public unsafe void Append(StringBuffer value)
-        {
-            if (value == null) throw new ArgumentNullException(nameof(value));
-            Append(value, 0, value.Length);
-        }
-
-        /// <summary>
         /// Append the given buffer starting at the given buffer index.
         /// </summary>
         /// <param name="nameof(value)">The buffer to append.</param>
@@ -271,7 +262,7 @@ namespace XTask.Interop
         /// <exception cref="ArgumentOutOfRangeException">
         /// Thrown if <paramref name="startIndex"/> is outside the range of <paramref name="value"/> characters.
         /// </exception>
-        public unsafe void Append(StringBuffer value, uint startIndex)
+        public unsafe void Append(StringBuffer value, uint startIndex = 0)
         {
             if (value == null) throw new ArgumentNullException(nameof(value));
             Append(value, startIndex, value.Length - startIndex);
@@ -290,8 +281,9 @@ namespace XTask.Interop
         /// </exception>
         public unsafe void Append(StringBuffer value, uint startIndex, uint count)
         {
-            if (count == 0) return;
             if (value == null) throw new ArgumentNullException(nameof(value));
+            if (count == 0) return;
+
             value.CopyTo(
                 bufferIndex: startIndex,
                 destination: this,
