@@ -297,7 +297,7 @@ namespace XTask.Interop
 
         internal static DateTime GetDateTime(System.Runtime.InteropServices.ComTypes.FILETIME fileTime)
         {
-            return DateTime.FromFileTime((((long)fileTime.dwHighDateTime) << 32) + fileTime.dwLowDateTime);
+            return DateTime.FromFileTime((((long)fileTime.dwHighDateTime) << 32) + (uint)fileTime.dwLowDateTime);
         }
 
         //[DllImport("ntdll.dll", SetLastError = true)]
