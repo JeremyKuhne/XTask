@@ -12,6 +12,7 @@ namespace XTask.Tests.Utility
     using FluentAssertions;
     using XTask.Systems.File;
     using Xunit;
+    using Support;
 
     public class FilesTests
     {

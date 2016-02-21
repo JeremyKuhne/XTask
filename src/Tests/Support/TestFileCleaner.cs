@@ -5,7 +5,7 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace XTask.Tests.FileSystem
+namespace XTask.Tests.Support
 {
     using System.IO;
     using Systems.File;
@@ -14,32 +14,21 @@ namespace XTask.Tests.FileSystem
 
     public class TestFileCleaner : FileCleaner
     {
-        bool useDotNet;
-        string originalCurrentDirectory;
+        bool _useDotNet;
 
-        internal static object DirectorySetLock;
-
-        private static IExtendedFileService extendedFileService = new ExtendedFileService();
-
-        static TestFileCleaner()
-        {
-            DirectorySetLock = new object();
-        }
+        private static IExtendedFileService _extendedFileService = new ExtendedFileService();
 
         public TestFileCleaner(bool useDotNet = false)
-            : base ("XTaskTests", useDotNet ? (IFileService) new Concrete.DotNet.FileService() : new Concrete.Flex.FileService(extendedFileService))
+            : base ("XTaskTests", useDotNet ? (IFileService) new Concrete.DotNet.FileService() : new Concrete.Flex.FileService(_extendedFileService))
         {
-            this.useDotNet = useDotNet;
-
-            // Try and restore the original current directory if a test fails
-            this.originalCurrentDirectory = Directory.GetCurrentDirectory();
+            _useDotNet = useDotNet;
         }
 
         protected override void CleanOrphanedTempFolders()
         {
             // .NET can't handle long paths and we'll be creating a lot of them, so don't let
             // that implementation do this phase of cleanup.
-            if (!this.useDotNet)
+            if (!_useDotNet)
             {
                 base.CleanOrphanedTempFolders();
             }
@@ -54,23 +43,9 @@ namespace XTask.Tests.FileSystem
             }
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            lock (DirectorySetLock)
-            {
-                if (Directory.GetCurrentDirectory() != originalCurrentDirectory)
-                {
-                    if (Directory.Exists(originalCurrentDirectory))
-                        Directory.SetCurrentDirectory(originalCurrentDirectory);
-                }
-            }
-
-            base.Dispose(disposing);
-        }
-
         public string GetTestPath(string basePath = null)
         {
-            return Paths.Combine(basePath ?? this.TempFolder, Path.GetRandomFileName());
+            return Paths.Combine(basePath ?? TempFolder, Path.GetRandomFileName());
         }
 
         public string CreateTestFile(string content, string basePath = null)
@@ -91,7 +66,7 @@ namespace XTask.Tests.FileSystem
         {
             get
             {
-                return this._fileServiceProvider;
+                return _fileServiceProvider;
             }
         }
 
@@ -99,7 +74,7 @@ namespace XTask.Tests.FileSystem
         {
             get
             {
-                return extendedFileService;
+                return _extendedFileService;
             }
         }
     }

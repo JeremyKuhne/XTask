@@ -7,11 +7,11 @@
 
 namespace XTask.Tests.Interop
 {
-    using FileSystem;
     using FluentAssertions;
     using System;
     using System.IO;
     using XTask.Interop;
+    using Support;
     using Xunit;
 
     public class DirectoryManagementTests
@@ -33,12 +33,10 @@ namespace XTask.Tests.Interop
         public void SetDirectoryTest()
         {
             using (var cleaner = new TestFileCleaner())
+            using (new TempCurrentDirectory())
             {
-                lock (TestFileCleaner.DirectorySetLock)
-                {
-                    NativeMethods.DirectoryManagement.SetCurrentDirectory(cleaner.TempFolder);
-                    Directory.GetCurrentDirectory().Should().Be(cleaner.TempFolder);
-                }
+                NativeMethods.DirectoryManagement.SetCurrentDirectory(cleaner.TempFolder);
+                Directory.GetCurrentDirectory().Should().Be(cleaner.TempFolder);
             }
         }
 
@@ -57,12 +55,10 @@ namespace XTask.Tests.Interop
         public void GetDirectoryTest()
         {
             using (var cleaner = new TestFileCleaner())
+            using (new TempCurrentDirectory())
             {
-                lock (TestFileCleaner.DirectorySetLock)
-                {
-                    Directory.SetCurrentDirectory(cleaner.TempFolder);
-                    NativeMethods.DirectoryManagement.GetCurrentDirectory().Should().Be(cleaner.TempFolder);
-                }
+                Directory.SetCurrentDirectory(cleaner.TempFolder);
+                NativeMethods.DirectoryManagement.GetCurrentDirectory().Should().Be(cleaner.TempFolder);
             }
         }
     }

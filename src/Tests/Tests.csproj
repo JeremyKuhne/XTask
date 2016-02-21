@@ -79,6 +79,7 @@
     <Compile Include="Interop\BufferPathInvokeTests.cs" />
     <Compile Include="Interop\DotNetBehaviors.cs" />
     <Compile Include="Interop\ErrorsTests.cs" />
+    <Compile Include="Interop\FileManagementBehaviors.cs" />
     <Compile Include="Interop\NativeBufferTests.cs" />
     <Compile Include="Interop\NativeMethodsTests.cs" />
     <Compile Include="Interop\StringBufferTests.cs" />
@@ -97,7 +98,7 @@
     <Compile Include="Interop\BufferInvokeTests.cs" />
     <Compile Include="Interop\DirectoryManagementTests.cs" />
     <Compile Include="Interop\FileManagementTests.cs" />
-    <Compile Include="FileSystem\TestFileCleaner.cs" />
+    <Compile Include="Support\TestFileCleaner.cs" />
     <Compile Include="Interop\LoadLibraryTests.cs" />
     <Compile Include="Interop\StreamBufferTests.cs" />
     <Compile Include="Logging\AggregatedLoggerTests.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="Logging\XmlSpreadsheetLoggerTests.cs" />
     <Compile Include="Services\DefaultServiceProviderTests.cs" />
     <Compile Include="Settings\ArgumentSettingsProviderTests.cs" />
+    <Compile Include="Support\TempCurrentDirectory.cs" />
     <Compile Include="Tasks\ConsoleTaskInteractionTests.cs" />
     <Compile Include="Logging\HtmlLoggerTests.cs" />
     <Compile Include="Logging\RichTextLoggerTests.cs" />
@@ -137,7 +139,7 @@
     <Compile Include="Utility\RegistryTests.cs" />
     <Compile Include="Utility\StringBuilderExtensionsTests.cs" />
     <Compile Include="Utility\StringsTests.cs" />
-    <Compile Include="Utility\TestFileService.cs" />
+    <Compile Include="Support\TestFileService.cs" />
     <Compile Include="Utility\TypesTests.cs" />
     <Compile Include="TestData.Designer.cs">
       <AutoGen>True</AutoGen>

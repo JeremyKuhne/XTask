@@ -7,13 +7,13 @@
 
 namespace XTask.Tests.Interop
 {
-    using FileSystem;
     using FluentAssertions;
     using System;
     using System.Linq;
     using XTask.Systems.File;
     using XTask.Interop;
     using Xunit;
+    using Support;
 
     public class BackupTests
     {

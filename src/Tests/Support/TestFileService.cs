@@ -5,7 +5,7 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace XTask.Tests.Utility
+namespace XTask.Tests.Support
 {
     using NSubstitute;
     using System;
@@ -25,20 +25,20 @@ namespace XTask.Tests.Utility
  
         public abstract class SimpleFileService : IFileService
         {
-            private string path;
-            private Stream stream;
+            private string _path;
+            private Stream _stream;
 
             public SimpleFileService(string path, string content)
             {
-                this.path = path;
-                this.stream = new MemoryStream(Encoding.UTF8.GetBytes(content ?? ""));
+                _path = path;
+                _stream = new MemoryStream(Encoding.UTF8.GetBytes(content ?? ""));
             }
 
             public Stream CreateFileStream(string path, FileMode mode = FileMode.Open, FileAccess access = FileAccess.Read, FileShare share = FileShare.ReadWrite)
             {
-                if (String.Equals(path, this.path, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(path, _path, StringComparison.OrdinalIgnoreCase))
                 {
-                    return this.stream;
+                    return _stream;
                 }
                 else
                 {
@@ -56,7 +56,7 @@ namespace XTask.Tests.Utility
 
             public FileAttributes GetAttributes(string path)
             {
-                if (String.Equals(path, this.path, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(path, this._path, StringComparison.OrdinalIgnoreCase))
                 {
                     return FileAttributes.Normal;
                 }

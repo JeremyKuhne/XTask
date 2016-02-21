@@ -12,7 +12,7 @@ namespace XTask.Tests.Utility
     using XTask.Settings;
     using Xunit;
     using System;
-    using XTask.Services;
+    using Support;
 
     public class ArgumentParserTests
     {

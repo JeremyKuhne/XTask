@@ -14,6 +14,7 @@ namespace XTask.Tests.FileSystem
     using Systems.File;
     using Systems.File.Concrete.Flex;
     using Xunit;
+    using Support;
 
     public class FlexFileServiceTests
     {

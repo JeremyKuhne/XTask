@@ -8,14 +8,11 @@
 namespace XTask.Tests.Interop
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Xunit;
     using FluentAssertions;
     using System.IO;
     using System.Reflection;
+    using Support;
 
     /// <summary>
     /// Tests to validate and document .NET API behaviors
@@ -23,6 +20,8 @@ namespace XTask.Tests.Interop
     public class DotNetBehaviors
     {
         [Theory
+            // InlineData(@"", @"")                                     // ArgumentException
+
             // Basic dot space handling
             InlineData(@"C:\", @"C:\")
             InlineData(@"C:\ ", @"C:\")
@@ -98,25 +97,46 @@ namespace XTask.Tests.Interop
             ]
         public void ValidateNoFullCheckBehaviors(string value, string expected)
         {
-            this.NormalizePath(value).Should().Be(expected);
+            NormalizePath(value).Should().Be(expected);
         }
 
         [Theory
-            InlineData(@".\PROGRA~1", @".\PROGRA~1")
             InlineData(@"C:\PROGRA~1", @"C:\Program Files")
+            InlineData(@"C:\.\PROGRA~1", @"C:\.\Program Files")
             ]
         public void ValidateNoFullCheckExpandShortPathBehaviors(string value, string expected)
         {
-            this.NormalizePath(value, fullCheck: false, expandShortPaths: true).Should().Be(expected);
+            NormalizePath(value, fullCheck: false, expandShortPaths: true).Should().Be(expected);
         }
 
-        private static MethodInfo normalizeMethod;
+        // Long paths need to exist for long path expansion. As such, relative paths like @".\PROGRA~1"
+        // could either resolve to @".\PROGRA~1" or @".\Program Files".
+
+        [Fact]
+        public void ValidateNoFullCheckExpandShortPathRelativeExists()
+        {
+            using (new TempCurrentDirectory(@"C:\"))
+            {
+                NormalizePath(@".\PROGRA~1", fullCheck: false, expandShortPaths: true).Should().Be(@".\Program Files");
+            }
+        }
+
+        [Fact]
+        public void ValidateNoFullCheckExpandShortPathRelativeNotExists()
+        {
+            using (new TempCurrentDirectory(@"C:\Users"))
+            {
+                NormalizePath(@".\PROGRA~1", fullCheck: false, expandShortPaths: true).Should().Be(@".\PROGRA~1");
+            }
+        }
+
+        private static MethodInfo _normalizeMethod;
 
         private string NormalizePath(string path, bool fullCheck = false, bool expandShortPaths = false, int maxPathLength = 260)
         {
-            if (normalizeMethod == null)
+            if (_normalizeMethod == null)
             {
-                normalizeMethod = typeof(Path).GetMethod(
+                _normalizeMethod = typeof(Path).GetMethod(
                     "NormalizePath",
                     BindingFlags.Static | BindingFlags.NonPublic,
                     binder: null,
@@ -124,7 +144,7 @@ namespace XTask.Tests.Interop
                     modifiers: null);
             }
 
-            return normalizeMethod.Invoke(null, new object[] { path, fullCheck, maxPathLength, expandShortPaths }) as string;
+            return _normalizeMethod.Invoke(null, new object[] { path, fullCheck, maxPathLength, expandShortPaths }) as string;
         }
 
         [Theory
@@ -146,6 +166,7 @@ namespace XTask.Tests.Interop
             InlineData(@"C:\PROGRA~1", @"C:\")
             InlineData(@".\PROGRA~1\A.TXT", @".\PROGRA~1")
             InlineData(@"C:\PROGRA~1\A.TXT", @"C:\Program Files")
+            InlineData(@"C:\.\PROGRA~1\A.TXT", @"C:\.\Program Files")
             ]
         public void ValidateGetDirectoryNameBehaviors(string input, string expected)
         {

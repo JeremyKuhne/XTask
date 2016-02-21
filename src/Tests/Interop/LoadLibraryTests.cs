@@ -16,6 +16,7 @@ namespace XTask.Tests.Interop
     using Systems.File.Concrete;
     using Systems.File.Concrete.Flex;
     using XTask.Interop;
+    using Support;
     using Xunit;
 
     public class LoadLibraryTests

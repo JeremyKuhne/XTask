@@ -13,6 +13,7 @@ namespace XTask.Tests.FileSystem
     using FluentAssertions;
     using XTask.Systems.File;
     using Xunit;
+    using Support;
 
     public class FlexDirectoryInfoTests
     {
