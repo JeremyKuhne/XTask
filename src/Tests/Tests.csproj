@@ -80,6 +80,7 @@
     <Compile Include="Interop\DotNetBehaviors.cs" />
     <Compile Include="Interop\ErrorsTests.cs" />
     <Compile Include="Interop\NativeBufferTests.cs" />
+    <Compile Include="Interop\NativeMethodsTests.cs" />
     <Compile Include="Interop\StringBufferTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Build\BuildArgumentParserTests.cs" />
