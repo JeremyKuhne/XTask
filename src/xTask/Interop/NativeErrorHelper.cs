@@ -28,6 +28,9 @@ namespace XTask.Interop
         // How to: Map HRESULTs and Exceptions
         // https://msdn.microsoft.com/en-us/library/9ztbc5s1.aspx
 
+        // Using NTSTATUS Values
+        // https://msdn.microsoft.com/en-us/library/windows/hardware/ff565436.aspx
+
         private const int FACILITY_WIN32 = 7;
 
         /// <summary>

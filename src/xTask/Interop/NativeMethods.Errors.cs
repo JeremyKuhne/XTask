@@ -9,9 +9,58 @@ namespace XTask.Interop
 {
     using System;
     using System.IO;
+    using System.Runtime.InteropServices;
+    using System.Security;
 
     internal static partial class NativeMethods
     {
+        // Technically WinErrors are uints (GetLastError returns DWORD). .NET uses int for these errors so we will as well
+        // to facilitate interaction with Marshal.GetLastWin32Error(), etc.
+
+        private static class Errors
+        {
+            // Putting private P/Invokes in a subclass to allow exact matching of signatures for perf on initial call and reduce string count
+            [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
+            internal static class Private
+            {
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/ms721800.aspx
+                [DllImport(Libraries.Advapi32, SetLastError = true, ExactSpelling = true)]
+                internal static extern int LsaNtStatusToWinError(int Status);
+            }
+
+            // [MS-ERREF] NTSTATUS
+            // https://msdn.microsoft.com/en-us/library/cc231200.aspx
+            private const int STATUS_SEVERITY_SUCCESS = 0x0;
+            private const int STATUS_SEVERITY_INFORMATIONAL = 0x1;
+            private const int STATUS_SEVERITY_WARNING = 0x2;
+            private const int STATUS_SEVERITY_ERROR = 0x3;
+
+            internal static bool NT_SUCCESS(int NTSTATUS)
+            {
+                return NTSTATUS >= 0;
+            }
+
+            internal static bool NT_INFORMATION(int NTSTATUS)
+            {
+                return (uint)NTSTATUS >> 30 == STATUS_SEVERITY_INFORMATIONAL;
+            }
+
+            internal static bool NT_WARNING(int NTSTATUS)
+            {
+                return (uint)NTSTATUS >> 30 == STATUS_SEVERITY_WARNING;
+            }
+
+            internal static bool NT_ERROR(int NTSTATUS)
+            {
+                return (uint)NTSTATUS >> 30 == STATUS_SEVERITY_ERROR;
+            }
+
+            internal static int NtStatusToWinError(int status)
+            {
+                return Private.LsaNtStatusToWinError(status);
+            }
+        }
+
         internal static class WinError
         {
             // From winerror.h
@@ -45,6 +94,39 @@ namespace XTask.Interop
             internal const int ERROR_NOT_FOUND = 1168;
             internal const int ERROR_PRIVILEGE_NOT_HELD = 1314;
             internal const int ERROR_DISK_CORRUPT = 1393;
+        }
+
+        internal static class NtStatus
+        {
+            // NTSTATUS values
+            // https://msdn.microsoft.com/en-us/library/cc704588.aspx
+            internal const int STATUS_SUCCESS = 0x00000000;
+
+            /// <summary>
+            /// {Buffer Overflow} The data was too large to fit into the specified buffer.
+            /// </summary>
+            internal const int STATUS_BUFFER_OVERFLOW = unchecked((int)0x80000005);
+
+            /// <summary>
+            /// The specified information record length does not match the length that is required for the specified information class.
+            /// </summary>
+            internal const int STATUS_INFO_LENGTH_MISMATCH = unchecked((int)0xC0000004);
+
+            /// <summary>
+            /// An invalid HANDLE was specified.
+            /// </summary>
+            internal const int STATUS_INVALID_HANDLE = unchecked((int)0xC0000008);
+
+            /// <summary>
+            /// {Access Denied} A process has requested access to an object but has not been granted those access rights.
+            /// </summary>
+            internal const int STATUS_ACCESS_DENIED = unchecked((int)0xC0000022);
+
+            /// <summary>
+            /// {Buffer Too Small} The buffer is too small to contain the entry. No information has been written to the buffer.
+            /// </summary>
+            internal const int STATUS_BUFFER_TOO_SMALL = unchecked((int)0xC0000023);
+
         }
 
         internal static Exception GetIoExceptionForError(int error, string path = null)

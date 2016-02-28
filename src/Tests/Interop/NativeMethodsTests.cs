@@ -8,6 +8,7 @@
 namespace XTask.Tests.Interop
 {
     using System;
+    using System.IO;
     using System.Runtime.InteropServices.ComTypes;
     using XTask.Interop;
     using Xunit;
@@ -28,6 +29,25 @@ namespace XTask.Tests.Interop
 
             DateTime dt = NativeMethods.GetDateTime(fileTime);
             dt.Ticks.Should().Be(expectedTicks);
+        }
+
+        [Fact]
+        public void GetPipeObjectInfo()
+        {
+            var fileHandle = NativeMethods.FileManagement.CreateFile(
+                @"\\.\pipe\",
+                0,                  // We don't care about read or write, we're just getting metadata with this handle
+                System.IO.FileShare.ReadWrite,
+                System.IO.FileMode.Open,
+                NativeMethods.FileManagement.AllFileAttributeFlags.FILE_ATTRIBUTE_NORMAL
+                    | NativeMethods.FileManagement.AllFileAttributeFlags.FILE_FLAG_OPEN_REPARSE_POINT   // To avoid traversing links
+                    | NativeMethods.FileManagement.AllFileAttributeFlags.FILE_FLAG_BACKUP_SEMANTICS);   // To open directories
+
+            string name = NativeMethods.Handles.GetObjectName(fileHandle.DangerousGetHandle());
+            name.Should().Be(@"\Device\NamedPipe\");
+
+            string typeName = NativeMethods.Handles.GetObjectTypeName(fileHandle.DangerousGetHandle());
+            typeName.Should().Be(@"File");
         }
     }
 }

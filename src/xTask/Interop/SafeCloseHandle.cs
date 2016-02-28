@@ -21,7 +21,7 @@ namespace XTask.Interop
 
         protected override bool ReleaseHandle()
         {
-            NativeMethods.CloseHandle(handle);
+            NativeMethods.Handles.CloseHandle(handle);
             return true;
         }
     }

@@ -103,6 +103,20 @@ namespace XTask.Interop
         //
         // PInvoke code is in dllimport, method, and ilmarshalers in coreclr\src\vm.
 
+        // Mapping for common Windows data types
+        //
+        //  Windows         C               C#
+        //  -------         -               --
+        //  BOOL            int             int
+        //  BOOLEAN         unsigned char   byte
+        //  BYTE            unsigned char   byte
+        //  CHAR            char            sbyte
+        //  DWORD           unsigned long   uint
+        //  HANDLE          void*           IntPtr
+        //  LARGE_INTEGER   __int64         long
+        //  LONGLONG        __int64         long
+        //  UCHAR           unsigned char   byte
+
         // Putting private P/Invokes in a subclass to allow exact matching of signatures for perf on initial call and reduce string count
         [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
         private static class Private
@@ -124,12 +138,6 @@ namespace XTask.Interop
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683182.aspx
             [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
             internal static extern IntPtr GetCurrentThread();
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211.aspx
-            [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            internal static extern bool CloseHandle(
-                IntPtr handle);
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms684179.aspx
             [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
@@ -160,11 +168,29 @@ namespace XTask.Interop
                 [MarshalAs(UnmanagedType.LPStr)] string methodName);
         }
 
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa380518.aspx
+        [StructLayout(LayoutKind.Sequential)]
+        unsafe internal struct UNICODE_STRING
+        {
+            /// <summary>
+            /// Length, in bytes, not including the the null, if any.
+            /// </summary>
+            public ushort Length;
+
+            /// <summary>
+            /// Max size of the buffer in bytes
+            /// </summary>
+            public ushort MaximumLength;
+
+            public char* Buffer;
+        }
+
         internal static class Libraries
         {
             internal const string Kernel32 = "kernel32.dll";
             internal const string Advapi32 = "advapi32.dll";
             internal const string User32 = "user32.dll";
+            internal const string Ntdll = "ntdll.dll";
         }
 
         /// <summary>
@@ -281,15 +307,6 @@ namespace XTask.Interop
                 error => error != WinError.ERROR_ENVVAR_NOT_FOUND);
         }
 
-        internal static void CloseHandle(IntPtr handle)
-        {
-            if (!Private.CloseHandle(handle))
-            {
-                int error = Marshal.GetLastWin32Error();
-                throw GetIoExceptionForError(error);
-            }
-        }
-
         internal static ulong HighLowToLong(uint high, uint low)
         {
             return ((ulong)high) << 32 | ((ulong)low & 0xFFFFFFFFL);
@@ -299,10 +316,6 @@ namespace XTask.Interop
         {
             return DateTime.FromFileTime((((long)fileTime.dwHighDateTime) << 32) + (uint)fileTime.dwLowDateTime);
         }
-
-        //[DllImport("ntdll.dll", SetLastError = true)]
-        //public static extern uint NtQueryObject(IntPtr handle, ObjectInformationClass objectInformationClass,
-        //    IntPtr objectInformation, uint objectInformationLength, out uint returnLength);
 
         internal static bool FreeLibrary(SafeLibraryHandle handle)
         {
