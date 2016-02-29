@@ -48,6 +48,48 @@ namespace XTask.Tests.Interop
 
             string typeName = NativeMethods.Handles.GetObjectTypeName(fileHandle.DangerousGetHandle());
             typeName.Should().Be(@"File");
+
+            string fileName = NativeMethods.FileInformation.GetFileName(fileHandle);
+            fileName.Should().Be(@"\");
+        }
+
+        [Fact]
+        public void GetPipeObjectInfoNoTrailingSlash()
+        {
+            var fileHandle = NativeMethods.FileManagement.CreateFile(
+                @"\\.\pipe",
+                0,                  // We don't care about read or write, we're just getting metadata with this handle
+                System.IO.FileShare.ReadWrite,
+                System.IO.FileMode.Open,
+                NativeMethods.FileManagement.AllFileAttributeFlags.FILE_ATTRIBUTE_NORMAL
+                    | NativeMethods.FileManagement.AllFileAttributeFlags.FILE_FLAG_OPEN_REPARSE_POINT   // To avoid traversing links
+                    | NativeMethods.FileManagement.AllFileAttributeFlags.FILE_FLAG_BACKUP_SEMANTICS);   // To open directories
+
+            string name = NativeMethods.Handles.GetObjectName(fileHandle.DangerousGetHandle());
+            name.Should().Be(@"\Device\NamedPipe");
+
+            string typeName = NativeMethods.Handles.GetObjectTypeName(fileHandle.DangerousGetHandle());
+            typeName.Should().Be(@"File");
+
+            // Not sure why this is- probably the source of why so many other things go wrong
+            Action action = () => NativeMethods.FileInformation.GetFileName(fileHandle);
+            action.ShouldThrow<IOException>().And.HResult.Should().Be(unchecked((int)0x80070057));
+        }
+
+        [Fact]
+        public void GetFileName()
+        {
+            // @"C:\" -> @"\"
+            var fileHandle = NativeMethods.FileManagement.CreateFile(
+                @"C:\Users",
+                0,                  // We don't care about read or write, we're just getting metadata with this handle
+                System.IO.FileShare.ReadWrite,
+                System.IO.FileMode.Open,
+                NativeMethods.FileManagement.AllFileAttributeFlags.FILE_ATTRIBUTE_NORMAL
+                    | NativeMethods.FileManagement.AllFileAttributeFlags.FILE_FLAG_OPEN_REPARSE_POINT   // To avoid traversing links
+                    | NativeMethods.FileManagement.AllFileAttributeFlags.FILE_FLAG_BACKUP_SEMANTICS);   // To open directories
+
+            string name = NativeMethods.FileInformation.GetFileName(fileHandle);
         }
     }
 }

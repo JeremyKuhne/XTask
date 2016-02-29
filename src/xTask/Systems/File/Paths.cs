@@ -51,6 +51,11 @@ namespace XTask.Systems.File
         /// </summary>
         public const string UncPrefix = @"\\";
 
+        /// <summary>
+        /// Path prefix for device paths
+        /// </summary>
+        public const string DevicePathPrefix = @"\\.\";
+
         // - Paths are case insensitive (NTFS supports sensitivity, but it is not enabled by default)
         // - Backslash is the "correct" separator for path components. Windows APIs convert forward slashes to backslashes, except for "\\?\"
         //
@@ -302,7 +307,7 @@ namespace XTask.Systems.File
             var sb = StringBuilderCache.Instance.Acquire();
 
             // Try and keep the casing of the target path
-            int keepLength = Strings.FindRightmostCommonCount(sourcePath, sourceRoot -1, targetPath, targetRoot - 1, StringComparison.OrdinalIgnoreCase);
+            int keepLength = Strings.FindRightmostCommonCount(sourcePath, sourceRoot - 1, targetPath, targetRoot - 1, StringComparison.OrdinalIgnoreCase);
 
             sb.Append(sourcePath, 0, sourceRoot - keepLength);
             sb.Append(targetPath, targetRoot - keepLength, targetPath.Length - targetRoot + keepLength);
@@ -567,12 +572,22 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
+        /// Returns true if the given path is a device path.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsDevice(string path)
+        {
+            return path != null && path.StartsWith(DevicePathPrefix, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Adds the extended path prefix (\\?\) if not already present.
         /// </summary>
         /// <param name="addIfUnderLegacyMaxPath">If false, will not add the extended prefix unless needed.</param>
         public static string AddExtendedPrefix(string path, bool addIfUnderLegacyMaxPath = false)
         {
             if (IsExtended(path)
+                || IsDevice(path)
                 || (!addIfUnderLegacyMaxPath && path.Length <= MaxPath))
             {
                 return path;

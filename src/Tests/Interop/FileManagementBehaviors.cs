@@ -83,6 +83,12 @@ namespace XTask.Tests.Interop
             InlineData(@"\\?\C:\..\..", @"\\?\")
             InlineData(@"\\?\C:\..\..\..", @"\\?\")
 
+            // Pipe tests
+            InlineData(@"\\.\pipe", @"\\.\pipe")
+            InlineData(@"\\.\pipe\", @"\\.\pipe\")
+            InlineData(@"\\?\pipe", @"\\?\pipe")
+            InlineData(@"\\?\pipe\", @"\\?\pipe\")
+
             // Basic dot space handling with UNCs
             InlineData(@"\\Server\Share\", @"\\Server\Share\")
             InlineData(@"\\Server\Share\ ", @"\\Server\Share\")

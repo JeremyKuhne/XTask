@@ -66,9 +66,27 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             _source = Source.FileInfo;
 
-            string originalRoot = Paths.GetRoot(originalPath);
-            string finalPath = NativeMethods.FileManagement.GetFinalPathName(fileHandle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED);
-            finalPath = Paths.ReplaceRoot(originalPath, finalPath);
+            string finalPath = originalPath;
+
+            try
+            {
+                string originalRoot = Paths.GetRoot(originalPath);
+                finalPath = NativeMethods.FileManagement.GetFinalPathName(fileHandle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED);
+
+                // GetFinalPathNameByHandle will use the legacy drive for the volume (e.g. \\?\C:\). We may have started with C:\ or some other
+                // volume name format (\\?\Volume({GUID}), etc.) and we want to put the original volume specifier back.
+                finalPath = Paths.ReplaceRoot(originalPath, finalPath);
+            }
+            catch
+            {
+                if (!originalPath.StartsWith(@"\\?\pipe\", StringComparison.OrdinalIgnoreCase)
+                    && !originalPath.StartsWith(@"\\.\pipe\", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Getting the final path name doesn't work with the pipes device. Not sure if there is a programmatic way
+                    // to know if an arbitrary file handle won't work with GetFinalPathName- potentially may be other cases.
+                    throw;
+                }
+            }
 
             _source = Source.FindResult;
             Path = finalPath;
@@ -99,14 +117,8 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             using (SafeFileHandle fileHandle = GetFileHandle(path))
             {
-                string canonicalPath = NativeMethods.FileManagement.GetFinalPathName(fileHandle, 0);
-
-                // GetFinalPathNameByHandle will use the legacy drive for the volume (e.g. \\?\C:\). We may have started with C:\ or some other
-                // volume name format (\\?\Volume({GUID}), etc.) and we want to put the original volume specifier back.
-                canonicalPath = Paths.ReplaceRoot(path, canonicalPath);
-
                 NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info = NativeMethods.FileManagement.GetFileInformationByHandle(fileHandle);
-                return Create(canonicalPath, fileHandle, info, fileService);
+                return Create(path, fileHandle, info, fileService);
             }
         }
 

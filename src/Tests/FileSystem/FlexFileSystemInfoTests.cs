@@ -13,6 +13,7 @@ namespace XTask.Tests.FileSystem
     using Systems.File.Concrete.Flex;
     using Systems.File.Concrete;
     using Xunit;
+    using XTask.Services;
 
     public class FlexFileSystemInfoTests
     {
@@ -22,13 +23,29 @@ namespace XTask.Tests.FileSystem
         public void CreateInfoForRootDrive(string prefix)
         {
             string driveRoot = prefix + Paths.GetRoot(Path.GetTempPath());
-            FileService fileService = new FileService(new ExtendedFileService());
+            IFileService fileService = FlexServiceProvider.Services.GetService<IFileService>();
 
             var info = fileService.GetPathInfo(driveRoot);
             info.Should().BeAssignableTo<IDirectoryInformation>();
             info.Exists.Should().BeTrue();
             info.Name.Should().Be(driveRoot);
             info.Path.Should().Be(driveRoot);
+        }
+
+        [Theory
+            InlineData(@"\\.\pipe\")
+            InlineData(@"\\?\pipe\")
+
+            // Currently these throw as many file apis don't like the file handle that this creates- still figuring out the best way to handle it
+            //InlineData(@"\\.\pipe")
+            //InlineData(@"\\?\pipe")
+            ]
+        public void CreateInfoForPipeRoot(string path)
+        {
+            IFileService fileService = FlexServiceProvider.Services.GetService<IFileService>();
+
+            var info = fileService.GetPathInfo(path);
+            info.Should().BeAssignableTo<IDirectoryInformation>();
         }
     }
 }

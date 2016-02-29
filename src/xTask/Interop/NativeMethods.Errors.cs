@@ -118,6 +118,11 @@ namespace XTask.Interop
             internal const int STATUS_INVALID_HANDLE = unchecked((int)0xC0000008);
 
             /// <summary>
+            /// An invalid parameter was passed to a service or function.
+            /// </summary>
+            internal const int STATUS_INVALID_PARAMETER = unchecked((int)0xC000000D);
+
+            /// <summary>
             /// {Access Denied} A process has requested access to an object but has not been granted those access rights.
             /// </summary>
             internal const int STATUS_ACCESS_DENIED = unchecked((int)0xC0000022);
