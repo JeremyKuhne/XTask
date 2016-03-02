@@ -64,10 +64,10 @@ namespace XTask.Tests.FileSystem
 
         [Theory,
             InlineData(null, PathFormat.UnknownFormat),
-            InlineData(@" ", PathFormat.CurrentDirectoryRelative),
-            InlineData(@"\\?\UNC\a\ ", PathFormat.UniformNamingConventionExtended),
+            InlineData(@" ", PathFormat.LocalCurrentDirectoryRelative),
+            InlineData(@"\\?\UNC\a\ ", PathFormat.UniformNamingConvention),
             InlineData(@"\\a\ ", PathFormat.UniformNamingConvention),
-            InlineData(@"\\.\ ", PathFormat.Device)
+            InlineData(@"\\.\ ", PathFormat.LocalFullyQualified)
             InlineData(@"", PathFormat.UnknownFormat),
             InlineData(@"\\?\UNC\a\", PathFormat.UnknownFormat),
             InlineData(@"\\a\", PathFormat.UnknownFormat),
@@ -78,35 +78,35 @@ namespace XTask.Tests.FileSystem
         }
 
         [Theory,
-            InlineData(@"C:", PathFormat.DriveRelative),
-            InlineData(@"C:Foo", PathFormat.DriveRelative),
-            InlineData(@"C:\", PathFormat.DriveAbsolute),
-            InlineData(@"C:\Foo", PathFormat.DriveAbsolute),
-            InlineData(@"C", PathFormat.CurrentDirectoryRelative),
+            InlineData(@"C:", PathFormat.LocalDriveRooted),
+            InlineData(@"C:Foo", PathFormat.LocalDriveRooted),
+            InlineData(@"C:\", PathFormat.LocalFullyQualified),
+            InlineData(@"C:\Foo", PathFormat.LocalFullyQualified),
+            InlineData(@"C", PathFormat.LocalCurrentDirectoryRelative),
             InlineData(@"@:", PathFormat.UnknownFormat),
             InlineData(@"[:", PathFormat.UnknownFormat),
-            InlineData(@"Foo", PathFormat.CurrentDirectoryRelative),
-            InlineData(@"\", PathFormat.CurrentVolumeRelative),
-            InlineData(@"\Foo", PathFormat.CurrentVolumeRelative),
-            InlineData(@"/", PathFormat.CurrentVolumeRelative),
+            InlineData(@"Foo", PathFormat.LocalCurrentDirectoryRelative),
+            InlineData(@"\", PathFormat.LocalCurrentDriveRooted),
+            InlineData(@"\Foo", PathFormat.LocalCurrentDriveRooted),
+            InlineData(@"/", PathFormat.LocalCurrentDriveRooted),
             InlineData(@"/\", PathFormat.UnknownFormat),
             InlineData(@"\\Foo\Bar", PathFormat.UniformNamingConvention),
             InlineData(@"\\Foo\Bar\", PathFormat.UniformNamingConvention),
-            InlineData(@"\\?\\Foo\Bar", PathFormat.UnknownFormat),
-            InlineData(@"\\?\Foo\Bar", PathFormat.VolumeAbsoluteExtended),
-            InlineData(@"\\?\Foo\Bar\", PathFormat.VolumeAbsoluteExtended),
+            InlineData(@"\\?\\Foo\Bar", PathFormat.LocalFullyQualified),
+            InlineData(@"\\?\Foo\Bar", PathFormat.LocalFullyQualified),
+            InlineData(@"\\?\Foo\Bar\", PathFormat.LocalFullyQualified),
             InlineData(@"\\?\UNC\\Foo\Bar", PathFormat.UnknownFormat),
             InlineData(@"\\?\UNC\\", PathFormat.UnknownFormat),
             InlineData(@"\\?\UNC\a\\", PathFormat.UnknownFormat),
-            InlineData(@"\\?\UNC\a\b", PathFormat.UniformNamingConventionExtended),
-            InlineData(@"\\?\UNC\Foo\Bar", PathFormat.UniformNamingConventionExtended),
-            InlineData(@"\\?\UNC\Foo\Bar\", PathFormat.UniformNamingConventionExtended),
+            InlineData(@"\\?\UNC\a\b", PathFormat.UniformNamingConvention),
+            InlineData(@"\\?\UNC\Foo\Bar", PathFormat.UniformNamingConvention),
+            InlineData(@"\\?\UNC\Foo\Bar\", PathFormat.UniformNamingConvention),
             InlineData(@":", PathFormat.UnknownFormat),
-            InlineData(@"\\?\C:", PathFormat.VolumeAbsoluteExtended),
-            InlineData(@"\\?\@:\", PathFormat.VolumeAbsoluteExtended),
-            InlineData(@"\\?\[:\", PathFormat.VolumeAbsoluteExtended),
-            InlineData(@"\\?\C:\", PathFormat.VolumeAbsoluteExtended),
-            InlineData(@"\\?\C:\Foo", PathFormat.VolumeAbsoluteExtended),
+            InlineData(@"\\?\C:", PathFormat.LocalFullyQualified),
+            InlineData(@"\\?\@:\", PathFormat.LocalFullyQualified),
+            InlineData(@"\\?\[:\", PathFormat.LocalFullyQualified),
+            InlineData(@"\\?\C:\", PathFormat.LocalFullyQualified),
+            InlineData(@"\\?\C:\Foo", PathFormat.LocalFullyQualified),
             InlineData(@"\\.psf\Home\", PathFormat.UniformNamingConvention),
             InlineData(@"\\.", PathFormat.UnknownFormat),
             InlineData(@"\\a\b", PathFormat.UniformNamingConvention),
@@ -118,48 +118,51 @@ namespace XTask.Tests.FileSystem
             Paths.GetPathFormat(path + " ").Should().Be(expected, "Passed path was '{0}'", path);
         }
 
-        [Theory,
-            InlineData(null, null),
-            InlineData(@"C:", @"C:"),
-            InlineData(@"C:Foo", @"C:"),
-            InlineData(@"C:\", @"C:\"),
-            InlineData(@"C:\Foo", @"C:\"),
-            InlineData(@"C", ""),
-            InlineData(@"@:", null),
-            InlineData(@"[:", null),
-            InlineData(@"Foo", ""),
-            InlineData(@"\", @"\"),
-            InlineData(@"\Foo", @"\"),
-            InlineData(@"/", @"/"),
-            InlineData(@"/\", null),
-            InlineData(@"\\Foo\Bar", @"\\Foo\Bar"),
-            InlineData(@"\\Foo\Bar\", @"\\Foo\Bar\"),
-            InlineData(@"\\Foo\Bar\Foo", @"\\Foo\Bar\"),
-            InlineData(@"\\Foo\Bar\Foo.txt", @"\\Foo\Bar\"),
-            InlineData(@"\\?\\Foo\Bar", null),
-            InlineData(@"\\?\Foo\Bar", @"\\?\Foo\"),
-            InlineData(@"\\?\Foo\Bar\", @"\\?\Foo\"),
-            InlineData(@"\\?\UNC\\Foo\Bar", null),
-            InlineData(@"\\?\UNC\\", null),
-            InlineData(@"\\?\UNC\a\", null),
-            InlineData(@"\\?\UNC\a\\", null),
-            InlineData(@"\\?\UNC\a\b", @"\\?\UNC\a\b"),
-            InlineData(@"\\?\UNC\Foo\Bar", @"\\?\UNC\Foo\Bar"),
-            InlineData(@"\\?\UNC\Foo\Bar\", @"\\?\UNC\Foo\Bar\"),
-            InlineData(@"", null),
-            InlineData(@":", null),
-            InlineData(@"\\?\C:", @"\\?\C:"),
-            InlineData(@"\\?\@:\", @"\\?\@:\"),
-            InlineData(@"\\?\[:\", @"\\?\[:\"),
-            InlineData(@"\\?\C:\", @"\\?\C:\"),
-            InlineData(@"\\?\C:\Foo", @"\\?\C:\"),
-            InlineData(@"\\.psf\Home\", @"\\.psf\Home\"),
-            InlineData(@"\\.", null),
-            InlineData(@"\\a\b", @"\\a\b"),
-            InlineData(@"\\\", null),
-            InlineData(@"\\a\", null),
-            InlineData(@"\\a\\", null),
-            InlineData(@"\\.\", null)]
+        [Theory
+            InlineData(null, null)
+            InlineData(@"C:", @"C:")
+            InlineData(@"C:Foo", @"C:")
+            InlineData(@"C:\", @"C:\")
+            InlineData(@"C:\Foo", @"C:\")
+            InlineData(@"C", "")
+            InlineData(@"@:", null)
+            InlineData(@"[:", null)
+            InlineData(@"Foo", "")
+            InlineData(@"\", @"\")
+            InlineData(@"\Foo", @"\")
+            InlineData(@"/", @"/")
+            InlineData(@"/\", null)
+            InlineData(@"\\Foo\Bar", @"\\Foo\Bar")
+            InlineData(@"\\Foo\Bar\", @"\\Foo\Bar\")
+            InlineData(@"\\Foo\Bar\Foo", @"\\Foo\Bar\")
+            InlineData(@"\\Foo\Bar\Foo.txt", @"\\Foo\Bar\")
+            InlineData(@"\\?\\Foo\Bar", @"\\?\\Foo\")
+            InlineData(@"\\?\Foo\Bar", @"\\?\Foo\")
+            InlineData(@"\\?\Foo\Bar\", @"\\?\Foo\")
+            InlineData(@"\\?\GLOBALROOT\GLOBAL??\C:\Foo", @"\\?\GLOBALROOT\GLOBAL??\C:\")
+            InlineData(@"\\?\UNC\\Foo\Bar", null)
+            InlineData(@"\\?\UNC\\", null)
+            InlineData(@"\\?\UNC\a\", null)
+            InlineData(@"\\?\UNC\a\\", null)
+            InlineData(@"\\?\UNC\a\b", @"\\?\UNC\a\b")
+            InlineData(@"\\?\UNC\Foo\Bar", @"\\?\UNC\Foo\Bar")
+            InlineData(@"\\?\UNC\Foo\Bar\", @"\\?\UNC\Foo\Bar\")
+            InlineData(@"", null)
+            InlineData(@":", null)
+            InlineData(@"\\?\C:", @"\\?\C:")
+            InlineData(@"\\?\@:\", @"\\?\@:\")
+            InlineData(@"\\?\[:\", @"\\?\[:\")
+            InlineData(@"\\?\C:\", @"\\?\C:\")
+            InlineData(@"\\?\C:\Foo", @"\\?\C:\")
+            InlineData(@"\\?\\C:\\", @"\\?\\C:\")
+            InlineData(@"\\.psf\Home\", @"\\.psf\Home\")
+            InlineData(@"\\.", null)
+            InlineData(@"\\a\b", @"\\a\b")
+            InlineData(@"\\\", null)
+            InlineData(@"\\a\", null)
+            InlineData(@"\\a\\", null)
+            InlineData(@"\\.\", null)
+            ]
         public void GetPathRoot(string path, string expected)
         {
             Paths.GetRoot(path).Should().Be(expected, "Passed path was {0}", path);
@@ -187,6 +190,8 @@ namespace XTask.Tests.FileSystem
             InlineData(@"C:\Foo.txt", @"Foo.txt"),
             InlineData(@"C:\Foo\", @"Foo"),
             InlineData(@"C:\Foo\Foo.txt", @"Foo.txt"),
+            InlineData(@"\\", null),
+            InlineData(@"\\?\\C:\\", null),
             InlineData(@"\\LocalHost\Share", null),
             InlineData(@"\\LocalHost\Share\", null),
             InlineData(@"\\LocalHost\Share\Foo", @"Foo"),
@@ -281,11 +286,43 @@ namespace XTask.Tests.FileSystem
         {
             var result = Paths.NormalizeDirectorySeparators(input);
             result.Should().Be(expected);
-            if (String.Equals(input, result, StringComparison.Ordinal))
+            if (string.Equals(input, result, StringComparison.Ordinal))
             {
                 // If they're equal we should get back the same instance
                 result.Should().BeSameAs(input);
             }
         }
+
+        [Theory
+            InlineData(@"", true, @"\\?\")
+            InlineData(@"", false, @"")
+            InlineData(@"\\?\", true, @"\\?\")
+            InlineData(@"\\?\", false, @"\\?\")
+            InlineData(@"\\.\", true, @"\\?\")
+            InlineData(@"\\.\", false, @"\\.\")
+            InlineData(@"\\?\UNC\", true, @"\\?\UNC\")
+            InlineData(@"\\?\UNC\", false, @"\\?\UNC\")
+            InlineData(@"\\.\UNC\", true, @"\\?\UNC\")
+            InlineData(@"\\.\UNC\", false, @"\\.\UNC\")
+            InlineData(@"\\", true, @"\\?\UNC\")
+            InlineData(@"\\", false, @"\\")
+            ]
+        public void AddExtendedPrefixTests(string input, bool addIfUnderMaxPath, string expected)
+        {
+            Paths.AddExtendedPrefix(input, addIfUnderMaxPath).Should().Be(expected);
+        }
+
+        [Theory
+            InlineData(@"", @"", @"")
+            InlineData(@"C:\foo", @"C:\Foo", @"C:\Foo")
+            InlineData(@"C:\foo", @"\\?\C:\Foo", @"C:\Foo")
+            InlineData(@"C:\foo", @"\\.\C:\Foo", @"C:\Foo")
+            InlineData(@"C:\foo", @"\\?\GLOBALROOT\GLOBAL??\C:\Foo", @"C:\Foo")
+            ]
+        public void ReplaceRootTests(string sourcePath, string targetPath, string expected)
+        {
+            Paths.ReplaceRoot(sourcePath, targetPath).Should().Be(expected);
+        }
+
     }
 }

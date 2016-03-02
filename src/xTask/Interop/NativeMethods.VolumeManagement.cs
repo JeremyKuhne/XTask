@@ -16,6 +16,11 @@ namespace XTask.Interop
 
     internal static partial class NativeMethods
     {
+        // MS-DOS Device Names
+        // https://msdn.microsoft.com/en-us/library/windows/hardware/ff556408.aspx
+
+        // The DosDevices namespace is accessed via \\.\ or \\?\
+
         internal static class VolumeManagement
         {
             // Putting private P/Invokes in a subclass to allow exact matching of signatures for perf on initial call and reduce string count

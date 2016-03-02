@@ -238,5 +238,13 @@ namespace XTask.Tests.Interop
         {
             NativeMethods.FileManagement.FindFirstFile(path, directoriesOnly: false, getAlternateName: false, returnNullIfNotFound: true).Should().BeNull();
         }
+
+        [Fact]
+        public void GetFileAttributesLongPath()
+        {
+            string longPath = PathGenerator.CreatePathOfLength(@"C:\", 300);
+            Action action = () => NativeMethods.FileManagement.GetFileAttributes(longPath);
+            action.ShouldThrow<DirectoryNotFoundException>();
+        }
     }
 }

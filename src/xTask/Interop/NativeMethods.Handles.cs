@@ -21,6 +21,14 @@ namespace XTask.Interop
             // http://research.microsoft.com/en-us/um/redmond/events/wincore2010/Dave_Probert_1.pdf
 
 
+            // Object Manager Routines (kernel-mode file systems and file system filter drivers)
+            // https://msdn.microsoft.com/en-us/library/windows/hardware/ff550969.aspx
+            // https://msdn.microsoft.com/en-us/library/windows/hardware/ff557759.aspx
+
+            // Managing Kernel Objects
+            // https://msdn.microsoft.com/en-us/library/windows/hardware/ff554383.aspx
+
+
             // Putting private P/Invokes in a subclass to allow exact matching of signatures for perf on initial call and reduce string count
             [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
             private static class Private
@@ -83,6 +91,52 @@ namespace XTask.Interop
                     uint GenericAll;
                 }
 
+                // https://msdn.microsoft.com/en-us/library/windows/hardware/ff564586.aspx
+                // https://msdn.microsoft.com/en-us/library/windows/hardware/ff547804.aspx
+                // 
+                [Flags]
+                internal enum ObjectAttributes : uint
+                {
+                    /// <summary>
+                    /// This handle can be inherited by child processes of the current process.
+                    /// </summary>
+                    OBJ_INHERIT = 0x00000002,
+
+                    /// <summary>
+                    /// This flag only applies to objects that are named within the object manager.
+                    /// By default, such objects are deleted when all open handles to them are closed.
+                    /// If this flag is specified, the object is not deleted when all open handles are closed.
+                    /// </summary>
+                    OBJ_PERMANENT = 0x00000010,
+
+                    /// <summary>
+                    /// Only a single handle can be open for this object.
+                    /// </summary>
+                    OBJ_EXCLUSIVE = 0x00000020,
+
+                    /// <summary>
+                    /// Lookups for this object should be case insensitive
+                    /// </summary>
+                    OBJ_CASE_INSENSITIVE = 0x00000040,
+
+                    /// <summary>
+                    /// Create on existing object should open, not fail with STATUS_OBJECT_NAME_COLLISION
+                    /// </summary>
+                    OBJ_OPENIF = 0x00000080,
+
+                    /// <summary>
+                    /// Open the symbolic link, not it's target
+                    /// </summary>
+                    OBJ_OPENLINK = 0x00000100,
+
+                    // Only accessible from kernel mode
+                    // OBJ_KERNEL_HANDLE
+
+                    // Access checks enforced, even in kernel mode
+                    // OBJ_FORCE_ACCESS_CHECK
+                    // OBJ_VALID_ATTRIBUTES = 0x000001F2
+                }
+
                 // The full struct isn't officially documented, names may be wrong.
                 //
                 //  https://msdn.microsoft.com/en-us/library/windows/hardware/ff551947.aspx
@@ -105,19 +159,38 @@ namespace XTask.Interop
                     public uint TotalNonPagedPoolUsage;
                     public uint TotalNamePoolUsage;
                     public uint TotalHandleTableUsage;
+
+                    // HighWater is the peak value
                     public uint HighWaterNumberOfObjects;
                     public uint HighWaterNumberOfHandles;
                     public uint HighWaterPagedPoolUsage;
                     public uint HighWaterNonPagedPoolUsage;
                     public uint HighWaterNamePoolUsage;
                     public uint HighWaterHandleTableUsage;
-                    public uint InvalidAttributes;
+
+                    /// <summary>
+                    /// Attributes that can't be used on instances
+                    /// </summary>
+                    public ObjectAttributes InvalidAttributes;
+
+                    /// <summary>
+                    /// Mapping of generic access rights (read/write/execute/all) to the type's specific rights
+                    /// </summary>
                     public GENERIC_MAPPING GenericMapping;
+
+                    /// <summary>
+                    /// Types of access a thread can request when opening a handle to an object of this type
+                    /// (read, write, terminate, suspend, etc.)
+                    /// </summary>
                     public uint ValidAccessMask;
                     public byte SecurityRequired;
                     public byte MaintainHandleCount;
                     public byte TypeIndex;
                     public byte ReservedByte;
+
+                    /// <summary>
+                    /// Instances are allocated from paged or non-paged (0) memory
+                    /// </summary>
                     public uint PoolType;
                     public uint DefaultPagedPoolCharge;
                     public uint DefaultNonPagedPoolCharge;
@@ -143,7 +216,7 @@ namespace XTask.Interop
                 [StructLayout(LayoutKind.Sequential)]
                 internal struct OBJECT_BASIC_INFORMATION
                 {
-                    public uint Attributes;
+                    public ObjectAttributes Attributes;
                     public uint GrantedAccess;
                     public uint HandleCount;
                     public uint PointerCount;

@@ -93,7 +93,7 @@
     <Compile Include="FileSystem\FlexFileServiceTests.cs" />
     <Compile Include="FileSystem\FlexFileSystemInfoTests.cs" />
     <Compile Include="FileSystem\NetFileSystemInfoTests.cs" />
-    <Compile Include="FileSystem\PathGenerator.cs" />
+    <Compile Include="Support\PathGenerator.cs" />
     <Compile Include="Interop\BackupTests.cs" />
     <Compile Include="Interop\BufferInvokeTests.cs" />
     <Compile Include="Interop\DirectoryManagementTests.cs" />

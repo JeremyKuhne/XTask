@@ -176,18 +176,15 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
 
-            switch (Paths.GetPathFormat(path))
+            // Don't mess with \\?\
+            if (Paths.IsExtended(path)) return path;
+
+            if (Paths.GetPathFormat(path) == PathFormat.LocalDriveRooted)
             {
-                case PathFormat.UniformNamingConventionExtended:
-                case PathFormat.VolumeAbsoluteExtended:
-                    // Don't mess with \\?\
-                    return path;
-                case PathFormat.DriveRelative:
-                    // Get the directory for the specified drive, and remove the drive specifier
-                    string drive = Paths.AddTrailingSeparator(path.Substring(0, 2));
-                    basePath = _directory.GetCurrentDirectory(drive);
-                    path = path.Substring(2);
-                    break;
+                // Get the directory for the specified drive, and remove the drive specifier
+                string drive = Paths.AddTrailingSeparator(path.Substring(0, 2));
+                basePath = _directory.GetCurrentDirectory(drive);
+                path = path.Substring(2);
             }
 
             if (basePath == null || !Paths.IsRelative(path))

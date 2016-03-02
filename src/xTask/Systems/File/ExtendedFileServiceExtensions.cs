@@ -29,16 +29,15 @@ namespace XTask.Systems.File
             string simpleRoot = root;
             string canonicalRoot = root;
 
+            bool isLocalDevice = Paths.IsExtended(path) || Paths.IsDevice(path);
+
             switch (format)
             {
-                case PathFormat.UniformNamingConventionExtended:
-                    simpleRoot = @"\\" + root.Substring(Paths.ExtendedUncPrefix.Length);
-                    goto case PathFormat.UniformNamingConvention;
                 case PathFormat.UniformNamingConvention:
+                    if (isLocalDevice) simpleRoot = @"\\" + root.Substring(Paths.ExtendedUncPrefix.Length);
                     canonicalRoot = simpleRoot;
                     break;
-                case PathFormat.VolumeAbsoluteExtended:
-                case PathFormat.DriveAbsolute:
+                case PathFormat.LocalFullyQualified:
                     canonicalRoot = extendedFileService.GetVolumeName(root);
                     simpleRoot = extendedFileService.GetMountPoint(root);
                     break;

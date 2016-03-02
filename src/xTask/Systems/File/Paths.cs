@@ -37,6 +37,11 @@ namespace XTask.Systems.File
         public const int MaxLongPath = short.MaxValue;
 
         /// <summary>
+        /// Path prefix for NT paths
+        /// </summary>
+        public const string NTPathPrefix = @"\??\";
+
+        /// <summary>
         /// Path prefix for extended paths
         /// </summary>
         public const string ExtendedPathPrefix = @"\\?\";
@@ -55,6 +60,16 @@ namespace XTask.Systems.File
         /// Path prefix for device paths
         /// </summary>
         public const string DevicePathPrefix = @"\\.\";
+
+        /// <summary>
+        /// Path prefix for device UNC paths
+        /// </summary>
+        public const string DeviceUncPrefix = @"\\.\UNC\";
+
+        /// <summary>
+        /// Global root define
+        /// </summary>
+        public const string GlobalRoot = @"GLOBALROOT";
 
         // - Paths are case insensitive (NTFS supports sensitivity, but it is not enabled by default)
         // - Backslash is the "correct" separator for path components. Windows APIs convert forward slashes to backslashes, except for "\\?\"
@@ -102,17 +117,17 @@ namespace XTask.Systems.File
                 return true;
             }
 
-            if ((path[0] == '\\') || (path[0] == '/'))
+            if (IsDirectorySeparator(path[0]))
             {
                 // There is no valid way to specify a relative path with two initial slashes
-                return !((path[1] == '\\') || (path[1] == '/'));
+                return !IsDirectorySeparator(path[1]);
             }
 
             // The only way to specify a fixed path that doesn't begin with two slashes
             // is the drive, colon, slash format- i.e. C:\
             return !((path.Length >= 3)
                 && (path[1] == ':')
-                && ((path[2] == '\\') || (path[2] == '/')));
+                && IsDirectorySeparator(path[2]));
         }
 
         /// <summary>
@@ -192,7 +207,7 @@ namespace XTask.Systems.File
             return AddTrailingSeparator(path);
         }
 
-        private static int GetDirectoryOrRootLength(string path, bool skipTrailingSlash = false)
+        private static int GetDirectoryOrRootLength(string path, bool skipTrailingSlashes = false)
         {
             int rootLength;
             PathFormat pathFormat = GetPathFormat(path, out rootLength);
@@ -200,7 +215,8 @@ namespace XTask.Systems.File
 
             int length = path.Length;
             if (rootLength == path.Length) return length;
-            if (skipTrailingSlash && EndsInDirectorySeparator(path)) length--;
+            if (skipTrailingSlashes)
+                while (length > 0 && IsDirectorySeparator(path[length - 1])) length--;
 
             while (((length > rootLength)
                 && (path[--length] != DirectorySeparator))
@@ -216,12 +232,18 @@ namespace XTask.Systems.File
         /// </summary>
         public static string GetFileOrDirectoryName(string path)
         {
-            int directoryLength = GetDirectoryOrRootLength(path, skipTrailingSlash: true);
+            int directoryLength = GetDirectoryOrRootLength(path, skipTrailingSlashes: true);
             if (directoryLength < 0) return null;
 
             // Just a root? Return it.
-            if (directoryLength == path.Length) return null;
-            if (IsDirectorySeparator(path[directoryLength])) directoryLength++;
+            if (directoryLength >= path.Length) return null;
+
+            while (IsDirectorySeparator(path[directoryLength]))
+            {
+                directoryLength++;
+                if (directoryLength >= path.Length) return null;
+            }
+
             return EndsInDirectorySeparator(path) ? path.Substring(directoryLength, path.Length - directoryLength - 1) : path.Substring(directoryLength);
         }
 
@@ -335,14 +357,75 @@ namespace XTask.Systems.File
         /// </remarks>
         public unsafe static PathFormat GetPathFormat(string path, out int rootLength)
         {
-            if (path == null || path.Length == 0 || path[0] == ':')
+            // The metric we're using for correctness is can you actually open a file handle on the given string?
+            // We also assume that the 
+            rootLength = -1;
+            int pathLength;
+
+            if (path == null || (pathLength = path.Length) == 0 || path[0] == ':')
             {
-                rootLength = -1;
                 return PathFormat.UnknownFormat;
             }
 
             fixed (char* start = path)
             {
+                if (IsDevice(path) || IsExtended(path))
+                {
+                    // Need at least something in the path
+                    int indexOfSeparator;
+                    int extendedPrefixLength = ExtendedPathPrefix.Length;
+                    if (pathLength == extendedPrefixLength) return PathFormat.UnknownFormat;
+
+                    int nextSeparatorSkip = extendedPrefixLength + 1;
+
+                    if (IsDeviceUnc(path) || IsExtendedUnc(path))
+                    {
+                        // Need at least something in the path
+                        if (pathLength == ExtendedUncPrefix.Length) return PathFormat.UnknownFormat;
+
+                        if (!ValidateAndFindUncRoot(start, pathLength, ExtendedUncPrefix.Length + 1, out rootLength))
+                            return PathFormat.UnknownFormat;
+                        else
+                            return PathFormat.UniformNamingConvention;
+                    }
+                    else
+                    {
+                        // \\?\GLOBALROOT\ and \\.\GLOBALROOT\ are special cases. Conceptually the top level paths are
+                        // at the second level, such as:
+                        //
+                        //      \\?\GLOBALROOT\Device\HarddiskVolume6
+                        //      \\?\GLOBALROOT\GLOBAL??\HarddiskVolume6
+                        //      \\?\GLOBALROOT\GLOBAL??\C:
+                        //
+                        if (path.IndexOf(GlobalRoot, extendedPrefixLength, StringComparison.OrdinalIgnoreCase) == extendedPrefixLength)
+                        {
+                            int globalExtendedPrefixLength = extendedPrefixLength + GlobalRoot.Length;
+
+                            // Need at least something in the path
+                            if (pathLength == globalExtendedPrefixLength) return PathFormat.UnknownFormat;
+
+                            if (IsDirectorySeparator(path[globalExtendedPrefixLength]))
+                            {
+                                // Assume we cant be something like \\?\GLOBALROOTA, which would be a potential alias in GLOBAL??
+                                // Fail if we're nothing more than a directory separator or two in a row
+                                if (pathLength == globalExtendedPrefixLength + 1 || IsDirectorySeparator(path[globalExtendedPrefixLength + 1])) return PathFormat.UnknownFormat;
+                                nextSeparatorSkip = globalExtendedPrefixLength + 1;
+
+                                // Skip another segment
+                                indexOfSeparator = NextSeparator(start, pathLength, nextSeparatorSkip);
+                                if (indexOfSeparator == -1 || pathLength - 1 == indexOfSeparator || IsDirectorySeparator(path[++indexOfSeparator])) return PathFormat.UnknownFormat;
+                                nextSeparatorSkip = indexOfSeparator;
+                            }
+                        }
+
+                        // Not a UNC, find next separator
+                        indexOfSeparator = NextSeparator(start, pathLength, nextSeparatorSkip);
+                        rootLength = indexOfSeparator == -1 ? pathLength : indexOfSeparator + 1;
+                        return PathFormat.LocalFullyQualified;
+                    }
+
+                }
+
                 return GetPathFormat(start, path.Length, out rootLength);
             }
         }
@@ -352,14 +435,14 @@ namespace XTask.Systems.File
             rootLength = -1;
 
             // Forward slashes are normalized to backslashes, so consider them equivalent
-            if (!(path[0] == '\\' || path[0] == '/'))
+            if (!IsDirectorySeparator(path[0]))
             {
                 // Path does not start with a slash
                 if (pathLength < 2 || path[1] != ':')
                 {
                     // Just a single character, or no colon
                     rootLength = 0;
-                    return PathFormat.CurrentDirectoryRelative;
+                    return PathFormat.LocalCurrentDirectoryRelative;
                 }
 
                 // We've got a colon in the drive letter position, check for a valid drive letter
@@ -370,87 +453,58 @@ namespace XTask.Systems.File
                     return PathFormat.UnknownFormat;
                 }
 
-                if (pathLength > 2 && (path[2] == '\\' || path[2] == '/'))
+                if (pathLength > 2 && IsDirectorySeparator(path[2]))
                 {
                     // C:\, D:\, etc
                     rootLength = 3;
-                    return PathFormat.DriveAbsolute;
+                    return PathFormat.LocalFullyQualified;
                 }
 
                 rootLength = 2;
-                return PathFormat.DriveRelative;
+                return PathFormat.LocalDriveRooted;
             }
 
-            // Now we know we have a slash, a single one is current volume (drive) relative
-            if (pathLength == 1 || !(path[1] == '\\') || (path[1] == '/'))
+            // Now we know we have a slash, a single one is rooted to the drive of the current working directory
+            if (pathLength == 1 || !IsDirectorySeparator(path[1]))
             {
                 rootLength = 1;
-                return PathFormat.CurrentVolumeRelative;
+                return PathFormat.LocalCurrentDriveRooted;
             }
 
-            if (pathLength < 5 || path[2] == '\\' || path[2] == '/')
+            if (pathLength < 5 || IsDirectorySeparator(path[2]))
             {
                 // Can't just be two or three slashes, and must be at least 5 characters \\a\b \\?\a
                 return PathFormat.UnknownFormat;
             }
 
-            // Now we know we're special (\\?\, \\.\, \\Server\Share)
-            int uncRoot = 3;
-            PathFormat format = PathFormat.UniformNamingConvention;
-            if (path[3] == '\\' || path[3] == '/')
-            {
-                // If we have \\ \ of some sort we might be a  special format
-                switch (path[2])
-                {
-                    case '.':
-                        format = PathFormat.Device;
-                        break;
-                    case '?':
-                        // Check for \\?\UNC or \\?\UNC\
-                        if (path[4] == 'U' && path[5] == 'N' && path[6] == 'C'
-                            && (pathLength == 7 || path[7] == '\\' || path[7] == '/'))
-                        {
-                            // Can't be anything but a bad or good extended UNC
-                            format = PathFormat.UniformNamingConventionExtended;
-                            uncRoot = 9;
-                        }
-                        else
-                        {
-                            format = PathFormat.VolumeAbsoluteExtended;
-                        }
-                        break;
-                }
+            if (ValidateAndFindUncRoot(path, pathLength, 3, out rootLength))
+                return PathFormat.UniformNamingConvention;
 
-                if (format == PathFormat.Device || format == PathFormat.VolumeAbsoluteExtended)
-                {
-                    // At least \\?\ or \\.\, can't have another slash
-                    if (path[4] == '\\' || path[4] == '/') return PathFormat.UnknownFormat;
+            // Bad UNC
+            return PathFormat.UnknownFormat;
+        }
 
-                    // Find the end of the volume/device identifier
-                    int nextSeparator = NextSeparator(path, pathLength, 4);
-                    rootLength = nextSeparator > -1 ? nextSeparator + 1 : pathLength;
-                    return format;
-                }
-            }
+        private unsafe static bool ValidateAndFindUncRoot(char* path, int pathLength, int uncRoot, out int rootLength)
+        {
+            rootLength = -1;
 
-            // UNC root is known to be \\ (two characters) or \\?\UNC (seven characters)
-            if (pathLength >= uncRoot + 2      // At least \\a\b or \\?\UNC\a\b
-                && path[uncRoot - 1] != '\\')  // Not just \\\ or \\?\UNC\\
+            // UNC root is known to be \\ (two characters)
+            if (pathLength >= uncRoot + 2      // At least \\a\b
+                && path[uncRoot - 1] != '\\')  // Not just \\\
             {
                 int indexOfShareSeparator = NextSeparator(path, pathLength, uncRoot);
-                if (indexOfShareSeparator > -1                     // Needs at least one slash past \\?\UNC\a
-                    && indexOfShareSeparator != pathLength - 1     //  and it can't be the final (e.g. \\?\UNC\a\)
-                    && path[indexOfShareSeparator + 1] != '\\')    //  and it can't be two backslashes (e.g. \\?\UNC\\)
+                if (indexOfShareSeparator > -1                     // Needs at least one slash past \\a
+                    && indexOfShareSeparator != pathLength - 1     //  and it can't be the final (e.g. \\a\)
+                    && path[indexOfShareSeparator + 1] != '\\')    //  and it can't be two backslashes (e.g. \\a\\)
                 {
                     // We're good, find the end of the server\share
                     int nextSeparator = NextSeparator(path, pathLength, indexOfShareSeparator + 1);
                     rootLength = nextSeparator > -1 ? nextSeparator + 1 : pathLength;
-                    return format;
+                    return true;
                 }
             };
 
-            // Bad extended UNC
-            return PathFormat.UnknownFormat;
+            return false;
         }
 
         private unsafe static int NextSeparator(char* value, int length, int skip)
@@ -568,7 +622,8 @@ namespace XTask.Systems.File
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsExtended(string path)
         {
-            return path != null && path.StartsWith(ExtendedPathPrefix, StringComparison.Ordinal);
+            return path != null && path.StartsWith(ExtendedPathPrefix, StringComparison.Ordinal)
+                || path.StartsWith(NTPathPrefix, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -581,16 +636,47 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
+        /// Returns true if the given path is extended.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsExtendedUnc(string path)
+        {
+            return path != null && path.StartsWith(ExtendedUncPrefix, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Returns true if the given path is a device path.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsDeviceUnc(string path)
+        {
+            return path != null && path.StartsWith(DeviceUncPrefix, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Adds the extended path prefix (\\?\) if not already present.
         /// </summary>
         /// <param name="addIfUnderLegacyMaxPath">If false, will not add the extended prefix unless needed.</param>
-        public static string AddExtendedPrefix(string path, bool addIfUnderLegacyMaxPath = false)
+        public unsafe static string AddExtendedPrefix(string path, bool addIfUnderLegacyMaxPath = false)
         {
             if (IsExtended(path)
-                || IsDevice(path)
                 || (!addIfUnderLegacyMaxPath && path.Length <= MaxPath))
             {
                 return path;
+            }
+
+            // Check for //./
+            if (IsDevice(path))
+            {
+                // Device is equivalent to extended in the namespace that it accesses. (@"\\?\C:\" == @"\\.\C:\")
+                // The difference is that it doesn't skip normalization and is blocked at MAX_PATH.
+                string newPath = string.Copy(path);
+                fixed (char* c = newPath)
+                {
+                    c[2] = '?';
+                }
+
+                return newPath;
             }
 
             if (!path.StartsWith(UncPrefix, StringComparison.OrdinalIgnoreCase))
