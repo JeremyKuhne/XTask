@@ -750,7 +750,7 @@ namespace XTask.Tests.Interop
             InlineData("", 'a', 0, 1, false)
             InlineData("", 'a', 1, 1, false)
             InlineData("a", 'a', 0, 0, true)
-            InlineData("", 'a', 1, 1, false)
+            InlineData("a", 'a', 1, 2, false)
             InlineData("aa", 'a', 0, 0, true)
             InlineData("aa", 'a', 1, 1, true)
             InlineData("ab", 'b', 0, 1, true)

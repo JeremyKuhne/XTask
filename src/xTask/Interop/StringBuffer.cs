@@ -161,7 +161,7 @@ namespace XTask.Interop
         /// Check for the index of a specified character.
         /// </summary>
         /// <param name="nameof(value)">Character to look for.</param>
-        /// <param name="nameof(index)">Index the character was found at if true is returned.</param>
+        /// <param name="nameof(index)">Index the character was found at if true is returned. Will be >Length if false.</param>
         /// <param name="nameof(skip)">Skip the given number of characters before looking.</param>
         /// <returns>True if the given character was found.</returns>
         public unsafe bool IndexOf(char value, out uint index, uint skip = 0)
