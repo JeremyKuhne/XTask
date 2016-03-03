@@ -198,5 +198,53 @@ namespace XTask.Tests.Utility
                 Strings.Split(new IntPtr(start), input.Length, splitChars).ShouldAllBeEquivalentTo(input.Split(splitChars));
             }
         }
+
+        [Theory
+            InlineData(@"", 0, @"", 0, StringComparison.Ordinal, 0)
+            InlineData(@"A", 0, @"", 0, StringComparison.OrdinalIgnoreCase, 0)
+            InlineData(@"", 0, @"A", 0, StringComparison.InvariantCulture, 0)
+            InlineData(@"A", 1, @"A", 0, StringComparison.InvariantCultureIgnoreCase, 0)
+            InlineData(@"A", 0, @"A", 1, StringComparison.CurrentCulture, 0)
+            InlineData(@"A", 0, @"A", 0, StringComparison.Ordinal, 1)
+            InlineData(@"a", 0, @"A", 0, StringComparison.Ordinal, 0)
+            InlineData(@"a", 0, @"A", 0, StringComparison.OrdinalIgnoreCase, 1)
+            InlineData(@"AA", 0, @"A", 0, StringComparison.Ordinal, 1)
+            InlineData(@"A", 0, @"AA", 0, StringComparison.Ordinal, 1)
+            InlineData(@"A", 0, @"aA", 0, StringComparison.Ordinal, 0)
+            InlineData(@"A", 0, @"aA", 1, StringComparison.Ordinal, 1)
+            InlineData(@"AA", 0, @"AA", 0, StringComparison.Ordinal, 1)
+            InlineData(@"AA", 1, @"AA", 0, StringComparison.Ordinal, 1)
+            InlineData(@"AA", 1, @"AA", 1, StringComparison.Ordinal, 2)
+            InlineData(@"AA", 0, @"AA", 1, StringComparison.Ordinal, 1)
+            InlineData(@"aA", 0, @"AA", 0, StringComparison.Ordinal, 0)
+            InlineData(@"aA", 1, @"AA", 1, StringComparison.Ordinal, 1)
+            InlineData(@"aA", 2, @"AA", 1, StringComparison.Ordinal, 0)
+            InlineData(@"aA", 2, @"AA", 2, StringComparison.Ordinal, 0)
+            InlineData(@"AA", 0, @"aA", 0, StringComparison.Ordinal, 0)
+            InlineData(@"AA", 1, @"aA", 0, StringComparison.Ordinal, 0)
+            InlineData(@"AA", 0, @"aA", 1, StringComparison.Ordinal, 1)
+            InlineData(@"AA", 1, @"aA", 1, StringComparison.Ordinal, 1)
+            InlineData(@"AA", 0, @"aA", 0, StringComparison.OrdinalIgnoreCase, 1)
+            InlineData(@"AA", 1, @"aA", 1, StringComparison.OrdinalIgnoreCase, 2)
+            ]
+        public void FindRightmostCommonCountTests(string first, int firstIndex, string second, int secondIndex, StringComparison comparisonType, int expected)
+        {
+            Strings.FindRightmostCommonCount(
+                first: first,
+                firstIndex: firstIndex,
+                second: second,
+                secondIndex: secondIndex,
+                comparisonType: comparisonType).Should().Be(expected);
+        }
+
+        [Theory
+            InlineData(null, "")
+            InlineData("", null)
+            InlineData(null, null)
+            ]
+        public void FindRightmostCommonCountArgumentNull(string first, string second)
+        {
+            Action action = () => Strings.FindRightmostCommonCount(first, 0, second, 0);
+        }
     }
 }

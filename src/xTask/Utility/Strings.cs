@@ -308,8 +308,19 @@ namespace XTask.Utility
         /// <summary>
         /// Get the count of characters that match at the given indexes walking backwards.
         /// </summary>
-        public static int FindRightmostCommonCount(string first, int firstIndex, string second, int secondIndex, StringComparison comparisonType)
+        public static int FindRightmostCommonCount(string first, int firstIndex, string second, int secondIndex, StringComparison comparisonType = StringComparison.Ordinal)
         {
+            if (first == null) throw new ArgumentNullException(nameof(first));
+            if (second == null) throw new ArgumentNullException(nameof(second));
+            if (firstIndex < 0 || first.Length - firstIndex < 0) throw new ArgumentOutOfRangeException(nameof(firstIndex));
+            if (secondIndex < 0 || second.Length - secondIndex < 0) throw new ArgumentOutOfRangeException(nameof(secondIndex));
+
+            if (first.Length == 0
+                || second.Length == 0
+                || firstIndex == first.Length
+                || secondIndex == second.Length)
+                return 0;
+
             int matchCount = 0;
             while (string.Compare(first, firstIndex, second, secondIndex, 1, comparisonType) == 0)
             {
