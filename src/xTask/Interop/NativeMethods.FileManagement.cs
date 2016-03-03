@@ -462,7 +462,7 @@ namespace XTask.Interop
 
                 // GetFinalPathNameByHandle will use the legacy drive for the volume (e.g. \\?\C:\). We may have started with \\?\Volume({GUID}) or some
                 // other volume name format (C:\, etc.) we want to put it back.
-                return Paths.ReplaceRoot(path, finalPath);
+                return Paths.ReplaceRightmostCommon(path, finalPath);
             }
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364415.aspx

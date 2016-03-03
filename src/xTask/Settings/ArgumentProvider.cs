@@ -56,6 +56,13 @@ namespace XTask.Settings
 
         protected void AddOrUpdateOption(string optionName, string optionValue = null)
         {
+            if (string.Equals(optionName, "target", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(optionName, "t", StringComparison.OrdinalIgnoreCase))
+            {
+                AddTarget(optionValue);
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(optionValue))
             {
                 // Without a specifier, we'll store the value as String.Empty. "null" means "not set" to consumers.

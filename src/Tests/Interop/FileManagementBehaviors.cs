@@ -274,7 +274,7 @@ namespace XTask.Tests.Interop
                 string filePath = cleaner.CreateTestFile("FinalPathNameVolumeNameBehavior");
 
                 string canonicalRoot = cleaner.ExtendedFileService.GetCanonicalRoot(cleaner.FileService, filePath);
-                string replacedPath = Paths.ReplaceRoot(canonicalRoot, filePath);
+                string replacedPath = Paths.ReplaceRightmostCommon(canonicalRoot, filePath);
 
                 using (var handle = NativeMethods.FileManagement.CreateFile(replacedPath.ToLower(), FileAccess.Read, FileShare.ReadWrite, FileMode.Open, 0))
                 {

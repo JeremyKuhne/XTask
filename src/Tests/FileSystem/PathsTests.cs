@@ -321,7 +321,7 @@ namespace XTask.Tests.FileSystem
             ]
         public void ReplaceRootTests(string sourcePath, string targetPath, string expected)
         {
-            Paths.ReplaceRoot(sourcePath, targetPath).Should().Be(expected);
+            Paths.ReplaceRightmostCommon(sourcePath, targetPath).Should().Be(expected);
         }
 
     }

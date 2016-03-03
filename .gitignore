@@ -159,3 +159,4 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 /src/SampleApplication/Tasks/ShortPathTask.cs
+/src/xTask.VC.opendb

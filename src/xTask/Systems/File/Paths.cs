@@ -309,30 +309,26 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Puts the root from the source path onto the target path if needed.
-        /// If either root can't be determined just returns the target path.
+        /// Copies the rightmost common characters ignoring case from target to source.
+        /// Use this to keep the root the same when normalizing casing.
         /// </summary>
-        public static string ReplaceRoot(string sourcePath, string targetPath)
+        public static string ReplaceRightmostCommon(string sourcePath, string targetPath)
         {
             if (sourcePath == null) throw new ArgumentNullException(nameof(sourcePath));
             if (targetPath == null) throw new ArgumentNullException(nameof(targetPath));
 
-            int sourceRoot = GetRootLength(sourcePath);
-            int targetRoot;
+            int keepLength = Strings.FindRightmostCommonCount(
+                first: sourcePath,
+                firstIndex: sourcePath.Length - 1,
+                second: targetPath,
+                secondIndex: targetPath.Length - 1,
+                comparisonType: StringComparison.OrdinalIgnoreCase);
 
-            // Skip out if we can't figure out the roots or are already good
-            if (sourceRoot == -1
-                || Strings.StartsWithCount(sourcePath, targetPath, sourceRoot, StringComparison.OrdinalIgnoreCase)
-                || (targetRoot = GetRootLength(targetPath)) == -1)
-                return targetPath;
+            if (keepLength == 0) return sourcePath;
 
             var sb = StringBuilderCache.Instance.Acquire();
-
-            // Try and keep the casing of the target path
-            int keepLength = Strings.FindRightmostCommonCount(sourcePath, sourceRoot - 1, targetPath, targetRoot - 1, StringComparison.OrdinalIgnoreCase);
-
-            sb.Append(sourcePath, 0, sourceRoot - keepLength);
-            sb.Append(targetPath, targetRoot - keepLength, targetPath.Length - targetRoot + keepLength);
+            sb.Append(sourcePath, startIndex: 0, count: sourcePath.Length - keepLength);
+            sb.Append(targetPath, startIndex: targetPath.Length - keepLength, count: keepLength);
             return StringBuilderCache.Instance.ToStringAndRelease(sb);
         }
 
@@ -622,8 +618,12 @@ namespace XTask.Systems.File
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsExtended(string path)
         {
-            return path != null && path.StartsWith(ExtendedPathPrefix, StringComparison.Ordinal)
-                || path.StartsWith(NTPathPrefix, StringComparison.Ordinal);
+            return path != null
+                && path.Length >= ExtendedPathPrefix.Length
+                && IsDirectorySeparator(path[0])
+                && (IsDirectorySeparator(path[1]) || path[1] == '?')
+                && path[2] == '?'
+                && IsDirectorySeparator(path[3]);
         }
 
         /// <summary>
@@ -632,7 +632,12 @@ namespace XTask.Systems.File
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDevice(string path)
         {
-            return path != null && path.StartsWith(DevicePathPrefix, StringComparison.Ordinal);
+            return path != null
+                && path.Length >= DevicePathPrefix.Length
+                && IsDirectorySeparator(path[0])
+                && IsDirectorySeparator(path[1])
+                && path[2] == '.'
+                && IsDirectorySeparator(path[3]);
         }
 
         /// <summary>
@@ -641,7 +646,13 @@ namespace XTask.Systems.File
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsExtendedUnc(string path)
         {
-            return path != null && path.StartsWith(ExtendedUncPrefix, StringComparison.Ordinal);
+            return path != null
+                && path.Length >= ExtendedUncPrefix.Length
+                && IsExtended(path)
+                && Char.ToUpper(path[4]) == 'U'
+                && Char.ToUpper(path[5]) == 'N'
+                && Char.ToUpper(path[6]) == 'C'
+                && IsDirectorySeparator(path[7]);
         }
 
         /// <summary>
@@ -650,7 +661,13 @@ namespace XTask.Systems.File
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDeviceUnc(string path)
         {
-            return path != null && path.StartsWith(DeviceUncPrefix, StringComparison.Ordinal);
+            return path != null
+                && path.Length >= DeviceUncPrefix.Length
+                && IsDevice(path)
+                && Char.ToUpper(path[4]) == 'U'
+                && Char.ToUpper(path[5]) == 'N'
+                && Char.ToUpper(path[6]) == 'C'
+                && IsDirectorySeparator(path[7]);
         }
 
         /// <summary>

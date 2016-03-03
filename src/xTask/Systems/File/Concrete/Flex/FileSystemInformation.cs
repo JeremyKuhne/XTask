@@ -75,7 +75,7 @@ namespace XTask.Systems.File.Concrete.Flex
 
                 // GetFinalPathNameByHandle will use the legacy drive for the volume (e.g. \\?\C:\). We may have started with C:\ or some other
                 // volume name format (\\?\Volume({GUID}), etc.) and we want to put the original volume specifier back.
-                finalPath = Paths.ReplaceRoot(originalPath, finalPath);
+                finalPath = Paths.ReplaceRightmostCommon(originalPath, finalPath);
             }
             catch
             {
