@@ -462,7 +462,7 @@ namespace XTask.Interop
 
                 // GetFinalPathNameByHandle will use the legacy drive for the volume (e.g. \\?\C:\). We may have started with \\?\Volume({GUID}) or some
                 // other volume name format (C:\, etc.) we want to put it back.
-                return Paths.ReplaceRightmostCommon(path, finalPath);
+                return Paths.ReplaceCasing(finalPath, path);
             }
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364415.aspx
@@ -641,7 +641,7 @@ namespace XTask.Interop
 
             internal static void DeleteFile(string path)
             {
-                Debug.Assert(!Paths.IsRelative(path));
+                Debug.Assert(!Paths.IsPartiallyQualified(path));
 
                 // Can't delete Posix files (end with "." for example) unless we've got the prefix
                 path = Paths.AddExtendedPrefix(path, addIfUnderLegacyMaxPath: true);

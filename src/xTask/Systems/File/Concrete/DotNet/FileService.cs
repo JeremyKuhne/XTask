@@ -62,7 +62,7 @@ namespace XTask.Systems.File.Concrete.DotNet
 
         public string GetFullPath(string path, string basePath = null)
         {
-            if (basePath == null || !Paths.IsRelative(path))
+            if (basePath == null || !Paths.IsPartiallyQualified(path))
             {
                 // Fixed, or we don't have a base path
                 return Path.GetFullPath(path);

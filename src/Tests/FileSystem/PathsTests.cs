@@ -40,26 +40,30 @@ namespace XTask.Tests.FileSystem
             var elapsed = end - start;
         }
 
-        [Theory,
-            InlineData("", true),
-            InlineData("C:", true),
-            InlineData("**", true),
-            InlineData(@"\\.\path", false),
-            InlineData(@"\\?\path", false),
-            InlineData(@"\\.", false),
-            InlineData(@"\\?", false),
-            InlineData(@"\\", false),
-            InlineData(@"//", false),
-            InlineData(@"\", true),
-            InlineData(@"/", true),
-            InlineData(@"C:Path", true),
-            InlineData(@"C:\Path", false),
-            InlineData(@"\\?\C:\Path", false),
-            InlineData(@"Path", true),
-            InlineData(@"X", true)]
-        public void IsPathRelative(string path, bool expected)
+        [Theory
+            InlineData("", true)
+            InlineData("C:", true)
+            InlineData("**", true)
+            InlineData(@"\\.\path", false)
+            InlineData(@"\\?\path", false)
+            InlineData(@"\??\path", false)
+            InlineData(@"\\.", false)
+            InlineData(@"\\?", false)
+            InlineData(@"\\", false)
+            InlineData(@"//", false)
+            InlineData(@"\?", false)
+            InlineData(@"/?", false)
+            InlineData(@"\", true)
+            InlineData(@"/", true)
+            InlineData(@"C:Path", true)
+            InlineData(@"C:\Path", false)
+            InlineData(@"\\?\C:\Path", false)
+            InlineData(@"Path", true)
+            InlineData(@"X", true)
+            ]
+        public void IsPathPartiallyQualified(string path, bool expected)
         {
-            Paths.IsRelative(path).Should().Be(expected);
+            Paths.IsPartiallyQualified(path).Should().Be(expected);
         }
 
         [Theory,
@@ -314,14 +318,17 @@ namespace XTask.Tests.FileSystem
 
         [Theory
             InlineData(@"", @"", @"")
-            InlineData(@"C:\foo", @"C:\Foo", @"C:\Foo")
-            InlineData(@"C:\foo", @"\\?\C:\Foo", @"C:\Foo")
-            InlineData(@"C:\foo", @"\\.\C:\Foo", @"C:\Foo")
-            InlineData(@"C:\foo", @"\\?\GLOBALROOT\GLOBAL??\C:\Foo", @"C:\Foo")
+            InlineData(@"C:\Foo", @"C:\foo", @"C:\Foo")
+            InlineData(@"C:\Foo", @"C:\foo\", @"C:\Foo\")
+            InlineData(@"C:\Foo\", @"C:\foo", @"C:\Foo")
+            InlineData(@"C:\Foo\", @"C:\foo\", @"C:\Foo\")
+            InlineData(@"\\?\C:\Foo", @"C:\foo", @"C:\Foo")
+            InlineData(@"\\.\C:\Foo", @"C:\foo", @"C:\Foo")
+            InlineData(@"\\?\GLOBALROOT\GLOBAL??\C:\Foo", @"C:\foo", @"C:\Foo")
             ]
-        public void ReplaceRootTests(string sourcePath, string targetPath, string expected)
+        public void ReplaceCasingTests(string sourcePath, string targetPath, string expected)
         {
-            Paths.ReplaceRightmostCommon(sourcePath, targetPath).Should().Be(expected);
+            Paths.ReplaceCasing(sourcePath, targetPath).Should().Be(expected);
         }
 
     }

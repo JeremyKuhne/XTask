@@ -75,12 +75,11 @@ namespace XTask.Systems.File.Concrete.Flex
 
                 // GetFinalPathNameByHandle will use the legacy drive for the volume (e.g. \\?\C:\). We may have started with C:\ or some other
                 // volume name format (\\?\Volume({GUID}), etc.) and we want to put the original volume specifier back.
-                finalPath = Paths.ReplaceRightmostCommon(originalPath, finalPath);
+                finalPath = Paths.ReplaceCasing(finalPath, originalPath);
             }
             catch
             {
-                if (!originalPath.StartsWith(@"\\?\pipe\", StringComparison.OrdinalIgnoreCase)
-                    && !originalPath.StartsWith(@"\\.\pipe\", StringComparison.OrdinalIgnoreCase))
+                if (originalPath.IndexOf(@"pipe", StringComparison.OrdinalIgnoreCase) == -1)
                 {
                     // Getting the final path name doesn't work with the pipes device. Not sure if there is a programmatic way
                     // to know if an arbitrary file handle won't work with GetFinalPathName- potentially may be other cases.

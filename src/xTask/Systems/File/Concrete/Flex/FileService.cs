@@ -187,7 +187,7 @@ namespace XTask.Systems.File.Concrete.Flex
                 path = path.Substring(2);
             }
 
-            if (basePath == null || !Paths.IsRelative(path))
+            if (basePath == null || !Paths.IsPartiallyQualified(path))
             {
                 // Fixed, or we don't have a base path
                 return NativeMethods.FileManagement.GetFullPathName(path);

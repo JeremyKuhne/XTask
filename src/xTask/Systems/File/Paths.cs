@@ -107,7 +107,7 @@ namespace XTask.Systems.File
         /// assume that rooted paths (Path.IsPathRooted) are not relative.  This isn't the case.
         /// </remarks>
         /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="path"/> is null.</exception>
-        public static bool IsRelative(string path)
+        public static bool IsPartiallyQualified(string path)
         {
             if (path == null) { throw new ArgumentNullException("path"); }
             if (path.Length < 2)
@@ -119,8 +119,9 @@ namespace XTask.Systems.File
 
             if (IsDirectorySeparator(path[0]))
             {
-                // There is no valid way to specify a relative path with two initial slashes
-                return !IsDirectorySeparator(path[1]);
+                // There is no valid way to specify a relative path with two initial slashes or
+                // \? as ? isn't valid for drive relative paths and \??\ is equivalent to \\?\
+                return !(path[1] == '?' || IsDirectorySeparator(path[1]));
             }
 
             // The only way to specify a fixed path that doesn't begin with two slashes
@@ -309,26 +310,42 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Copies the rightmost common characters ignoring case from target to source.
-        /// Use this to keep the root the same when normalizing casing.
+        /// Copies the casing from the source path to the target path, matching from the right.
         /// </summary>
-        public static string ReplaceRightmostCommon(string sourcePath, string targetPath)
+        public static string ReplaceCasing(string sourcePath, string targetPath)
         {
             if (sourcePath == null) throw new ArgumentNullException(nameof(sourcePath));
             if (targetPath == null) throw new ArgumentNullException(nameof(targetPath));
 
-            int keepLength = Strings.FindRightmostCommonCount(
+            bool sourceEndsInSeparator = EndsInDirectorySeparator(sourcePath);
+            bool targetEndsInSeparator = EndsInDirectorySeparator(targetPath);
+
+            int sourceLength = sourcePath.Length;
+            int targetLength = targetPath.Length;
+
+            if (sourceLength == 0
+                || targetLength == 0
+                || (sourceLength == 1 && sourceEndsInSeparator)
+                || (targetLength == 1 && targetEndsInSeparator))
+                return targetPath;
+
+            int common = Strings.FindRightmostCommonCount(
                 first: sourcePath,
-                firstIndex: sourcePath.Length - 1,
+                firstIndex: sourceLength - (sourceEndsInSeparator ? 2 : 1),
                 second: targetPath,
-                secondIndex: targetPath.Length - 1,
+                secondIndex: targetLength - (targetEndsInSeparator ? 2 : 1),
                 comparisonType: StringComparison.OrdinalIgnoreCase);
 
-            if (keepLength == 0) return sourcePath;
+            if (common == 0) return sourcePath;
 
             var sb = StringBuilderCache.Instance.Acquire();
-            sb.Append(sourcePath, startIndex: 0, count: sourcePath.Length - keepLength);
-            sb.Append(targetPath, startIndex: targetPath.Length - keepLength, count: keepLength);
+            sb.Append(targetPath, startIndex: 0, count: targetLength - common - (targetEndsInSeparator ? 1 : 0));
+            sb.Append(sourcePath, startIndex: sourceLength - common - (sourceEndsInSeparator ? 1 : 0), count: common);
+            if (targetEndsInSeparator)
+            {
+                sb.Append(targetPath[targetLength - 1]);
+            }
+
             return StringBuilderCache.Instance.ToStringAndRelease(sb);
         }
 

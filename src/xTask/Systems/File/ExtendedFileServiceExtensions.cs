@@ -18,7 +18,7 @@ namespace XTask.Systems.File
         /// <exception cref="System.IO.IOException">Thrown if unable to get the root from the OS.</exception>
         public static string GetCanonicalRoot(this IExtendedFileService extendedFileService, IFileService fileService, string path)
         {
-            if (Paths.IsRelative(path)) throw new ArgumentException(nameof(path));
+            if (Paths.IsPartiallyQualified(path)) throw new ArgumentException(nameof(path));
 
             path = fileService.GetFullPath(path);
             int rootLength;

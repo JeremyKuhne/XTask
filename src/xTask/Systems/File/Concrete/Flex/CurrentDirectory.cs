@@ -29,7 +29,7 @@ namespace XTask.Systems.File.Concrete.Flex
 
         public void SetCurrentDirectory(string directory)
         {
-            if (Paths.IsRelative(directory))
+            if (Paths.IsPartiallyQualified(directory))
             {
                 throw new ArgumentException("Argument cannot be relative", nameof(directory));
             }

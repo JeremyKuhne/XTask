@@ -165,7 +165,7 @@ namespace XTask.Tests.Interop
             string tempPath = Path.GetTempPath();
             string lowerTempPath = tempPath.ToLowerInvariant();
             tempPath.Should().NotBe(lowerTempPath);
-            NativeMethods.FileManagement.GetFinalPathName(lowerTempPath, 0, false).Should().Be(Paths.RemoveTrailingSeparators(tempPath));
+            NativeMethods.FileManagement.GetFinalPathName(lowerTempPath, 0, false).Should().Be(tempPath);
         }
 
         [Fact]
