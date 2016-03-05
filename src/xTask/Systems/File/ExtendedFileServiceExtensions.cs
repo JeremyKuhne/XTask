@@ -29,12 +29,10 @@ namespace XTask.Systems.File
             string simpleRoot = root;
             string canonicalRoot = root;
 
-            bool isLocalDevice = Paths.IsExtended(path) || Paths.IsDevice(path);
-
             switch (format)
             {
                 case PathFormat.UniformNamingConvention:
-                    if (isLocalDevice) simpleRoot = @"\\" + root.Substring(Paths.ExtendedUncPrefix.Length);
+                    if (Paths.IsDevice(path)) simpleRoot = @"\\" + root.Substring(Paths.ExtendedUncPrefix.Length);
                     canonicalRoot = simpleRoot;
                     break;
                 case PathFormat.LocalFullyQualified:

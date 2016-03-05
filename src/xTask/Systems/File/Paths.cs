@@ -382,7 +382,7 @@ namespace XTask.Systems.File
 
             fixed (char* start = path)
             {
-                if (IsDevice(path) || IsExtended(path))
+                if (IsDevice(path))
                 {
                     // Need at least something in the path
                     int indexOfSeparator;
@@ -630,30 +630,39 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns true if the given path is extended.
+        /// Returns true if the given path is extended and will skip normalization and MAX_PATH checks.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsExtended(string path)
         {
+            // While paths like "//?/C:/" will work, they're treated the same as "\\.\" paths.
+            // Skipping of normalization will *only* occur if back slashes ('\') are used.
             return path != null
                 && path.Length >= ExtendedPathPrefix.Length
-                && IsDirectorySeparator(path[0])
-                && (IsDirectorySeparator(path[1]) || path[1] == '?')
+                && path[0] == '\\'
+                && (path[1] == '\\' || path[1] == '?')
                 && path[2] == '?'
-                && IsDirectorySeparator(path[3]);
+                && path[3] == '\\';
         }
 
         /// <summary>
         /// Returns true if the given path is a device path.
         /// </summary>
+        /// <remarks>
+        /// This will return true if the path returns any of the following with either forward or back slashes.
+        ///  \\?\  \??\  \\.\
+        /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDevice(string path)
         {
             return path != null
                 && path.Length >= DevicePathPrefix.Length
                 && IsDirectorySeparator(path[0])
-                && IsDirectorySeparator(path[1])
-                && path[2] == '.'
+                &&
+                (
+                    ( IsDirectorySeparator(path[1]) && ( path[2] == '.' || path[2] == '?' ))
+                    || ( path[1] == '?' && path[2] == '?' )
+                )
                 && IsDirectorySeparator(path[3]);
         }
 
@@ -707,7 +716,11 @@ namespace XTask.Systems.File
                 string newPath = string.Copy(path);
                 fixed (char* c = newPath)
                 {
+                    // Must be "\\?\" (e.g. not "//?/")
+                    c[0] = '\\';
+                    c[1] = '\\';
                     c[2] = '?';
+                    c[3] = '\\';
                 }
 
                 return newPath;

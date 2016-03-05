@@ -302,6 +302,12 @@ namespace XTask.Tests.FileSystem
             InlineData(@"", false, @"")
             InlineData(@"\\?\", true, @"\\?\")
             InlineData(@"\\?\", false, @"\\?\")
+            InlineData(@"//?/", true, @"\\?\")
+            InlineData(@"//?/", false, @"//?/")
+            InlineData(@"\??\", true, @"\??\")
+            InlineData(@"\??\", false, @"\??\")
+            InlineData(@"/??/", true, @"\\?\")
+            InlineData(@"/??/", false, @"/??/")
             InlineData(@"\\.\", true, @"\\?\")
             InlineData(@"\\.\", false, @"\\.\")
             InlineData(@"\\?\UNC\", true, @"\\?\UNC\")
@@ -329,6 +335,43 @@ namespace XTask.Tests.FileSystem
         public void ReplaceCasingTests(string sourcePath, string targetPath, string expected)
         {
             Paths.ReplaceCasing(sourcePath, targetPath).Should().Be(expected);
+        }
+
+        [Theory
+            InlineData(null, false)
+            InlineData(@"", false)
+            InlineData(@"\\?\", true)
+            InlineData(@"\??\", true)
+            InlineData(@"\\.\", true)
+            InlineData(@"//?/", true)
+            InlineData(@"/??/", true)
+            InlineData(@"//./", true)
+            InlineData(@"\\?", false)
+            InlineData(@"\??", false)
+            InlineData(@"\\.", false)
+            InlineData(@"\\??", false)
+            InlineData(@"\???", false)
+            InlineData(@"\\..", false)
+            ]
+        public void IsDeviceTests(string path, bool expected)
+        {
+            Paths.IsDevice(path).Should().Be(expected);
+        }
+
+        [Theory
+            InlineData(null, false)
+            InlineData(@"", false)
+            InlineData(@"\\?\", true)
+            InlineData(@"\??\", true)
+            InlineData(@"\\.\", false)
+            InlineData(@"//?/", false)
+            InlineData(@"/??/", false)
+            InlineData(@"\\?", false)
+            InlineData(@"\??", false)
+            ]
+        public void IsExtendedTests(string path, bool expected)
+        {
+            Paths.IsExtended(path).Should().Be(expected);
         }
 
     }
