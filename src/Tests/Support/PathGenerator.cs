@@ -16,7 +16,8 @@ namespace XTask.Tests.Support
         // Note that 254 is the safe max segment (works on optical drives)
         public static string CreatePathOfLength(string root, int totalLength, int directoryLength = 254)
         {
-            var sb = StringBuilderCache.Instance.Acquire();
+            var sb = StringBuilderCache.Instance.Acquire(directoryLength);
+
             string guid = Guid.NewGuid().ToString();
             if (directoryLength < guid.Length)
             {
@@ -32,7 +33,7 @@ namespace XTask.Tests.Support
             int directoryCount = neededLength / (directory.Length + 1);
             int lastDirectory = neededLength % (directory.Length + 1) + 1;
 
-            var fullPath = StringBuilderCache.Instance.Acquire();
+            var fullPath = StringBuilderCache.Instance.Acquire(totalLength);
             fullPath.Append(root);
 
             for (int i = 0; i < directoryCount; i++)

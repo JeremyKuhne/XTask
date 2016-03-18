@@ -171,6 +171,9 @@ namespace XTask.Tests.Interop
             InlineData(@"//Server//Share/..", @"\\Server\")                         // Double slash shares normalize but don't root correctly
             InlineData(@"//Server\\Share/..", @"\\Server\")
             InlineData(@"//?/", @"\\?\")
+            // InlineData(@"\??\", @"D:\??\")                                       // \??\ will return the current directory's drive if passed to GetFullPathName
+            // InlineData(@"/??/", @"D:\??\")
+            InlineData(@"//./", @"\\.\")
 
             // Device behavior
             InlineData(@"CON", @"\\.\CON")
@@ -182,6 +185,23 @@ namespace XTask.Tests.Interop
         public void ValidateKnownFixedBehaviors(string value, string expected)
         {
             NativeMethods.FileManagement.GetFullPathName(value).Should().Be(expected, $"source was {value}");
+        }
+
+        [Fact]
+        public void GetFullPathNameLongPathBehaviors()
+        {
+            // ERROR_FILENAME_EXCED_RANGE (206)
+            // GetFullPathName will fail if the passed in patch is longer than short.MaxValue - 2, even if the path will normalize below that value.
+            // NativeMethods.FileManagement.GetFullPathName(PathGenerator.CreatePathOfLength(@"C:\..\..\..\..", short.MaxValue - 2));
+
+            // ERROR_INVALID_NAME (123)
+            // GetFullPathName will fail if the passed in path normalizes over short.MaxValue - 2
+            // NativeMethods.FileManagement.GetFullPathName(new string('a', short.MaxValue - 2));
+
+            NativeMethods.FileManagement.GetFullPathName(PathGenerator.CreatePathOfLength(Path.GetTempPath(), short.MaxValue - 2));
+
+            // Works
+            // NativeMethods.FileManagement.GetFullPathName(PathGenerator.CreatePathOfLength(@"C:\", short.MaxValue - 2));
         }
 
         [Theory

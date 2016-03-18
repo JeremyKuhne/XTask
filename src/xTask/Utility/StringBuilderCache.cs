@@ -17,29 +17,45 @@ namespace XTask.Utility
     {
         internal static StringBuilderCache Instance = new StringBuilderCache();
 
-        private int _minSize;
-        private int _maxSize;
+        private int _minCapcity;
+        private int _maxCapacity;
 
-        public StringBuilderCache(int minSize = 16, int maxSize = 1024, int maxBuilders = 0)
+        /// <summary>
+        /// Create a StringBuilder cache.
+        /// </summary>
+        /// <param name="minCapacity">The minimum capacity for created StringBuilders.</param>
+        /// <param name="maxCapacity">The maximum capacity for cached StringBuilders.</param>
+        /// <param name="maxBuilders">The maximum number of builders to cache. If less than one scales to the number of processors.</param>
+        public StringBuilderCache(int minCapacity = 16, int maxCapacity = 1024, int maxBuilders = 0)
             : base(maxBuilders)
         {
-            if (minSize < 0) minSize = 0;
-            if (maxSize < 0) maxSize = 0;
-            _minSize = minSize;
-            _maxSize = maxSize;
+            if (minCapacity < 0) minCapacity = 0;
+            if (maxCapacity < 0) maxCapacity = 0;
+            _minCapcity = minCapacity;
+            _maxCapacity = maxCapacity;
         }
 
         public override StringBuilder Acquire()
         {
             var builder = base.Acquire();
-            builder.EnsureCapacity(_minSize);
+            builder.EnsureCapacity(_minCapcity);
+            return builder;
+        }
+
+        /// <summary>
+        /// Acquire a StringBuilder with at least the specified capacity.
+        /// </summary>
+        public StringBuilder Acquire(int minCapacity)
+        {
+            var builder = base.Acquire();
+            builder.EnsureCapacity(minCapacity);
             return builder;
         }
 
         public override void Release(StringBuilder item)
         {
             item.Clear();
-            if (item.Capacity <= _maxSize)
+            if (item.Capacity <= _maxCapacity)
             {
                 base.Release(item);
             }
