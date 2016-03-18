@@ -563,7 +563,7 @@ namespace XTask.Tests.Interop
 
         [Theory
             InlineData("foo bar", new char[] { ' ' })
-            InlineData("foo bar", new char[] {  })
+            InlineData("foo bar", new char[] { })
             InlineData("foo bar", null)
             InlineData("foo\0bar", new char[] { '\0' })
             InlineData("foo\0bar", new char[] { ' ' })
@@ -762,6 +762,45 @@ namespace XTask.Tests.Interop
                 uint index;
                 buffer.IndexOf(value, out index, skip).Should().Be(expectedValue);
                 index.Should().Be(expectedIndex);
+            }
+        }
+
+        [Theory
+            InlineData("", 'z', 0, "")
+            InlineData("", 'a', 1, "a")
+            InlineData("", 'b', 2, "bb")
+            InlineData("", 'c', 3, "ccc")
+            InlineData("", 'd', 4, "dddd")
+            InlineData("", 'e', 5, "eeeee")
+            InlineData("", 'f', 6, "ffffff")
+            InlineData("", 'g', 7, "ggggggg")
+            InlineData("", 'h', 8, "hhhhhhhh")
+            InlineData("", 'i', 9, "iiiiiiiii")
+            InlineData("", 'j', 10, "jjjjjjjjjj")
+            InlineData("", 'k', 11, "kkkkkkkkkkk")
+            InlineData("y", 'z', 0, "y")
+            InlineData("y", 'a', 1, "ya")
+            InlineData("y", 'b', 2, "ybb")
+            ]
+        public void AppendCharCountTests(string initialBuffer, char value, uint count, string expected)
+        {
+            using (var buffer = new StringBuffer(initialBuffer))
+            {
+                buffer.Append(value, count);
+                buffer.ToString().Should().Be(expected);
+            }
+        }
+
+        // [Fact]
+        public void AppendCharCountPerf()
+        {
+            using (var buffer = new StringBuffer())
+            {
+                for (int i = 0; i < 100000; i++)
+                {
+                    buffer.Length = 0;
+                    buffer.Append('a', 100000);
+                }
             }
         }
     }

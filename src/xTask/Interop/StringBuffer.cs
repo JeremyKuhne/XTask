@@ -104,7 +104,6 @@ namespace XTask.Interop
         /// <summary>
         /// Ensure capacity in characters is at least the given minimum.
         /// </summary>
-        /// <exception cref="OutOfMemoryException">Thrown if unable to allocate memory when setting.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(Capacity)"/> to a value that is larger than the maximum addressable memory.</exception>
         public void EnsureCharCapacity(uint minCapacity)
         {
@@ -115,8 +114,6 @@ namespace XTask.Interop
         /// The logical length of the buffer in characters. (Does not include the final null.) Will automatically attempt to increase capacity.
         /// This is where the usable data ends.
         /// </summary>
-        /// <exception cref="OutOfMemoryException">Thrown if unable to allocate memory when setting.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set <paramref name="nameof(Length)"/> to a value that is larger than the maximum addressable memory.</exception>
         public unsafe uint Length
         {
             get { return _length; }
@@ -225,12 +222,48 @@ namespace XTask.Interop
         /// <summary>
         /// Append the given character.
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if you try to append more characters than the StringBuffer can hold.</exception>
         public unsafe void Append(char value)
         {
-            if (_length == 0) EnsureCharCapacity(1);
+            if (_length == uint.MaxValue) throw new ArgumentOutOfRangeException(nameof(value));
+            uint oldLength = Length++;
+            CharPointer[oldLength] = value;
+        }
 
-            CharPointer[_length] = value;
-            Length++;
+        /// <summary>
+        /// Append a specified count of a given character.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if you try to append more characters than the StringBuffer can hold.</exception>
+        public unsafe void Append(char value, uint count)
+        {
+            if (count >= uint.MaxValue - _length) throw new ArgumentOutOfRangeException(nameof(count));
+
+            uint oldLength = _length;
+            Length += count;
+            char* current = CharPointer + oldLength;
+
+            while (((uint)current & 3) != 0 && count > 0)
+            {
+                *current++ = value;
+                count--;
+            }
+
+            if (count > 1)
+            {
+                uint twoChars = (uint)((value << 16 | value));
+
+                while (count > 1)
+                {
+                    *((uint*)current) = twoChars;
+                    current += 2;
+                    count -= 2;
+                }
+            }
+
+            if (count == 1)
+            {
+                *current = value;
+            }
         }
 
         /// <summary>
