@@ -27,6 +27,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -77,6 +79,7 @@
     <Compile Include="Collections\CacheTests.cs" />
     <Compile Include="FileSystem\FileSystemInformationExtensions.cs" />
     <Compile Include="Interop\BufferPathInvokeTests.cs" />
+    <Compile Include="Interop\CryptographyTests.cs" />
     <Compile Include="Interop\DotNetBehaviors.cs" />
     <Compile Include="Interop\ErrorsTests.cs" />
     <Compile Include="Interop\FileManagementBehaviors.cs" />

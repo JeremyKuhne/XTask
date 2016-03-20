@@ -28,7 +28,7 @@ namespace XTask.Interop
     /// </remarks>
     public class NativeBuffer : IDisposable
     {
-        private HeapHandle _handle;
+        private SafeHeapHandle _handle;
         private ulong _byteCapacity;
 
         /// <summary>

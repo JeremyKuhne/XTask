@@ -13,7 +13,7 @@ namespace XTask.Interop
     /// Allows limited reuse of heap buffers to improve memory pressure. This cache does not ensure
     /// that multiple copies of handles are not released back into the cache.
     /// </summary>
-    public sealed class HeapHandleCache : Cache<HeapHandle>
+    public sealed class HeapHandleCache : Cache<SafeHeapHandle>
     {
         private ulong _minSize;
         private ulong _maxSize;
@@ -35,9 +35,9 @@ namespace XTask.Interop
         /// <summary>
         /// Get a HeapHandle
         /// </summary>
-        public HeapHandle Acquire(ulong minSize)
+        public SafeHeapHandle Acquire(ulong minSize)
         {
-            HeapHandle handle = Acquire();
+            SafeHeapHandle handle = Acquire();
             if (minSize < _minSize) minSize = _minSize;
             if (handle.ByteLength < minSize)
             {
@@ -47,7 +47,7 @@ namespace XTask.Interop
             return handle;
         }
 
-        public override void Release(HeapHandle item)
+        public override void Release(SafeHeapHandle item)
         {
             if (item.ByteLength <= _maxSize)
                 base.Release(item);

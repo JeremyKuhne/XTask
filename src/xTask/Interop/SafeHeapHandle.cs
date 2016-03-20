@@ -23,7 +23,7 @@ namespace XTask.Interop
     /// Windows attempts to grab space from the low fragmentation heap if the requested memory is below a platform specific
     /// threshold and certain flags aren't in play (such as NO_SERIALIZE).
     /// </remarks>
-    public class HeapHandle : SafeBuffer
+    public class SafeHeapHandle : SafeBuffer
     {
         [SuppressUnmanagedCodeSecurity] // We don't want a stack walk with every P/Invoke.
         protected static class NativeMethods
@@ -83,7 +83,7 @@ namespace XTask.Interop
         /// <summary>
         /// Create an empty heap handle
         /// </summary>
-        public HeapHandle() : this(0) { }
+        public SafeHeapHandle() : this(0) { }
 
         /// <summary>
         /// Allocate a buffer of the given size and zero memory if requested.
@@ -91,7 +91,7 @@ namespace XTask.Interop
         /// <param name="nameof(byteLength)">Required size in bytes. Must be less than UInt32.MaxValue for 32 bit or UInt64.MaxValue for 64 bit.</param>
         /// <exception cref="OutOfMemoryException">Thrown if the requested memory size cannot be allocated.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if size is greater than the maximum memory size.</exception>
-        public HeapHandle(ulong byteLength, bool zeroMemory = false) : base(ownsHandle: true)
+        public SafeHeapHandle(ulong byteLength, bool zeroMemory = false) : base(ownsHandle: true)
         {
             if (byteLength > 0)
             {
