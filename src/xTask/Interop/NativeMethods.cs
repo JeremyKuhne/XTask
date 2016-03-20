@@ -44,6 +44,9 @@ namespace XTask.Interop
         // Strings:
         // --------
         //
+        // "Default Marshalling for Strings"     https://msdn.microsoft.com/en-us/library/s9ts558h.aspx
+        // "Windows Data Types for Strings"      http://msdn.microsoft.com/en-us/library/dd374131.aspx
+        //
         // Strings are marshalled as LPTSTR by default, which means it will match the CharSet property in the DllImport attribute.
         // The CharSet is, by default, ANSI, which isn't appropriate for anything post Windows 9x (which isn't supported by .NET
         // anymore). As such, the mapping is actually as follows:
@@ -79,6 +82,19 @@ namespace XTask.Interop
         //
         // StringBuilder is guaranteed to have a null that is not counted in the capacity. As such the count of characters when using as a
         // character buffer is Capacity + 1.
+        //
+        // Booleans:
+        // ---------
+        //
+        // "Default Marshalling for Boolean Types"  https://msdn.microsoft.com/en-us/library/t2t3725f.aspx
+        //
+        // Booleans are easy to mess up. The default marshalling for P/Invoke is as the Windows type BOOL, where it is a 4 byte value.
+        // BOOLEAN, however, is a single byte. You need to use [MarshalAs(UnmanagedType.U1)] or [MarshalAs(UnmanagedType.I1)] either
+        // should work as TRUE is defined as 1 and FALSE is defined as 0. U1 is technically more correct as it is defined as an
+        // unsigned char.
+        //
+        // For COM (VARIANT_BOOL) the type is 2 bytes where true is -1 and false is 0. Marshalling uses this by default for bool in
+        // COM calls (UnmanagedType.VariantBool).
 
         // For most APIs with an output buffer:
         //
@@ -92,23 +108,22 @@ namespace XTask.Interop
         // Useful Interop Links
         // ====================
         //
-        // "Windows Data Types"                  http://msdn.microsoft.com/en-us/library/aa383751.aspx
-        // "Windows Data Types for Strings"      http://msdn.microsoft.com/en-us/library/dd374131.aspx
-        // "Data Type Ranges"                    http://msdn.microsoft.com/en-us/library/s3f49ktz.aspx
         // "MarshalAs Attribute"                 http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.marshalasattribute.aspx
         // "GetLastError and managed code"       http://blogs.msdn.com/b/adam_nathan/archive/2003/04/25/56643.aspx
         // "Copying and Pinning"                 https://msdn.microsoft.com/en-us/library/23acw07k.aspx
-        // "Default Marshalling for Strings"     https://msdn.microsoft.com/en-us/library/s9ts558h.aspx
         // "Marshalling between Managed and Unmanaged Code" (MSDN Magazine January 2008)
         //
         // PInvoke code is in dllimport, method, and ilmarshalers in coreclr\src\vm.
 
         // Mapping for common Windows data types
         //
-        //  Windows         C               C#
-        //  -------         -               --
-        //  BOOL            int             int
-        //  BOOLEAN         unsigned char   byte
+        // "Windows Data Types"                  http://msdn.microsoft.com/en-us/library/aa383751.aspx
+        // "Data Type Ranges"                    http://msdn.microsoft.com/en-us/library/s3f49ktz.aspx
+        //
+        //  Windows         C               C#          Alt
+        //  -------         -               --          ---
+        //  BOOL            int             int         bool
+        //  BOOLEAN         unsigned char   byte        [MarshalAs(UnmanagedType.U1)] bool
         //  BYTE            unsigned char   byte
         //  CHAR            char            sbyte
         //  DWORD           unsigned long   uint
@@ -191,6 +206,7 @@ namespace XTask.Interop
             internal const string Advapi32 = "advapi32.dll";
             internal const string User32 = "user32.dll";
             internal const string Ntdll = "ntdll.dll";
+            internal const string Crypt32 = "crypt32.dll";
         }
 
         /// <summary>
