@@ -67,6 +67,7 @@ namespace XTask.Interop
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms681382.aspx
             internal const int NO_ERROR = 0;
             internal const int ERROR_SUCCESS = 0;
+            internal const int NERR_Success = 0;
             internal const int ERROR_INVALID_FUNCTION = 1;
             internal const int ERROR_FILE_NOT_FOUND = 2;
             internal const int ERROR_PATH_NOT_FOUND = 3;
@@ -94,6 +95,11 @@ namespace XTask.Interop
             internal const int ERROR_NOT_FOUND = 1168;
             internal const int ERROR_PRIVILEGE_NOT_HELD = 1314;
             internal const int ERROR_DISK_CORRUPT = 1393;
+
+            // From lmerr.h
+            internal const int NERR_BASE = 2100;
+            internal const int NERR_BufTooSmall = NERR_BASE + 23;
+            internal const int NERR_InvalidComputer = NERR_BASE + 251;
         }
 
         internal static class NtStatus

@@ -66,6 +66,8 @@
     <Compile Include="Collections\ListExtensions.cs" />
     <Compile Include="Interop\NativeBufferReader.cs" />
     <Compile Include="Interop\EmptySafeHandle.cs" />
+    <Compile Include="Interop\NativeMethods.NetworkManagement.cs" />
+    <Compile Include="Interop\SafeNetApiBufferHandle.cs" />
     <Compile Include="Interop\SafeCertificateStoreHandle.cs" />
     <Compile Include="Interop\SafeHeapHandle.cs" />
     <Compile Include="Interop\HeapHandleCache.cs" />

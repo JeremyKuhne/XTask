@@ -207,6 +207,7 @@ namespace XTask.Interop
             internal const string User32 = "user32.dll";
             internal const string Ntdll = "ntdll.dll";
             internal const string Crypt32 = "crypt32.dll";
+            internal const string Netapi32 = "netapi32.dll";
         }
 
         /// <summary>
