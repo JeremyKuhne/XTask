@@ -5,13 +5,12 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Win32.SafeHandles;
+using System;
+using XTask.Interop;
+
 namespace XTask.Systems.File.Concrete.Flex
 {
-    using Interop;
-    using Microsoft.Win32.SafeHandles;
-    using System;
-    using Services;
-
     /// <summary>
     /// File service that provides fast and accurate file system access. Supports extended syntax and implicit long paths.
     /// Maintains a separate, enhanced current directory that supports alternate volume names.
@@ -23,9 +22,9 @@ namespace XTask.Systems.File.Concrete.Flex
     {
         private CurrentDirectory _directory;
 
-        public FileService(IExtendedFileService extendedFileService)
+        public FileService(IExtendedFileService extendedFileService, string initialCurrentDirectory = null)
         {
-            _directory = new CurrentDirectory(this, extendedFileService);
+            _directory = new CurrentDirectory(this, extendedFileService, initialCurrentDirectory);
         }
 
         public string CurrentDirectory
@@ -179,12 +178,27 @@ namespace XTask.Systems.File.Concrete.Flex
             // Don't mess with \\?\
             if (Paths.IsExtended(path)) return path;
 
-            if (Paths.GetPathFormat(path) == PathFormat.LocalDriveRooted)
+            if (basePath != null && Paths.IsPartiallyQualified(basePath))
+                throw new ArgumentException(nameof(basePath));
+
+            switch (Paths.GetPathFormat(path))
             {
-                // Get the directory for the specified drive, and remove the drive specifier
-                string drive = Paths.AddTrailingSeparator(path.Substring(0, 2));
-                basePath = _directory.GetCurrentDirectory(drive);
-                path = path.Substring(2);
+                case PathFormat.LocalDriveRooted:
+                    // Get the directory for the specified drive, and remove the drive specifier
+                    string drive = path.Substring(0, 2);
+
+                    if (basePath == null || !basePath.StartsWith(drive, StringComparison.OrdinalIgnoreCase))
+                        // No basepath or it doesn't match, find the current directory for the drive
+                        basePath = _directory.GetCurrentDirectory(Paths.AddTrailingSeparator(drive));
+
+                    path = path.Substring(2);
+
+                    break;
+                case PathFormat.LocalCurrentDriveRooted:
+                    // Get the root directory of the basePath if possible
+                    basePath = basePath ?? _directory.GetCurrentDirectory();
+                    basePath = Paths.GetRoot(basePath) ?? basePath;
+                    break;
             }
 
             if (basePath == null || !Paths.IsPartiallyQualified(path))

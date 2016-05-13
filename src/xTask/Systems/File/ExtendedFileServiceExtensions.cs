@@ -5,10 +5,10 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace XTask.Systems.File
 {
-    using System;
-
     public static class ExtendedFileServiceExtensions
     {
         /// <summary>
@@ -26,18 +26,15 @@ namespace XTask.Systems.File
             if (format == PathFormat.UnknownFormat) throw new ArgumentException(nameof(format));
 
             string root = path.Substring(0, rootLength);
-            string simpleRoot = root;
             string canonicalRoot = root;
 
             switch (format)
             {
                 case PathFormat.UniformNamingConvention:
-                    if (Paths.IsDevice(path)) simpleRoot = @"\\" + root.Substring(Paths.ExtendedUncPrefix.Length);
-                    canonicalRoot = simpleRoot;
+                    if (Paths.IsDevice(path)) canonicalRoot = @"\\" + root.Substring(Paths.ExtendedUncPrefix.Length);
                     break;
                 case PathFormat.LocalFullyQualified:
                     canonicalRoot = extendedFileService.GetVolumeName(root);
-                    simpleRoot = extendedFileService.GetMountPoint(root);
                     break;
             }
 

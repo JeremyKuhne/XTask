@@ -5,17 +5,19 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using FluentAssertions;
+using NSubstitute;
+using System;
+using System.IO;
+using XTask.Interop;
+using XTask.Systems.File;
+using XTask.Systems.File.Concrete;
+using XTask.Systems.File.Concrete.Flex;
+using XTask.Tests.Support;
+using Xunit;
+
 namespace XTask.Tests.FileSystem
 {
-    using FluentAssertions;
-    using System;
-    using System.IO;
-    using XTask.Interop;
-    using Systems.File;
-    using Systems.File.Concrete.Flex;
-    using Xunit;
-    using Support;
-
     public class FlexFileServiceTests
     {
         [Fact]
@@ -213,6 +215,25 @@ namespace XTask.Tests.FileSystem
                 var info = cleaner.FileService.GetPathInfo(filePath.ToLowerInvariant());
                 info.Path.Should().Be(filePath);
             }
+        }
+
+        [Theory
+            InlineData(@"a", @"C:\b", @"C:\b\a")
+            InlineData(@"C:a", @"C:\b", @"C:\b\a")
+            InlineData(@"C:a", @"D:\b", @"C:\Users\a")
+            InlineData(@"C:\a\b", @"C:\b", @"C:\a\b")
+            InlineData(@"a", @"D:\b", @"D:\b\a")
+            InlineData(@"D:a", @"D:\b", @"D:\b\a")
+            InlineData(@"D:a", @"C:\b", @"D:\a")
+            ]
+        public void GetFullPathWithBasePathTests(string path, string basePath, string expected)
+        {
+            IExtendedFileService extendedFileService = Substitute.For<IExtendedFileService>();
+            extendedFileService.GetVolumeName(@"C:\").Returns("TestCVolumeName");
+            extendedFileService.GetVolumeName(@"D:\").Returns("TestDVolumeName");
+
+            var fileService = new FileService(extendedFileService, initialCurrentDirectory: @"C:\Users");
+            fileService.GetFullPath(path, basePath).Should().Be(expected);
         }
     }
 }
