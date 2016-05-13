@@ -134,6 +134,7 @@
     <Compile Include="Utility\ConsoleHelperTests.cs" />
     <Compile Include="Utility\EnumsTests.cs" />
     <Compile Include="Utility\ErrorHelperTests.cs" />
+    <Compile Include="Utility\ExceptionsTests.cs" />
     <Compile Include="Utility\FileCleanerTests.cs" />
     <Compile Include="Utility\FilesTests.cs" />
     <Compile Include="Logging\ColumnFormatTests.cs" />

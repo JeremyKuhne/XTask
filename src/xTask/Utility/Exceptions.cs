@@ -5,11 +5,11 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+
 namespace XTask.Utility
 {
-    using System;
-    using System.IO;
-
     public static class Exceptions
     {
         /// <summary>
@@ -18,9 +18,9 @@ namespace XTask.Utility
         public static bool IsIoException(Exception exception)
         {
             return exception is IOException
-                // Unfortunately AccessViolationException and OperationCanceledException come out of
+                // Unfortunately UnauthorizedAccessException and OperationCanceledException come out of
                 // IO APIs and don't derive from IOException.
-                || exception is AccessViolationException
+                || exception is UnauthorizedAccessException
                 || exception is OperationCanceledException
                 // ArgumentException is the saddest of "normal" exceptions to come out of .NET APIs.
                 // System.IO.Path.CheckInvalidPathChars() gets called by almost all .NET APIs that
