@@ -54,7 +54,8 @@ build/
 ipch/
 *.aps
 *.ncb
-*.opendb
+*.VC.db
+*.VC.opendb
 *.opensdf
 *.sdf
 *.cachefile
@@ -160,4 +161,4 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 /src/SampleApplication/Tasks/ShortPathTask.cs
-/src/xTask.VC.opendb
+
