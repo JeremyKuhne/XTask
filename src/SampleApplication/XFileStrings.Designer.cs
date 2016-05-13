@@ -70,6 +70,26 @@ namespace XFile {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copies files. Source can include filename wildcards. Destination is assumed to be the current directory if not specified. If the source is one file and the destination isn&apos;t an existing directory the destination is assumed to be the destination filename.
+        ///
+        ///copy source [destination] [/overwrite].
+        /// </summary>
+        internal static string CopyTaskHelp {
+            get {
+                return ResourceManager.GetString("CopyTaskHelp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to overwrite   (/ow)   Overwrite existing destination file.
+        /// </summary>
+        internal static string CopyTaskOptions {
+            get {
+                return ResourceManager.GetString("CopyTaskOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy a file to a given location.
         /// </summary>
         internal static string CopyTaskSummary {

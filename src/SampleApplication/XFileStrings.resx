@@ -120,6 +120,14 @@
   <data name="ChangeDirectorySummary" xml:space="preserve">
     <value>Change the current directory</value>
   </data>
+  <data name="CopyTaskHelp" xml:space="preserve">
+    <value>Copies files. Source can include filename wildcards. Destination is assumed to be the current directory if not specified. If the source is one file and the destination isn't an existing directory the destination is assumed to be the destination filename.
+
+copy source [destination] [/overwrite]</value>
+  </data>
+  <data name="CopyTaskOptions" xml:space="preserve">
+    <value>overwrite   (/ow)   Overwrite existing destination file</value>
+  </data>
   <data name="CopyTaskSummary" xml:space="preserve">
     <value>Copy a file to a given location</value>
   </data>
