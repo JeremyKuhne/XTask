@@ -703,7 +703,7 @@ namespace XTask.Systems.File
         public unsafe static string AddExtendedPrefix(string path, bool addIfUnderLegacyMaxPath = false)
         {
             if (IsExtended(path)
-                || (!addIfUnderLegacyMaxPath && path.Length <= MaxPath))
+                || (!addIfUnderLegacyMaxPath && path.Length < MaxPath))
             {
                 return path;
             }
