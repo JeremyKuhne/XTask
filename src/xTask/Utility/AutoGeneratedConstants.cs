@@ -15,27 +15,27 @@ namespace XTask.Utility
             /// <summary>
             /// Current year
             /// </summary>
-            public const int CurrentYear =  2015;
+            public const int CurrentYear =  2016;
 
             /// <summary>
             /// Current month 1..12
             /// </summary>
-            public const int CurrentMonth = 10;
+            public const int CurrentMonth = 5;
 
             /// <summary>
             /// Current day of the month 1..31
             /// </summary>
-            public const int CurrentDayOfMonth =  8;
+            public const int CurrentDayOfMonth =  13;
 
             /// <summary>
             /// Current hour from 0..23
             /// </summary>
-            public const int CurrentHour = 16;
+            public const int CurrentHour = 13;
 
             /// <summary>
             /// Current hour from 0..59
             /// </summary>
-            public const int CurrentMinute = 10;
+            public const int CurrentMinute = 43;
         }
 
         public static class Strings
@@ -43,47 +43,47 @@ namespace XTask.Utility
             /// <summary>
             /// Current year
             /// </summary>
-            public const string CurrentYear =  "2015";
+            public const string CurrentYear =  "2016";
 
             /// <summary>
             /// Current month 1..12
             /// </summary>
-            public const string CurrentMonth = "10";
+            public const string CurrentMonth = "5";
 
             /// <summary>
             /// Current month 01..12
             /// </summary>
-            public const string CurrentTwoDigitMonth = "10";
+            public const string CurrentTwoDigitMonth = "05";
 
             /// <summary>
             /// Current day of the month 1..31
             /// </summary>
-            public const string CurrentDayOfMonth =  "8";
+            public const string CurrentDayOfMonth =  "13";
 
             /// <summary>
             /// Current two digit day of the month 01..31
             /// </summary>
-            public const string CurrentTwoDigitDayOfMonth =  "08";
+            public const string CurrentTwoDigitDayOfMonth =  "13";
 
             /// <summary>
             /// Current hour from 0..23
             /// </summary>
-            public const string CurrentHour = "16";
+            public const string CurrentHour = "13";
 
             /// <summary>
             /// Current two digit hour from 00..23
             /// </summary>
-            public const string CurrentTwoDigitHour = "16";
+            public const string CurrentTwoDigitHour = "13";
 
             /// <summary>
             /// Current hour from 0..59
             /// </summary>
-            public const string CurrentMinute = "10";
+            public const string CurrentMinute = "43";
 
             /// <summary>
             /// Current two digit hour from 00..59
             /// </summary>
-            public const string CurrentTwoDigitMinute = "10";
+            public const string CurrentTwoDigitMinute = "43";
         }
     }
 }
