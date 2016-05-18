@@ -6,13 +6,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using WInterop.Authorization;
 using WInterop.Authorization.Desktop;
+using WInterop.Backup;
 using WInterop.FileManagement;
 using WInterop.FileManagement.Desktop;
 using WInterop.VolumeManagement;
-using XTask.Interop;
 
 namespace XTask.Systems.File.Concrete
 {
@@ -83,7 +84,13 @@ namespace XTask.Systems.File.Concrete
 
         public IEnumerable<AlternateStreamInformation> GetAlternateStreamInformation(string path)
         {
-            return NativeMethods.Backup.GetAlternateStreamInformation(path);
+            return
+                from info in BackupDesktopMethods.GetAlternateStreamInformation(path)
+                select new AlternateStreamInformation
+                {
+                    Name = info.Name,
+                    Size = info.Size
+                };
         }
 
         public bool CanCreateSymbolicLinks()

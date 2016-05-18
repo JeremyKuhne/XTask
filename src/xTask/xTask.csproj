@@ -80,7 +80,6 @@
     <Compile Include="Interop\NativeMethods.Cryptography.cs" />
     <Compile Include="Interop\NativeMethods.Handles.cs" />
     <Compile Include="Interop\StreamBuffer.cs" />
-    <Compile Include="Interop\NativeMethods.Backup.cs" />
     <Compile Include="Interop\StringBuffer.cs" />
     <Compile Include="Interop\SafeHandleZeroIsInvalid.cs" />
     <Compile Include="Interop\SafeLibraryHandle.cs" />
