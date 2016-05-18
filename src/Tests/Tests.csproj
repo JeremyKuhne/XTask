@@ -97,7 +97,6 @@
     <Compile Include="Support\PathGenerator.cs" />
     <Compile Include="Interop\BackupTests.cs" />
     <Compile Include="Interop\BufferInvokeTests.cs" />
-    <Compile Include="Interop\DirectoryManagementTests.cs" />
     <Compile Include="Support\TestFileCleaner.cs" />
     <Compile Include="Interop\LoadLibraryTests.cs" />
     <Compile Include="Interop\StreamBufferTests.cs" />

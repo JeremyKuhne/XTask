@@ -6,8 +6,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using WInterop.DirectoryManagement;
+using WInterop.ErrorHandling;
 using WInterop.FileManagement;
-using XTask.Interop;
 
 namespace XTask.Systems.File.Concrete.Flex
 {
@@ -61,7 +62,7 @@ namespace XTask.Systems.File.Concrete.Flex
             if (path == null) throw new ArgumentNullException(nameof(path));
             path = GetFullPath(path);
             int pathRootLength = Paths.GetRootLength(path);
-            if (pathRootLength < 0) throw NativeMethods.GetIoExceptionForError(NativeMethods.WinError.ERROR_BAD_PATHNAME);
+            if (pathRootLength < 0) throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_BAD_PATHNAME);
 
             int i = pathRootLength;
             string subDirectory;
@@ -79,11 +80,13 @@ namespace XTask.Systems.File.Concrete.Flex
                     i++;
                 }
 
+                // CreateDirectory will refuse paths that are over MAX_PATH - 12, so we always want to add the prefix
+                subDirectory = Paths.AddExtendedPrefix(subDirectory, addIfUnderLegacyMaxPath: true);
                 var info = FileMethods.TryGetFileInfo(Paths.AddExtendedPrefix(subDirectory));
                 if (!info.HasValue)
                 {
                     // Doesn't exist, try to create it
-                    NativeMethods.DirectoryManagement.CreateDirectory(subDirectory);
+                    DirectoryMethods.CreateDirectory(subDirectory);
                 }
                 else if ((info.Value.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) == FileAttributes.FILE_ATTRIBUTE_DIRECTORY)
                 {
@@ -93,7 +96,7 @@ namespace XTask.Systems.File.Concrete.Flex
                 else
                 {
                     // File exists
-                    throw NativeMethods.GetIoExceptionForError(NativeMethods.WinError.ERROR_FILE_EXISTS, subDirectory);
+                    throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_FILE_EXISTS, subDirectory);
                 }
             }
         }
@@ -106,17 +109,17 @@ namespace XTask.Systems.File.Concrete.Flex
 
         private void DeleteDirectoryRecursive(string path)
         {
-            var info = FileMethods.TryGetFileInfo(Paths.AddExtendedPrefix(path));
+            var info = FileMethods.TryGetFileInfo(path);
             if (!info.HasValue)
             {
                 // Nothing found
-                throw NativeMethods.GetIoExceptionForError(NativeMethods.WinError.ERROR_PATH_NOT_FOUND, path);
+                throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_PATH_NOT_FOUND, path);
             }
 
             if ((info.Value.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) != FileAttributes.FILE_ATTRIBUTE_DIRECTORY)
             {
                 // Not a directory, a file
-                throw NativeMethods.GetIoExceptionForError(NativeMethods.WinError.ERROR_FILE_EXISTS, path);
+                throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_FILE_EXISTS, path);
             }
 
             //if (attributes.HasFlag(FileAttributes.ReadOnly))
@@ -153,7 +156,7 @@ namespace XTask.Systems.File.Concrete.Flex
             }
 
             // We've either emptied or we're a reparse point, delete the directory
-            NativeMethods.DirectoryManagement.RemoveDirectory(path);
+            DirectoryMethods.RemoveDirectory(path);
         }
 
         public void DeleteDirectory(string path, bool deleteChildren = false)
@@ -161,7 +164,7 @@ namespace XTask.Systems.File.Concrete.Flex
             if (path == null) throw new ArgumentNullException(nameof(path));
 
             // Always add the prefix to ensure we can delete Posix names (end in space/period)
-            path = Paths.AddExtendedPrefix(FileMethods.GetFullPathName(path), addIfUnderLegacyMaxPath: true);
+            path = Paths.AddExtendedPrefix(NormalizeIfNotExtended(path), addIfUnderLegacyMaxPath: true);
 
             if (deleteChildren)
             {
@@ -169,7 +172,7 @@ namespace XTask.Systems.File.Concrete.Flex
             }
             else
             {
-                NativeMethods.DirectoryManagement.RemoveDirectory(path);
+                DirectoryMethods.RemoveDirectory(path);
             }
         }
 
