@@ -5,16 +5,46 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using XTask.Logging;
+
 namespace XTask.Utility
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using XTask.Logging;
-
     public static class StringBuilderExtensions
     {
+        /// <summary>
+        /// Append a substring from a string to a StringBuilder.
+        /// </summary>
+        /// <param name="startIndex">The starting index in the given string to start appending from.</param>
+        /// <param name="length">Number of character to copy, or -1 to copy to the end.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="nameof(value)"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown if <paramref name="nameof(startIndex)"/> or <paramref name="nameof(length)"/> are out of bounds of <paramref name="nameof(value)"/>.
+        /// </exception>
+        public static void AppendSubstring(this StringBuilder builder, string value, int startIndex, int length = -1)
+        {
+            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (startIndex >= value.Length) throw new ArgumentOutOfRangeException(nameof(startIndex));
+
+            if (length < 0)
+                length = value.Length - startIndex;
+            else if (value.Length - startIndex > length)
+                throw new ArgumentOutOfRangeException(nameof(length));
+
+            if (length == 0) return;
+
+            unsafe
+            {
+                fixed(char* start = value)
+                {
+                    builder.Append(start + startIndex, valueCount: length);
+                }
+            }
+        }
+
         /// <summary>
         /// Returns true if the StringBuilder starts with the given string.
         /// </summary>

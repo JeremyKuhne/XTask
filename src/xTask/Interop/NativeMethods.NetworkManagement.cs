@@ -30,6 +30,29 @@ namespace XTask.Interop
                 internal static extern int NetApiBufferFree(
                     IntPtr Buffer);
 
+                // Local Group Functions
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa370283.aspx
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa370434.aspx
+                [DllImport(Libraries.Netapi32, CharSet = CharSet.Unicode, ExactSpelling = true)]
+                internal unsafe static extern int NetLocalGroupAdd(
+                    string servername,
+                    uint level,
+                    void* buf,
+                    out uint parm_err);
+
+                // LOCALGROUP_INFO_0 is a pointer to a Unicode name string
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa370275.aspx
+                //
+                // LOCALGROUP_INFO_1 is two pointers, one to a name and one to the comment
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa370277.aspx
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa370437.aspx
+                [DllImport(Libraries.Netapi32, CharSet = CharSet.Unicode, ExactSpelling = true)]
+                internal static extern int NetLocalGroupDel(
+                    string servername,
+                    string groupname);
+
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa370440.aspx
                 [DllImport(Libraries.Netapi32, CharSet = CharSet.Unicode, ExactSpelling = true)]
                 internal static extern int NetLocalGroupEnum(
@@ -98,6 +121,11 @@ namespace XTask.Interop
                     SidTypeComputer,
                     SidTypeLabel
                 }
+
+                // Group Functions
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa370266.aspx
+
+
             }
 
             internal enum SidType
@@ -120,6 +148,31 @@ namespace XTask.Interop
                 if (result != WinError.NERR_Success)
                 {
                     throw GetIoExceptionForError(result);
+                }
+            }
+
+            internal unsafe static void AddLocalGroup(string groupName, string comment = null, string server = null)
+            {
+                uint level = string.IsNullOrEmpty(comment) ? 0u : 1;
+                uint parameter;
+
+                fixed (char* fixedName = groupName)
+                fixed (char* fixedComment = level == 0 ? null : comment)
+                {
+                    char*[] data = new char*[] { fixedName, fixedComment };
+                    fixed (void* buffer = data)
+                    {
+                        int result = Private.NetLocalGroupAdd(
+                            servername: server,
+                            level: level,
+                            buf: buffer,
+                            parm_err: out parameter);
+
+                        if (result != WinError.NERR_Success)
+                        {
+                            throw GetIoExceptionForError(result, groupName);
+                        }
+                    }
                 }
             }
 

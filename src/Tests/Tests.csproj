@@ -79,13 +79,10 @@
     <Compile Include="Collections\CacheTests.cs" />
     <Compile Include="FileSystem\FileSystemInformationExtensions.cs" />
     <Compile Include="Interop\BufferPathInvokeTests.cs" />
-    <Compile Include="Interop\NetworkManagementTests.cs" />
     <Compile Include="Interop\CryptographyTests.cs" />
     <Compile Include="Interop\DotNetBehaviors.cs" />
     <Compile Include="Interop\ErrorsTests.cs" />
-    <Compile Include="Interop\FileManagementBehaviors.cs" />
     <Compile Include="Interop\NativeBufferTests.cs" />
-    <Compile Include="Interop\NativeMethodsTests.cs" />
     <Compile Include="Interop\StringBufferTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Build\BuildArgumentParserTests.cs" />
@@ -101,7 +98,6 @@
     <Compile Include="Interop\BackupTests.cs" />
     <Compile Include="Interop\BufferInvokeTests.cs" />
     <Compile Include="Interop\DirectoryManagementTests.cs" />
-    <Compile Include="Interop\FileManagementTests.cs" />
     <Compile Include="Support\TestFileCleaner.cs" />
     <Compile Include="Interop\LoadLibraryTests.cs" />
     <Compile Include="Interop\StreamBufferTests.cs" />

@@ -10,6 +10,7 @@ namespace XTask.Interop
     using System;
     using System.Runtime.InteropServices;
     using System.Security;
+    using WInterop.FileManagement;
     using XTask.Systems.File;
 
     internal static partial class NativeMethods
@@ -49,7 +50,7 @@ namespace XTask.Interop
 
             internal static void RemoveDirectory(string path)
             {
-                path = Paths.AddExtendedPrefix(NativeMethods.FileManagement.GetFullPathName(path));
+                path = Paths.AddExtendedPrefix(FileMethods.GetFullPathName(path));
 
                 if (!Private.RemoveDirectoryW(path))
                 {

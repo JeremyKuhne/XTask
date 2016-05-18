@@ -110,6 +110,12 @@ namespace XTask.Interop
                     TokenAccessLevels DesiredAccess,
                     [MarshalAs(UnmanagedType.Bool)] bool OpenAsSelf,
                     out SafeCloseHandle TokenHandle);
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379166.aspx
+                // LookupAccountSid
+
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379159.aspx
+                // LookupAccountName
             }
 
             // In winnt.h
@@ -163,6 +169,38 @@ namespace XTask.Interop
                 TokenIsRestricted,
                 MaxTokenInfoClass
             }
+
+            // From winnt.h:
+            //
+            //         1   1   1   1   1   1
+            //         5   4   3   2   1   0   9   8   7   6   5   4   3   2   1   0
+            //      +---------------------------------------------------------------+
+            //      |      SubAuthorityCount        |Reserved1 (SBZ)|   Revision    |
+            //      +---------------------------------------------------------------+
+            //      |                   IdentifierAuthority[0]                      |
+            //      +---------------------------------------------------------------+
+            //      |                   IdentifierAuthority[1]                      |
+            //      +---------------------------------------------------------------+
+            //      |                   IdentifierAuthority[2]                      |
+            //      +---------------------------------------------------------------+
+            //      |                                                               |
+            //      +- -  -  -  -  -  -  -  SubAuthority[]  -  -  -  -  -  -  -  - -+
+            //      |                                                               |
+            //      +---------------------------------------------------------------+
+            //
+            //
+            //      typedef struct _SID
+            //      {
+            //          BYTE Revision;
+            //          BYTE SubAuthorityCount;
+            //          SID_IDENTIFIER_AUTHORITY IdentifierAuthority;
+            //          DWORD SubAuthority[ANYSIZE_ARRAY];
+            //      } SID, *PISID;
+            //
+            // As a SID is variable in length it is a little more complicated to wrap. Using a flat buffer makes the most sense.
+            // System.Security.Principal.SecurityIdentifier allows copying to/from a byte array.
+            // 
+            // https://msdn.microsoft.com/en-us/library/system.security.principal.securityidentifier.aspx
 
             // https://msdn.microsoft.com/en-us/library/aa379261.aspx
             [StructLayout(LayoutKind.Sequential)]

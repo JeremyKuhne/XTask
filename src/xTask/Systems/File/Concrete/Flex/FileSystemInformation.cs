@@ -5,13 +5,15 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.InteropServices;
+using WInterop.FileManagement;
+using WInterop.FileManagement.Desktop;
+using WInterop.Handles;
+
 namespace XTask.Systems.File.Concrete.Flex
 {
-    using Interop;
-    using Microsoft.Win32.SafeHandles;
-    using System;
-
-    internal class FileSystemInformation : IFileSystemInformation, IExtendedFileSystemInformation
+    internal class FileSystemInformation : IFileSystemInformation
     {
         internal enum Source : byte
         {
@@ -29,11 +31,11 @@ namespace XTask.Systems.File.Concrete.Flex
             FileService = fileService;
         }
 
-        protected virtual void PopulateData(NativeMethods.FileManagement.FindResult findResult)
+        protected virtual void PopulateData(FindResult findResult, string directory)
         {
             _source = Source.FindResult;
-            Path = Paths.Combine(findResult.BasePath, findResult.FileName);
-            Attributes = findResult.Attributes;
+            Path = Paths.Combine(directory, findResult.FileName);
+            Attributes = (System.IO.FileAttributes)findResult.Attributes;
             CreationTime = findResult.Creation;
             LastAccessTime = findResult.LastAccess;
             LastWriteTime = findResult.LastWrite;
@@ -52,17 +54,18 @@ namespace XTask.Systems.File.Concrete.Flex
 
         private static SafeFileHandle GetFileHandle(string path)
         {
-            return NativeMethods.FileManagement.CreateFile(
-                path,
-                0,                  // We don't care about read or write, we're just getting metadata with this handle
-                System.IO.FileShare.ReadWrite,
-                System.IO.FileMode.Open,
-                NativeMethods.FileManagement.AllFileAttributeFlags.FILE_ATTRIBUTE_NORMAL
-                    | NativeMethods.FileManagement.AllFileAttributeFlags.FILE_FLAG_OPEN_REPARSE_POINT   // To avoid traversing links
-                    | NativeMethods.FileManagement.AllFileAttributeFlags.FILE_FLAG_BACKUP_SEMANTICS);   // To open directories
+            return FileMethods.CreateFile(
+                Paths.AddExtendedPrefix(path),
+                // We don't care about read or write, we're just getting metadata with this handle
+                0,
+                ShareMode.FILE_SHARE_READWRITE,
+                CreationDisposition.OPEN_EXISTING,
+                FileAttributes.NONE,
+                FileFlags.FILE_FLAG_OPEN_REPARSE_POINT          // To avoid traversing links
+                    | FileFlags.FILE_FLAG_BACKUP_SEMANTICS);    // To open directories
         }
 
-        protected virtual void PopulateData(string originalPath, SafeFileHandle fileHandle, NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info)
+        protected virtual void PopulateData(string originalPath, SafeFileHandle fileHandle, FileBasicInfo info)
         {
             _source = Source.FileInfo;
 
@@ -71,7 +74,7 @@ namespace XTask.Systems.File.Concrete.Flex
             try
             {
                 string originalRoot = Paths.GetRoot(originalPath);
-                finalPath = NativeMethods.FileManagement.GetFinalPathName(fileHandle, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED);
+                finalPath = FileDesktopMethods.GetFinalPathNameByHandle(fileHandle, GetFinalPathNameByHandleFlags.FILE_NAME_NORMALIZED);
 
                 // GetFinalPathNameByHandle will use the legacy drive for the volume (e.g. \\?\C:\). We may have started with C:\ or some other
                 // volume name format (\\?\Volume({GUID}), etc.) and we want to put the original volume specifier back.
@@ -89,26 +92,23 @@ namespace XTask.Systems.File.Concrete.Flex
 
             _source = Source.FindResult;
             Path = finalPath;
-            Attributes = info.dwFileAttributes;
-            CreationTime = NativeMethods.GetDateTime(info.ftCreationTime);
-            LastAccessTime = NativeMethods.GetDateTime(info.ftLastAccessTime);
-            LastWriteTime = NativeMethods.GetDateTime(info.ftLastWriteTime);
+            Attributes = (System.IO.FileAttributes)info.Attributes;
+            CreationTime = info.CreationTime;
+            LastAccessTime = info.LastAccessTime;
+            LastWriteTime = info.LastWriteTime;
             Name = Paths.GetFileOrDirectoryName(finalPath) ?? finalPath;
-            FileIndex = NativeMethods.HighLowToLong(info.nFileIndexHigh, info.nFileSizeLow);
-            NumberOfLinks = info.nNumberOfLinks;
-            VolumeSerialNumber = info.dwVolumeSerialNumber;
             Exists = true;
         }
 
-        internal static IFileSystemInformation Create(NativeMethods.FileManagement.FindResult findResult, IFileService fileService)
+        internal static IFileSystemInformation Create(FindResult findResult, string directory, IFileService fileService)
         {
-            if ((findResult.Attributes & System.IO.FileAttributes.Directory) != 0)
+            if ((findResult.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) != 0)
             {
-                return DirectoryInformation.Create(findResult, fileService);
+                return DirectoryInformation.Create(findResult, directory, fileService);
             }
             else
             {
-                return FileInformation.Create(findResult, fileService);
+                return FileInformation.Create(findResult, directory, fileService);
             }
         }
 
@@ -116,14 +116,14 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             using (SafeFileHandle fileHandle = GetFileHandle(path))
             {
-                NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info = NativeMethods.FileManagement.GetFileInformationByHandle(fileHandle);
+                var info = FileMethods.GetFileBasicInfoByHandle(fileHandle);
                 return Create(path, fileHandle, info, fileService);
             }
         }
 
-        internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info, IFileService fileService)
+        internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, FileBasicInfo info, IFileService fileService)
         {
-            if ((info.dwFileAttributes & System.IO.FileAttributes.Directory) != 0)
+            if ((info.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) != 0)
             {
                 return DirectoryInformation.Create(originalPath, fileHandle, info, fileService);
             }
@@ -201,18 +201,14 @@ namespace XTask.Systems.File.Concrete.Flex
                 switch (_source)
                 {
                     case Source.Attributes:
-                        System.IO.FileAttributes attributes = NativeMethods.FileManagement.GetFileAttributes(Path);
+                        System.IO.FileAttributes attributes = (System.IO.FileAttributes)FileMethods.GetFileAttributesEx(Paths.AddExtendedPrefix(Path)).Attributes;
                         PopulateData(Path, attributes);
                         break;
                     case Source.FindResult:
-                        var findResult = NativeMethods.FileManagement.FindFirstFile(Path);
-                        PopulateData(findResult);
-                        findResult.FindHandle.Close();
-                        break;
                     case Source.FileInfo:
                         using (SafeFileHandle fileHandle = GetFileHandle(Path))
                         {
-                            NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info = NativeMethods.FileManagement.GetFileInformationByHandle(fileHandle);
+                            var info = FileMethods.GetFileBasicInfoByHandle(fileHandle);
                             PopulateData(Path, fileHandle, info);
                         }
                         break;

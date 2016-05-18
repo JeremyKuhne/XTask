@@ -210,6 +210,30 @@ namespace XTask.Interop
             internal const string Netapi32 = "netapi32.dll";
         }
 
+        internal static string LongPathInvoke(string path, Func<string, string> invoker, bool utilizeExtendedSyntax = true)
+        {
+            if (path == null) return null;
+            string originalPath = path;
+
+            bool hadExtendedPrefix = Paths.IsExtended(path);
+            bool addedExtendedPrefix = false;
+            if (utilizeExtendedSyntax && !hadExtendedPrefix && (path.Length > Paths.MaxPath))
+            {
+                path = Paths.AddExtendedPrefix(path);
+                addedExtendedPrefix = true;
+            }
+
+            string result = invoker(path);
+
+            if (addedExtendedPrefix && result.StartsWith(Paths.ExtendedPathPrefix, StringComparison.Ordinal))
+            {
+                // Remove the prefix
+                return Paths.RemoveExtendedPrefix(result);
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Uses the native string buffer cache and increases the buffer size if needed. Handles path prepending as needed.
         /// </summary>

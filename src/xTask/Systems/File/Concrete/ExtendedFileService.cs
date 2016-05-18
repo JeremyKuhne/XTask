@@ -5,13 +5,15 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Security.Principal;
+using WInterop.FileManagement;
+using WInterop.FileManagement.Desktop;
+using XTask.Interop;
+
 namespace XTask.Systems.File.Concrete
 {
-    using Interop;
-    using System;
-    using System.Collections.Generic;
-    using System.Security.Principal;
-
     /// <summary>
     /// Basic implementation of extended file service support. These methods have no .NET implementation.
     /// </summary>
@@ -19,17 +21,17 @@ namespace XTask.Systems.File.Concrete
     {
         public string GetFinalPath(string path, bool resolveLinks = false)
         {
-            return NativeMethods.FileManagement.GetFinalPathName(path, NativeMethods.FileManagement.FinalPathFlags.FILE_NAME_NORMALIZED, resolveLinks);
+            return FileDesktopMethods.GetFinalPathName(Paths.AddExtendedPrefix(path), GetFinalPathNameByHandleFlags.FILE_NAME_NORMALIZED, resolveLinks);
         }
 
         public string GetLongPath(string path)
         {
-            return NativeMethods.FileManagement.GetLongPathName(path);
+            return FileDesktopMethods.GetLongPathName(Paths.AddExtendedPrefix(path));
         }
 
         public string GetShortPath(string path)
         {
-            return NativeMethods.FileManagement.GetShortPathName(path);
+            return FileDesktopMethods.GetShortPathName(Paths.AddExtendedPrefix(path));
         }
 
         public string GetVolumeName(string volumeMountPoint)

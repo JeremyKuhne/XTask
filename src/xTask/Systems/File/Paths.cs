@@ -5,15 +5,17 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using XTask.Utility;
+using XTask.Interop;
+
 namespace XTask.Systems.File
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
-    using System.Text;
-    using Utility;
-    using Interop;
+
 
     /// <summary>
     /// Path related helpers.
@@ -694,6 +696,21 @@ namespace XTask.Systems.File
                 && Char.ToUpper(path[5]) == 'N'
                 && Char.ToUpper(path[6]) == 'C'
                 && IsDirectorySeparator(path[7]);
+        }
+
+        /// <summary>
+        /// Remove the extended prefix from the given path if present.
+        /// </summary>
+        public unsafe static string RemoveExtendedPrefix(string path)
+        {
+            if (!IsExtended(path))
+                return path;
+
+            var sb = StringBuilderCache.Instance.Acquire(path.Length - 2);
+            if (IsExtendedUnc(path))
+                sb.Append('\\');
+            sb.AppendSubstring(path, DevicePathPrefix.Length);
+            return StringBuilderCache.Instance.ToStringAndRelease(sb);
         }
 
         /// <summary>

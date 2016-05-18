@@ -57,8 +57,8 @@ namespace XTask.Tests.FileSystem
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 300);
                 cleaner.FileService.CreateDirectory(longPath);
 
-                NativeMethods.FileManagement.FileExists(longPath).Should().BeFalse();
-                NativeMethods.FileManagement.DirectoryExists(longPath).Should().BeTrue();
+                cleaner.FileService.FileExists(longPath).Should().BeFalse();
+                cleaner.FileService.DirectoryExists(longPath).Should().BeTrue();
             }
         }
 

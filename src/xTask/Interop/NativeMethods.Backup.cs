@@ -7,12 +7,12 @@
 
 namespace XTask.Interop
 {
-    using Microsoft.Win32.SafeHandles;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Security;
+    using WInterop.FileManagement;
     using XTask.Systems.File;
 
     internal static partial class NativeMethods
@@ -92,7 +92,7 @@ namespace XTask.Interop
                 [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
                 [return: MarshalAs(UnmanagedType.Bool)]
                 private static extern bool BackupRead(
-                    SafeFileHandle hFile,
+                    SafeHandle hFile,
                     SafeHandle lpBuffer,
                     uint nNumberOfBytesToRead,
                     out uint lpNumberOfBytesRead,
@@ -104,7 +104,7 @@ namespace XTask.Interop
                 [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
                 [return: MarshalAs(UnmanagedType.Bool)]
                 private static extern bool BackupSeek(
-                    SafeFileHandle hFile,
+                    SafeHandle hFile,
                     uint dwLowBytesToSeek,
                     uint dwHighBytesToSeek,
                     out uint lpdwLowByteSeeked,
@@ -168,11 +168,11 @@ namespace XTask.Interop
                 }
 
                 private IntPtr _context = IntPtr.Zero;
-                private SafeFileHandle _fileHandle;
+                private SafeHandle _fileHandle;
                 private NativeBuffer _buffer = new NativeBuffer(4096);
                 private static uint WIN32_STREAM_ID_SIZE = (uint)Marshal.SizeOf(typeof(WIN32_STREAM_ID));
 
-                public BackupReader(SafeFileHandle fileHandle)
+                public BackupReader(SafeHandle fileHandle)
                 {
                     _fileHandle = fileHandle;
                 }
@@ -283,13 +283,14 @@ namespace XTask.Interop
             {
                 List<AlternateStreamInformation> streams = new List<AlternateStreamInformation>();
                 path = Paths.AddExtendedPrefix(path);
-                using (var fileHandle = FileManagement.CreateFile(
+                using (var fileHandle = FileMethods.CreateFile(
                     path,
                     // To look at metadata we don't need read or write access
                     0,
                     FileShare.ReadWrite,
                     FileMode.Open,
-                    FileManagement.AllFileAttributeFlags.FILE_FLAG_BACKUP_SEMANTICS))
+                    0,
+                    FileFlags.FILE_FLAG_BACKUP_SEMANTICS))
                 {
                     using (BackupReader reader = new BackupReader(fileHandle))
                     {
