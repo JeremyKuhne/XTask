@@ -7,7 +7,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Principal;
+using WInterop.Authorization;
+using WInterop.Authorization.Desktop;
 using WInterop.FileManagement;
 using WInterop.FileManagement.Desktop;
 using XTask.Interop;
@@ -78,9 +79,9 @@ namespace XTask.Systems.File.Concrete
         public bool CanCreateSymbolicLinks()
         {
             // Assuming that the current thread can replicate rights from the process
-            using (var processToken = NativeMethods.Authorization.OpenProcessToken(TokenAccessLevels.Query | TokenAccessLevels.Read))
+            using (var processToken = AuthorizationDesktopMethods.OpenProcessToken(TokenRights.TOKEN_QUERY | TokenRights.TOKEN_READ))
             {
-                return NativeMethods.Authorization.HasPrivilege(processToken, Privileges.SeCreateSymbolicLinkPrivilege);
+                return AuthorizationDesktopMethods.HasPrivilege(processToken, Privileges.SeCreateSymbolicLinkPrivilege);
             }
         }
     }
