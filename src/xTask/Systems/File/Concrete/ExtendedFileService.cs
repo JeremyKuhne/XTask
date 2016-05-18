@@ -11,6 +11,7 @@ using WInterop.Authorization;
 using WInterop.Authorization.Desktop;
 using WInterop.FileManagement;
 using WInterop.FileManagement.Desktop;
+using WInterop.VolumeManagement;
 using XTask.Interop;
 
 namespace XTask.Systems.File.Concrete
@@ -39,36 +40,45 @@ namespace XTask.Systems.File.Concrete
         {
             if (string.IsNullOrWhiteSpace(volumeMountPoint)) throw new ArgumentNullException(nameof(volumeMountPoint));
 
-            return NativeMethods.VolumeManagement.GetVolumeNameForVolumeMountPoint(volumeMountPoint);
+            return VolumeDesktopMethods.GetVolumeNameForVolumeMountPoint(volumeMountPoint);
         }
 
         public string GetMountPoint(string path)
         {
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
 
-            return NativeMethods.VolumeManagement.GetVolumePathName(path);
+            return VolumeDesktopMethods.GetVolumePathName(path);
         }
 
         public IEnumerable<string> GetVolumeMountPoints(string volumeName)
         {
             if (string.IsNullOrWhiteSpace(volumeName)) throw new ArgumentNullException(nameof(volumeName));
 
-            return NativeMethods.VolumeManagement.GetVolumePathNamesForVolumeName(volumeName);
+            return VolumeDesktopMethods.GetVolumePathNamesForVolumeName(volumeName);
         }
 
         public IEnumerable<string> QueryDosDeviceNames(string dosAlias)
         {
-            return NativeMethods.VolumeManagement.QueryDosDevice(dosAlias);
+            return VolumeDesktopMethods.QueryDosDevice(dosAlias);
         }
 
         public IEnumerable<string> GetLogicalDriveStrings()
         {
-            return NativeMethods.VolumeManagement.GetLogicalDriveStrings();
+            return VolumeDesktopMethods.GetLogicalDriveStrings();
         }
 
         public VolumeInformation GetVolumeInformation(string rootPath)
         {
-            return NativeMethods.VolumeManagement.GetVolumeInformation(rootPath);
+            var info =  VolumeDesktopMethods.GetVolumeInformation(rootPath);
+            return new VolumeInformation
+            {
+                FileSystemFlags = (FileSystemFeature)info.FileSystemFlags,
+                FileSystemName = info.FileSystemName,
+                RootPathName = info.RootPathName,
+                MaximumComponentLength = info.MaximumComponentLength,
+                VolumeName = info.VolumeName,
+                VolumeSerialNumber = info.VolumeSerialNumber
+            };
         }
 
         public IEnumerable<AlternateStreamInformation> GetAlternateStreamInformation(string path)
