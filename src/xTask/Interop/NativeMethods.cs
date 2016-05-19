@@ -154,33 +154,11 @@ namespace XTask.Interop
             [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
             internal static extern IntPtr GetCurrentThread();
 
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms684179.aspx
-            [DllImport(Libraries.Kernel32, CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
-            internal static extern SafeLibraryHandle LoadLibraryExW(
-                string lpFileName,
-                IntPtr hReservedNull,
-                LoadLibraryFlags dwFlags);
-
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683152.aspx
             [DllImport(Libraries.Kernel32, SetLastError = true, ExactSpelling = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
             internal static extern bool FreeLibrary(
                 IntPtr hModule);
-
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms647486.aspx
-            [DllImport(Libraries.User32, SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
-            unsafe internal static extern int LoadStringW(
-                SafeLibraryHandle hInstance,
-                int uID,
-                out char* lpBuffer,
-                int nBufferMax);
-
-            // This API is only available in ANSI
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683212.aspx
-            [DllImport(Libraries.Kernel32, CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true, BestFitMapping = false)]
-            internal static extern IntPtr GetProcAddress(
-                SafeLibraryHandle hModule,
-                [MarshalAs(UnmanagedType.LPStr)] string methodName);
         }
 
         // https://msdn.microsoft.com/en-us/library/windows/desktop/aa380518.aspx
@@ -356,49 +334,6 @@ namespace XTask.Interop
         internal static DateTime GetDateTime(System.Runtime.InteropServices.ComTypes.FILETIME fileTime)
         {
             return DateTime.FromFileTime((((long)fileTime.dwHighDateTime) << 32) + (uint)fileTime.dwLowDateTime);
-        }
-
-        internal static bool FreeLibrary(SafeLibraryHandle handle)
-        {
-            return Private.FreeLibrary(handle.DangerousGetHandle());
-        }
-
-        internal static SafeLibraryHandle LoadLibrary(string path, LoadLibraryFlags flags)
-        {
-            SafeLibraryHandle handle = Private.LoadLibraryExW(path, IntPtr.Zero, flags);
-            if (handle.IsInvalid)
-            {
-                int error = Marshal.GetLastWin32Error();
-                throw GetIoExceptionForError(error, path);
-            }
-            return handle;
-        }
-
-        unsafe internal static string LoadString(SafeLibraryHandle library, int identifier)
-        {
-            // Passing 0 will give us a read only handle to the string resource
-            char* buffer;
-            int result = Private.LoadStringW(library, identifier, out buffer, 0);
-            if (result <= 0)
-            {
-                int error = Marshal.GetLastWin32Error();
-                throw GetIoExceptionForError(error, identifier.ToString());
-            }
-
-            // Null is not included in the result
-            return new string(buffer, 0, result);
-        }
-
-        internal static DelegateType GetFunctionDelegate<DelegateType>(SafeLibraryHandle library, string methodName)
-        {
-            IntPtr method = Private.GetProcAddress(library, methodName);
-            if (method == IntPtr.Zero)
-            {
-                int error = Marshal.GetLastWin32Error();
-                throw GetIoExceptionForError(error, methodName);
-            }
-
-            return (DelegateType)(object)Marshal.GetDelegateForFunctionPointer(method, typeof(DelegateType));
         }
     }
 }

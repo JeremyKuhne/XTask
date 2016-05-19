@@ -70,19 +70,15 @@
     <Compile Include="Collections\ListExtensions.cs" />
     <Compile Include="Interop\NativeBufferReader.cs" />
     <Compile Include="Interop\EmptySafeHandle.cs" />
-    <Compile Include="Interop\NativeMethods.NetworkManagement.cs" />
-    <Compile Include="Interop\SafeNetApiBufferHandle.cs" />
     <Compile Include="Interop\SafeCertificateStoreHandle.cs" />
     <Compile Include="Interop\SafeHeapHandle.cs" />
     <Compile Include="Interop\HeapHandleCache.cs" />
-    <Compile Include="Interop\LoadLibraryFlags.cs" />
     <Compile Include="Interop\NativeMethods.FileInformation.cs" />
     <Compile Include="Interop\NativeMethods.Cryptography.cs" />
     <Compile Include="Interop\NativeMethods.Handles.cs" />
     <Compile Include="Interop\StreamBuffer.cs" />
     <Compile Include="Interop\StringBuffer.cs" />
     <Compile Include="Interop\SafeHandleZeroIsInvalid.cs" />
-    <Compile Include="Interop\SafeLibraryHandle.cs" />
     <Compile Include="Interop\StringBufferCache.cs" />
     <Compile Include="Services\SimpleServiceProvider.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationManager.cs" />
@@ -102,7 +98,6 @@
     <Compile Include="Systems\File\Concrete\Flex\FileInformation.cs" />
     <Compile Include="Systems\File\Concrete\Flex\FileSystemInformation.cs" />
     <Compile Include="Systems\File\Concrete\DotNet\FileSystemInformation.cs" />
-    <Compile Include="Systems\File\Concrete\Flex\LibraryService.cs" />
     <Compile Include="Systems\File\DirectoryInformationExtensions.cs" />
     <Compile Include="Systems\File\Concrete\ExtendedFileService.cs" />
     <Compile Include="Systems\File\ExtendedFileServiceExtensions.cs" />

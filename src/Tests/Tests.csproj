@@ -97,7 +97,6 @@
     <Compile Include="Support\PathGenerator.cs" />
     <Compile Include="Interop\BufferInvokeTests.cs" />
     <Compile Include="Support\TestFileCleaner.cs" />
-    <Compile Include="Interop\LoadLibraryTests.cs" />
     <Compile Include="Interop\StreamBufferTests.cs" />
     <Compile Include="Logging\AggregatedLoggerTests.cs" />
     <Compile Include="Logging\ClipboardTests.cs" />
@@ -169,11 +168,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>TestData.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\bin\x64\$(Configuration)\NativeTestLibrary\NativeTestLibrary.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
