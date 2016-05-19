@@ -8,7 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using XTask.Interop;
+using WInterop.ProcessAndThreads;
 
 namespace XTask.Systems.File.Concrete.Flex
 {
@@ -91,7 +91,7 @@ namespace XTask.Systems.File.Concrete.Flex
                 string driveLetter = _extendedFileService.GetDriveLetter(_fileService, path);
                 if (!string.IsNullOrEmpty(driveLetter))
                 {
-                    string environmentPath = NativeMethods.GetEnvironmentVariable("=" + driveLetter.Substring(0, 2));
+                    string environmentPath = ProcessDesktopMethods.GetEnvironmentVariable("=" + driveLetter.Substring(0, 2));
                     if (environmentPath != null)
                     {
                         AddEntry(environmentPath);

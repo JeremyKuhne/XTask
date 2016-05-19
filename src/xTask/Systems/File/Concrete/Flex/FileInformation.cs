@@ -6,7 +6,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Runtime.InteropServices;
 using WInterop.FileManagement;
 using WInterop.Handles;
 
@@ -45,7 +44,7 @@ namespace XTask.Systems.File.Concrete.Flex
         {
             base.PopulateData(findResult, directory);
             Length = findResult.Length;
-            _directory = findResult.OriginalPath;
+            _directory = Paths.GetDirectory(findResult.SearchPath);
         }
 
         protected override void PopulateData(string originalPath, SafeFileHandle fileHandle, FileBasicInfo info)

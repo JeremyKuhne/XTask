@@ -52,11 +52,11 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="WInterop, Version=0.1.0.0, Culture=neutral, PublicKeyToken=1ea30a2edb2b5ea2, processorArchitecture=MSIL">
-      <HintPath>..\packages\WInterop.0.1.1-alpha-051712039\lib\portable-net46+win+dnxcore50+netcore50+uap10.0\WInterop.dll</HintPath>
+      <HintPath>..\packages\WInterop.0.1.1-alpha-051811856\lib\portable-net46+win+dnxcore50+netcore50+uap10.0\WInterop.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="WInterop.Desktop, Version=0.1.0.0, Culture=neutral, PublicKeyToken=1ea30a2edb2b5ea2, processorArchitecture=MSIL">
-      <HintPath>..\packages\WInterop.Desktop.0.1.1-alpha-051712039\lib\portable-net46+win+dnxcore50+netcore50+uap10.0\WInterop.Desktop.dll</HintPath>
+      <HintPath>..\packages\WInterop.Desktop.0.1.1-alpha-051811856\lib\portable-net46+win+dnxcore50+netcore50+uap10.0\WInterop.Desktop.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>

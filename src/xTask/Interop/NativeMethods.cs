@@ -309,15 +309,6 @@ namespace XTask.Interop
             });
         }
 
-        internal static void SetEnvironmentVariable(string name, string value)
-        {
-            if (!Private.SetEnvironmentVariableW(name, value))
-            {
-                int error = Marshal.GetLastWin32Error();
-                throw GetIoExceptionForError(error, name);
-            }
-        }
-
         internal static string GetEnvironmentVariable(string name)
         {
             return BufferInvoke(
@@ -326,14 +317,5 @@ namespace XTask.Interop
                 error => error != WinError.ERROR_ENVVAR_NOT_FOUND);
         }
 
-        internal static ulong HighLowToLong(uint high, uint low)
-        {
-            return ((ulong)high) << 32 | ((ulong)low & 0xFFFFFFFFL);
-        }
-
-        internal static DateTime GetDateTime(System.Runtime.InteropServices.ComTypes.FILETIME fileTime)
-        {
-            return DateTime.FromFileTime((((long)fileTime.dwHighDateTime) << 32) + (uint)fileTime.dwLowDateTime);
-        }
     }
 }
