@@ -11,12 +11,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using XTask.Utility;
-using XTask.Interop;
 
 namespace XTask.Systems.File
 {
-
-
     /// <summary>
     /// Path related helpers.
     /// </summary>
@@ -818,16 +815,6 @@ namespace XTask.Systems.File
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
 
-            var normalized = InternalNormalizeDirectorySeparators(path);
-            if (normalized == null)
-                return path;
-            else
-                return StringBufferCache.Instance.ToStringAndRelease(normalized);
-        }
-
-
-        private static StringBuffer InternalNormalizeDirectorySeparators(string path)
-        {
             // Check to see if we need to normalize
             bool normalized = true;
             char current;
@@ -852,10 +839,10 @@ namespace XTask.Systems.File
             }
 
             // Already normalized, don't allocate another string
-            if (normalized) return null;
+            if (normalized) return path;
 
             // Normalize
-            var builder = StringBufferCache.Instance.Acquire((uint)path.Length);
+            var builder = StringBuilderCache.Instance.Acquire(path.Length);
 
             // Keep an initial separator if we start with separators
             int startSeparators = 0;
@@ -885,7 +872,7 @@ namespace XTask.Systems.File
                 builder.Append(current);
             }
 
-            return builder;
+            return StringBuilderCache.Instance.ToStringAndRelease(builder);
         }
     }
 }

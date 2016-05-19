@@ -78,11 +78,7 @@
   <ItemGroup>
     <Compile Include="Collections\CacheTests.cs" />
     <Compile Include="FileSystem\FileSystemInformationExtensions.cs" />
-    <Compile Include="Interop\BufferPathInvokeTests.cs" />
     <Compile Include="Interop\DotNetBehaviors.cs" />
-    <Compile Include="Interop\ErrorsTests.cs" />
-    <Compile Include="Interop\NativeBufferTests.cs" />
-    <Compile Include="Interop\StringBufferTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Build\BuildArgumentParserTests.cs" />
     <Compile Include="Build\BuildTaskBridgeTests.cs" />
@@ -94,9 +90,7 @@
     <Compile Include="FileSystem\FlexFileSystemInfoTests.cs" />
     <Compile Include="FileSystem\NetFileSystemInfoTests.cs" />
     <Compile Include="Support\PathGenerator.cs" />
-    <Compile Include="Interop\BufferInvokeTests.cs" />
     <Compile Include="Support\TestFileCleaner.cs" />
-    <Compile Include="Interop\StreamBufferTests.cs" />
     <Compile Include="Logging\AggregatedLoggerTests.cs" />
     <Compile Include="Logging\ClipboardTests.cs" />
     <Compile Include="Logging\ConsoleLoggerTests.cs" />
@@ -125,7 +119,6 @@
     <Compile Include="Collections\EnumerableExtensionsTests.cs" />
     <Compile Include="Utility\ConsoleHelperTests.cs" />
     <Compile Include="Utility\EnumsTests.cs" />
-    <Compile Include="Utility\ErrorHelperTests.cs" />
     <Compile Include="Utility\ExceptionsTests.cs" />
     <Compile Include="Utility\FileCleanerTests.cs" />
     <Compile Include="Utility\FilesTests.cs" />

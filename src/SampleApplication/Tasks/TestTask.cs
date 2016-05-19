@@ -12,7 +12,6 @@ namespace XFile.Tasks
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using XTask.Interop;
     using XTask.Logging;
     using XTask.Systems.File;
     using XTask.Systems.File.Concrete.Flex;
