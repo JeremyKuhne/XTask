@@ -37,12 +37,28 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.FileSystem, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.4.0.0\lib\net46\System.IO.FileSystem.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.0.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WInterop, Version=0.1.0.0, Culture=neutral, PublicKeyToken=1ea30a2edb2b5ea2, processorArchitecture=MSIL">
+      <HintPath>..\packages\WInterop.0.1.1-alpha-051811856\lib\portable-net46+win+dnxcore50+netcore50+uap10.0\WInterop.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="WInterop.Desktop, Version=0.1.0.0, Culture=neutral, PublicKeyToken=1ea30a2edb2b5ea2, processorArchitecture=MSIL">
+      <HintPath>..\packages\WInterop.Desktop.0.1.1-alpha-051811856\lib\portable-net46+win+dnxcore50+netcore50+uap10.0\WInterop.Desktop.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Build\BuildArgumentParser.cs" />
@@ -52,23 +68,6 @@
     <Compile Include="Build\TaskItem.cs" />
     <Compile Include="Collections\Cache.cs" />
     <Compile Include="Collections\ListExtensions.cs" />
-    <Compile Include="Interop\NativeBufferReader.cs" />
-    <Compile Include="Interop\EmptySafeHandle.cs" />
-    <Compile Include="Interop\NativeMethods.NetworkManagement.cs" />
-    <Compile Include="Interop\SafeNetApiBufferHandle.cs" />
-    <Compile Include="Interop\SafeCertificateStoreHandle.cs" />
-    <Compile Include="Interop\SafeHeapHandle.cs" />
-    <Compile Include="Interop\HeapHandleCache.cs" />
-    <Compile Include="Interop\LoadLibraryFlags.cs" />
-    <Compile Include="Interop\NativeMethods.FileInformation.cs" />
-    <Compile Include="Interop\NativeMethods.Cryptography.cs" />
-    <Compile Include="Interop\NativeMethods.Handles.cs" />
-    <Compile Include="Interop\StreamBuffer.cs" />
-    <Compile Include="Interop\NativeMethods.Backup.cs" />
-    <Compile Include="Interop\StringBuffer.cs" />
-    <Compile Include="Interop\SafeHandleZeroIsInvalid.cs" />
-    <Compile Include="Interop\SafeLibraryHandle.cs" />
-    <Compile Include="Interop\StringBufferCache.cs" />
     <Compile Include="Services\SimpleServiceProvider.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationManager.cs" />
     <Compile Include="Systems\Configuration\Concrete\ConfigurationSectionGroupWrapper.cs" />
@@ -87,7 +86,6 @@
     <Compile Include="Systems\File\Concrete\Flex\FileInformation.cs" />
     <Compile Include="Systems\File\Concrete\Flex\FileSystemInformation.cs" />
     <Compile Include="Systems\File\Concrete\DotNet\FileSystemInformation.cs" />
-    <Compile Include="Systems\File\Concrete\Flex\LibraryService.cs" />
     <Compile Include="Systems\File\DirectoryInformationExtensions.cs" />
     <Compile Include="Systems\File\Concrete\ExtendedFileService.cs" />
     <Compile Include="Systems\File\ExtendedFileServiceExtensions.cs" />
@@ -98,15 +96,6 @@
     <Compile Include="Systems\File\FileType.cs" />
     <Compile Include="Systems\File\IExtendedFileService.cs" />
     <Compile Include="Systems\File\VolumeInformation.cs" />
-    <Compile Include="Interop\NativeBuffer.cs" />
-    <Compile Include="Interop\NativeMethods.Authorization.cs" />
-    <Compile Include="Interop\NativeMethods.DirectoryManagement.cs" />
-    <Compile Include="Interop\NativeMethods.Errors.cs" />
-    <Compile Include="Interop\NativeMethods.VolumeManagement.cs" />
-    <Compile Include="Interop\Privileges.cs" />
-    <Compile Include="Interop\PrivilegeSetting.cs" />
-    <Compile Include="Interop\PrivilegeState.cs" />
-    <Compile Include="Interop\SafeCloseHandle.cs" />
     <Compile Include="Settings\ArgumentProvider.cs" />
     <Compile Include="Systems\File\IExtendedFileSystemInformation.cs" />
     <Compile Include="Tasks\HiddenAttribute.cs" />
@@ -115,7 +104,6 @@
     <Compile Include="Tasks\TaskInteraction.cs" />
     <Compile Include="Tasks\TaskService.cs" />
     <Compile Include="Tasks\InteractiveTask.cs" />
-    <Compile Include="Interop\NativeMethods.cs" />
     <Compile Include="Systems\File\IDirectoryInformation.cs" />
     <Compile Include="Systems\File\IFileInformation.cs" />
     <Compile Include="Systems\File\IFileSystemInformation.cs" />
@@ -208,7 +196,6 @@
     <Compile Include="Settings\Property.cs" />
     <Compile Include="Settings\PropertyView.cs" />
     <Compile Include="Settings\PropertyViewProvider.cs" />
-    <Compile Include="Interop\NativeErrorHelper.cs" />
     <Compile Include="Utility\Registry.cs" />
     <Compile Include="Utility\RegistryHive.cs" />
     <Compile Include="Utility\StringBuilderCache.cs" />
@@ -234,7 +221,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Interop\NativeMethods.FileManagement.cs" />
     <Content Include="Utility\AutoGeneratedConstants.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AutoGeneratedConstants.cs</LastGenOutput>

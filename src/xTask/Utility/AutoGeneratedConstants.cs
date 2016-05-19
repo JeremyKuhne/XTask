@@ -25,17 +25,17 @@ namespace XTask.Utility
             /// <summary>
             /// Current day of the month 1..31
             /// </summary>
-            public const int CurrentDayOfMonth =  13;
+            public const int CurrentDayOfMonth =  18;
 
             /// <summary>
             /// Current hour from 0..23
             /// </summary>
-            public const int CurrentHour = 13;
+            public const int CurrentHour = 19;
 
             /// <summary>
             /// Current hour from 0..59
             /// </summary>
-            public const int CurrentMinute = 43;
+            public const int CurrentMinute = 16;
         }
 
         public static class Strings
@@ -58,32 +58,32 @@ namespace XTask.Utility
             /// <summary>
             /// Current day of the month 1..31
             /// </summary>
-            public const string CurrentDayOfMonth =  "13";
+            public const string CurrentDayOfMonth =  "18";
 
             /// <summary>
             /// Current two digit day of the month 01..31
             /// </summary>
-            public const string CurrentTwoDigitDayOfMonth =  "13";
+            public const string CurrentTwoDigitDayOfMonth =  "18";
 
             /// <summary>
             /// Current hour from 0..23
             /// </summary>
-            public const string CurrentHour = "13";
+            public const string CurrentHour = "19";
 
             /// <summary>
             /// Current two digit hour from 00..23
             /// </summary>
-            public const string CurrentTwoDigitHour = "13";
+            public const string CurrentTwoDigitHour = "19";
 
             /// <summary>
             /// Current hour from 0..59
             /// </summary>
-            public const string CurrentMinute = "43";
+            public const string CurrentMinute = "16";
 
             /// <summary>
             /// Current two digit hour from 00..59
             /// </summary>
-            public const string CurrentTwoDigitMinute = "43";
+            public const string CurrentTwoDigitMinute = "16";
         }
     }
 }

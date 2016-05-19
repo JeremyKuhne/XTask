@@ -5,13 +5,13 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using WInterop.FileManagement;
+using WInterop.Handles;
+
 namespace XTask.Systems.File.Concrete.Flex
 {
-    using Interop;
-    using Microsoft.Win32.SafeHandles;
-    using System;
-    using System.Collections.Generic;
-
     internal class DirectoryInformation : FileSystemInformation, IDirectoryInformation
     {
         private DirectoryInformation(IFileService fileService)
@@ -19,12 +19,12 @@ namespace XTask.Systems.File.Concrete.Flex
         {
         }
 
-        new static internal IFileSystemInformation Create(NativeMethods.FileManagement.FindResult findResult, IFileService fileService)
+        new static internal IFileSystemInformation Create(FindResult findResult, string directory, IFileService fileService)
         {
-            if ((findResult.Attributes & System.IO.FileAttributes.Directory) == 0) throw new ArgumentOutOfRangeException(nameof(findResult));
+            if ((findResult.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) == 0) throw new ArgumentOutOfRangeException(nameof(findResult));
 
             var directoryInfo = new DirectoryInformation(fileService);
-            directoryInfo.PopulateData(findResult);
+            directoryInfo.PopulateData(findResult, directory);
             return directoryInfo;
         }
 
@@ -37,18 +37,18 @@ namespace XTask.Systems.File.Concrete.Flex
             return directoryInfo;
         }
 
-        new internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, NativeMethods.FileManagement.BY_HANDLE_FILE_INFORMATION info, IFileService fileService)
+        new internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, FileBasicInfo info, IFileService fileService)
         {
-            if ((info.dwFileAttributes & System.IO.FileAttributes.Directory) == 0) throw new ArgumentOutOfRangeException(nameof(info));
+            if ((info.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) == 0) throw new ArgumentOutOfRangeException(nameof(info));
 
             var directoryInfo = new DirectoryInformation(fileService);
             directoryInfo.PopulateData(originalPath, fileHandle, info);
             return directoryInfo;
         }
 
-        protected override void PopulateData(NativeMethods.FileManagement.FindResult findResult)
+        protected override void PopulateData(FindResult findResult, string directory)
         {
-            base.PopulateData(findResult);
+            base.PopulateData(findResult, directory);
         }
 
         public IEnumerable<IFileSystemInformation> EnumerateChildren(
@@ -57,7 +57,8 @@ namespace XTask.Systems.File.Concrete.Flex
             System.IO.SearchOption searchOption = System.IO.SearchOption.TopDirectoryOnly,
             System.IO.FileAttributes excludeAttributes = System.IO.FileAttributes.Hidden | System.IO.FileAttributes.System | System.IO.FileAttributes.ReparsePoint)
         {
-            return EnumerateChildrenInternal(this.Path, childType, searchPattern, searchOption, excludeAttributes, this.FileService);
+            return EnumerateChildrenInternal(Path,
+                childType, searchPattern, searchOption, unchecked((FileAttributes)excludeAttributes), FileService);
         }
 
         internal static IEnumerable<IFileSystemInformation> EnumerateChildrenInternal(
@@ -65,58 +66,60 @@ namespace XTask.Systems.File.Concrete.Flex
             ChildType childType,
             string searchPattern,
             System.IO.SearchOption searchOption,
-            System.IO.FileAttributes excludeAttributes,
+            FileAttributes excludeAttributes,
             IFileService fileService)
         {
-            var firstFile = NativeMethods.FileManagement.FindFirstFile(Paths.Combine(directory, searchPattern));
-            var findInfo = firstFile;
+            // We want to be able to see all files as we recurse and open new find handles (that might be over MAX_PATH).
+            // We've already normalized our base directory.
+            string extendedDirectory = Paths.AddExtendedPrefix(directory);
 
-            if (firstFile != null)
+            // The assertion here is that we want to find files that match the desired pattern in all subdirectories, even if the
+            // subdirectories themselves don't match the pattern. That requires two passes to avoid overallocating for directories
+            // with a large number of files.
+
+            // First look for items that match the given search pattern in the current directory
+            using (FindOperation findOperation = new FindOperation(Paths.Combine(extendedDirectory, searchPattern)))
             {
-                // Look for specified file/directories
-                do
+                FindResult findResult;
+                while ((findResult = findOperation.GetNextResult()) != null)
                 {
-                    bool isDirectory = findInfo.Attributes.HasFlag(System.IO.FileAttributes.Directory);
+                    bool isDirectory = (findResult.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) == FileAttributes.FILE_ATTRIBUTE_DIRECTORY;
 
-                    if ((findInfo.Attributes & excludeAttributes) == 0
-                        && findInfo.FileName != "."
-                        && findInfo.FileName != ".."
+                    if ((findResult.Attributes & excludeAttributes) == 0
+                        && findResult.FileName != "."
+                        && findResult.FileName != ".."
                         && ((isDirectory && childType == ChildType.Directory)
                             || (!isDirectory && childType == ChildType.File)))
                     {
-                        yield return FileSystemInformation.Create(findInfo, fileService);
+                        yield return FileSystemInformation.Create(findResult, directory, fileService);
                     }
-
-                    findInfo = NativeMethods.FileManagement.FindNextFile(firstFile);
-                } while (findInfo != null);
-
-                firstFile.FindHandle.Close();
+                }
             }
 
             if (searchOption != System.IO.SearchOption.AllDirectories) yield break;
 
-            // Need to recurse to find additional matches
-            firstFile = NativeMethods.FileManagement.FindFirstFile(Paths.Combine(directory, "*"), directoriesOnly: true);
-            if (firstFile == null) yield break;
-            findInfo = firstFile;
-
-            do
+            // Now recurse into each subdirectory
+            using (FindOperation findOperation = new FindOperation(Paths.Combine(extendedDirectory, "*"), directoriesOnly: true))
             {
-                if ((findInfo.Attributes & excludeAttributes) == 0
-                    && findInfo.Attributes.HasFlag(System.IO.FileAttributes.Directory)
-                    && findInfo.FileName != "."
-                    && findInfo.FileName != "..")
+                FindResult findResult;
+                while ((findResult = findOperation.GetNextResult()) != null)
                 {
-                    IFileSystemInformation childDirectory = Create(findInfo, fileService);
-                    foreach (var child in EnumerateChildrenInternal(childDirectory.Path, childType, searchPattern, searchOption, excludeAttributes, fileService))
+                    // Unfortunately there is no guarantee that the API will return only directories even if we ask for it
+                    bool isDirectory = (findResult.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) == FileAttributes.FILE_ATTRIBUTE_DIRECTORY;
+
+                    if ((findResult.Attributes & excludeAttributes) == 0
+                        && isDirectory
+                        && findResult.FileName != "."
+                        && findResult.FileName != "..")
                     {
-                        yield return child;
+                        foreach (var child in EnumerateChildrenInternal(Paths.Combine(directory, findResult.FileName), childType, searchPattern,
+                            searchOption, excludeAttributes, fileService))
+                        {
+                            yield return child;
+                        }
                     }
                 }
-                findInfo = NativeMethods.FileManagement.FindNextFile(firstFile);
-            } while (findInfo != null);
-
-            firstFile.FindHandle.Close();
+            }
         }
     }
 }

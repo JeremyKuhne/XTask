@@ -5,18 +5,14 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using FluentAssertions;
+using System.IO;
+using XTask.Systems.File;
+using XTask.Systems.File.Concrete.DotNet;
+using Xunit;
+
 namespace XTask.Tests.FileSystem
 {
-    using System;
-    using System.IO;
-    using System.Linq;
-    using FluentAssertions;
-    using XTask.Systems.File;
-    using Xunit;
-    using Interop;
-    using XTask.Systems.File.Concrete.DotNet;
-    using XTask.Interop;
-
     public class NetFileSystemInfoTests
     {
         [Fact]

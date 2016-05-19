@@ -5,16 +5,15 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using XTask.Utility;
+
 namespace XTask.Systems.File
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
-    using System.Text;
-    using Utility;
-    using Interop;
-
     /// <summary>
     /// Path related helpers.
     /// </summary>
@@ -697,6 +696,21 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
+        /// Remove the extended prefix from the given path if present.
+        /// </summary>
+        public unsafe static string RemoveExtendedPrefix(string path)
+        {
+            if (!IsExtended(path))
+                return path;
+
+            var sb = StringBuilderCache.Instance.Acquire(path.Length - 2);
+            if (IsExtendedUnc(path))
+                sb.Append('\\');
+            sb.AppendSubstring(path, DevicePathPrefix.Length);
+            return StringBuilderCache.Instance.ToStringAndRelease(sb);
+        }
+
+        /// <summary>
         /// Adds the extended path prefix (\\?\) if not already present.
         /// </summary>
         /// <param name="addIfUnderLegacyMaxPath">If false, will not add the extended prefix unless needed.</param>
@@ -801,16 +815,6 @@ namespace XTask.Systems.File
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
 
-            var normalized = InternalNormalizeDirectorySeparators(path);
-            if (normalized == null)
-                return path;
-            else
-                return StringBufferCache.Instance.ToStringAndRelease(normalized);
-        }
-
-
-        private static StringBuffer InternalNormalizeDirectorySeparators(string path)
-        {
             // Check to see if we need to normalize
             bool normalized = true;
             char current;
@@ -835,10 +839,10 @@ namespace XTask.Systems.File
             }
 
             // Already normalized, don't allocate another string
-            if (normalized) return null;
+            if (normalized) return path;
 
             // Normalize
-            var builder = StringBufferCache.Instance.Acquire((uint)path.Length);
+            var builder = StringBuilderCache.Instance.Acquire(path.Length);
 
             // Keep an initial separator if we start with separators
             int startSeparators = 0;
@@ -868,7 +872,7 @@ namespace XTask.Systems.File
                 builder.Append(current);
             }
 
-            return builder;
+            return StringBuilderCache.Instance.ToStringAndRelease(builder);
         }
     }
 }

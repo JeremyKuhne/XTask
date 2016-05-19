@@ -78,15 +78,6 @@
   <ItemGroup>
     <Compile Include="Collections\CacheTests.cs" />
     <Compile Include="FileSystem\FileSystemInformationExtensions.cs" />
-    <Compile Include="Interop\BufferPathInvokeTests.cs" />
-    <Compile Include="Interop\NetworkManagementTests.cs" />
-    <Compile Include="Interop\CryptographyTests.cs" />
-    <Compile Include="Interop\DotNetBehaviors.cs" />
-    <Compile Include="Interop\ErrorsTests.cs" />
-    <Compile Include="Interop\FileManagementBehaviors.cs" />
-    <Compile Include="Interop\NativeBufferTests.cs" />
-    <Compile Include="Interop\NativeMethodsTests.cs" />
-    <Compile Include="Interop\StringBufferTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Build\BuildArgumentParserTests.cs" />
     <Compile Include="Build\BuildTaskBridgeTests.cs" />
@@ -98,13 +89,7 @@
     <Compile Include="FileSystem\FlexFileSystemInfoTests.cs" />
     <Compile Include="FileSystem\NetFileSystemInfoTests.cs" />
     <Compile Include="Support\PathGenerator.cs" />
-    <Compile Include="Interop\BackupTests.cs" />
-    <Compile Include="Interop\BufferInvokeTests.cs" />
-    <Compile Include="Interop\DirectoryManagementTests.cs" />
-    <Compile Include="Interop\FileManagementTests.cs" />
     <Compile Include="Support\TestFileCleaner.cs" />
-    <Compile Include="Interop\LoadLibraryTests.cs" />
-    <Compile Include="Interop\StreamBufferTests.cs" />
     <Compile Include="Logging\AggregatedLoggerTests.cs" />
     <Compile Include="Logging\ClipboardTests.cs" />
     <Compile Include="Logging\ConsoleLoggerTests.cs" />
@@ -133,7 +118,6 @@
     <Compile Include="Collections\EnumerableExtensionsTests.cs" />
     <Compile Include="Utility\ConsoleHelperTests.cs" />
     <Compile Include="Utility\EnumsTests.cs" />
-    <Compile Include="Utility\ErrorHelperTests.cs" />
     <Compile Include="Utility\ExceptionsTests.cs" />
     <Compile Include="Utility\FileCleanerTests.cs" />
     <Compile Include="Utility\FilesTests.cs" />
@@ -175,11 +159,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>TestData.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\bin\x64\$(Configuration)\NativeTestLibrary\NativeTestLibrary.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

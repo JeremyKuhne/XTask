@@ -9,9 +9,7 @@ using FluentAssertions;
 using NSubstitute;
 using System;
 using System.IO;
-using XTask.Interop;
 using XTask.Systems.File;
-using XTask.Systems.File.Concrete;
 using XTask.Systems.File.Concrete.Flex;
 using XTask.Tests.Support;
 using Xunit;
@@ -57,8 +55,8 @@ namespace XTask.Tests.FileSystem
                 string longPath = PathGenerator.CreatePathOfLength(cleaner.TempFolder, 300);
                 cleaner.FileService.CreateDirectory(longPath);
 
-                NativeMethods.FileManagement.FileExists(longPath).Should().BeFalse();
-                NativeMethods.FileManagement.DirectoryExists(longPath).Should().BeTrue();
+                cleaner.FileService.FileExists(longPath).Should().BeFalse();
+                cleaner.FileService.DirectoryExists(longPath).Should().BeTrue();
             }
         }
 
