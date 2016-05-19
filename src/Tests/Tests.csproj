@@ -78,7 +78,6 @@
   <ItemGroup>
     <Compile Include="Collections\CacheTests.cs" />
     <Compile Include="FileSystem\FileSystemInformationExtensions.cs" />
-    <Compile Include="Interop\DotNetBehaviors.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Build\BuildArgumentParserTests.cs" />
     <Compile Include="Build\BuildTaskBridgeTests.cs" />
