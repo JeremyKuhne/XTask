@@ -70,11 +70,8 @@
     <Compile Include="Collections\ListExtensions.cs" />
     <Compile Include="Interop\NativeBufferReader.cs" />
     <Compile Include="Interop\EmptySafeHandle.cs" />
-    <Compile Include="Interop\SafeCertificateStoreHandle.cs" />
     <Compile Include="Interop\SafeHeapHandle.cs" />
     <Compile Include="Interop\HeapHandleCache.cs" />
-    <Compile Include="Interop\NativeMethods.FileInformation.cs" />
-    <Compile Include="Interop\NativeMethods.Cryptography.cs" />
     <Compile Include="Interop\NativeMethods.Handles.cs" />
     <Compile Include="Interop\StreamBuffer.cs" />
     <Compile Include="Interop\StringBuffer.cs" />
