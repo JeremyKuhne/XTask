@@ -8,7 +8,9 @@
 using System;
 using WInterop.DirectoryManagement;
 using WInterop.ErrorHandling;
+using WInterop.ErrorHandling.DataTypes;
 using WInterop.FileManagement;
+using WInterop.FileManagement.DataTypes;
 
 namespace XTask.Systems.File.Concrete.Flex
 {
@@ -62,7 +64,7 @@ namespace XTask.Systems.File.Concrete.Flex
             if (path == null) throw new ArgumentNullException(nameof(path));
             path = GetFullPath(path);
             int pathRootLength = Paths.GetRootLength(path);
-            if (pathRootLength < 0) throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_BAD_PATHNAME);
+            if (pathRootLength < 0) throw ErrorHelper.GetIoExceptionForError(WindowsError.ERROR_BAD_PATHNAME);
 
             int i = pathRootLength;
             string subDirectory;
@@ -96,7 +98,7 @@ namespace XTask.Systems.File.Concrete.Flex
                 else
                 {
                     // File exists
-                    throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_FILE_EXISTS, subDirectory);
+                    throw ErrorHelper.GetIoExceptionForError(WindowsError.ERROR_FILE_EXISTS, subDirectory);
                 }
             }
         }
@@ -113,13 +115,13 @@ namespace XTask.Systems.File.Concrete.Flex
             if (!info.HasValue)
             {
                 // Nothing found
-                throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_PATH_NOT_FOUND, path);
+                throw ErrorHelper.GetIoExceptionForError(WindowsError.ERROR_PATH_NOT_FOUND, path);
             }
 
             if ((info.Value.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) != FileAttributes.FILE_ATTRIBUTE_DIRECTORY)
             {
                 // Not a directory, a file
-                throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_FILE_EXISTS, path);
+                throw ErrorHelper.GetIoExceptionForError(WindowsError.ERROR_FILE_EXISTS, path);
             }
 
             //if (attributes.HasFlag(FileAttributes.ReadOnly))

@@ -9,11 +9,11 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using WInterop.Authorization;
-using WInterop.Authorization.Desktop;
 using WInterop.Backup;
 using WInterop.FileManagement;
-using WInterop.FileManagement.Desktop;
 using WInterop.VolumeManagement;
+using WInterop.Authorization.DataTypes;
+using WInterop.FileManagement.DataTypes;
 
 namespace XTask.Systems.File.Concrete
 {

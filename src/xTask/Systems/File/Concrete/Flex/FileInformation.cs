@@ -7,7 +7,8 @@
 
 using System;
 using WInterop.FileManagement;
-using WInterop.Handles;
+using WInterop.FileManagement.DataTypes;
+using WInterop.Handles.DataTypes;
 
 namespace XTask.Systems.File.Concrete.Flex
 {

@@ -25,17 +25,17 @@ namespace XTask.Utility
             /// <summary>
             /// Current day of the month 1..31
             /// </summary>
-            public const int CurrentDayOfMonth =  18;
+            public const int CurrentDayOfMonth =  25;
 
             /// <summary>
             /// Current hour from 0..23
             /// </summary>
-            public const int CurrentHour = 19;
+            public const int CurrentHour = 18;
 
             /// <summary>
             /// Current hour from 0..59
             /// </summary>
-            public const int CurrentMinute = 16;
+            public const int CurrentMinute = 2;
         }
 
         public static class Strings
@@ -58,32 +58,32 @@ namespace XTask.Utility
             /// <summary>
             /// Current day of the month 1..31
             /// </summary>
-            public const string CurrentDayOfMonth =  "18";
+            public const string CurrentDayOfMonth =  "25";
 
             /// <summary>
             /// Current two digit day of the month 01..31
             /// </summary>
-            public const string CurrentTwoDigitDayOfMonth =  "18";
+            public const string CurrentTwoDigitDayOfMonth =  "25";
 
             /// <summary>
             /// Current hour from 0..23
             /// </summary>
-            public const string CurrentHour = "19";
+            public const string CurrentHour = "18";
 
             /// <summary>
             /// Current two digit hour from 00..23
             /// </summary>
-            public const string CurrentTwoDigitHour = "19";
+            public const string CurrentTwoDigitHour = "18";
 
             /// <summary>
             /// Current hour from 0..59
             /// </summary>
-            public const string CurrentMinute = "16";
+            public const string CurrentMinute = "2";
 
             /// <summary>
             /// Current two digit hour from 00..59
             /// </summary>
-            public const string CurrentTwoDigitMinute = "16";
+            public const string CurrentTwoDigitMinute = "02";
         }
     }
 }
