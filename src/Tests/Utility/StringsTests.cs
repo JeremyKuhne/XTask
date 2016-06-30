@@ -246,5 +246,28 @@ namespace XTask.Tests.Utility
         {
             Action action = () => Strings.FindRightmostCommonCount(first, 0, second, 0);
         }
+
+
+        [Theory,
+            InlineData(null, null, true, 0)
+            InlineData(null, null, false, 0)
+            InlineData(null, "", true, 0)
+            InlineData(null, "", false, 0)
+            InlineData("", "", true, 0)
+            InlineData("", "", false, 0)
+            InlineData("a", "a", true, 1)
+            InlineData("a", "a", false, 1)
+            InlineData("A", "a", true, 1)
+            InlineData("A", "a", false, 0)
+            InlineData("foo", "foobar", true, 3)
+            InlineData("foo", "foobar", false, 3)
+            InlineData("foo", "foOBar", true, 3)
+            InlineData("foo", "foOBar", false, 2)
+            ]
+        public void FindLeftmostCommonCount(string first, string second, bool ignoreCase, int expected)
+        {
+            Strings.FindLeftmostCommonCount(first, second, ignoreCase).Should().Be(expected);
+            Strings.FindLeftmostCommonCount(second, first, ignoreCase).Should().Be(expected, "order shouldn't matter");
+        }
     }
 }

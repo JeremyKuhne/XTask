@@ -374,5 +374,18 @@ namespace XTask.Tests.FileSystem
             Paths.IsExtended(path).Should().Be(expected);
         }
 
+
+        [Theory
+            InlineData(@"C:\", @"C:\", @"")
+            InlineData(@"C:\", @"C:\b", @"b")
+            InlineData(@"C:\a", @"C:\b", @"..\b")
+            InlineData(@"C:\a\", @"C:\b", @"..\b")
+            InlineData(@"C:\a", @"C:\a\b", @"b")
+            InlineData(@"C:\a\", @"C:\a\b", @"b")
+            ]
+        public void CreateRelativePath(string from, string to, string expected)
+        {
+            Paths.CreateRelativePath(from, to).Should().Be(expected);
+        }
     }
 }

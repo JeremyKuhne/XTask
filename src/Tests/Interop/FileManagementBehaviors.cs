@@ -181,6 +181,8 @@ namespace XTask.Tests.Interop
             InlineData(@"LPT9", @"\\.\LPT9")
 
             InlineData(@"C:\A\B\.\..\C", @"C:\A\C")
+
+            InlineData(@"\\\\.\\pipe\\", @"\\\pipe\")
             ]
         public void ValidateKnownFixedBehaviors(string value, string expected)
         {

@@ -809,6 +809,68 @@ namespace XTask.Systems.File
         }
 
 
+        public static int GetCommonPathLength(string first, string second)
+        {
+            int commonChars = Strings.FindLeftmostCommonCount(first, second, ignoreCase: true);
+
+            // TODO: Normalize
+
+            // If nothing matches or we've got an entire path we have no additional checking to do
+            if (commonChars == 0 || commonChars == first.Length || commonChars == second.Length)
+                return commonChars;
+
+            // It's possible we matched somewhere in the middle of a segment e.g. C:\Foodie and C:\Foobar.
+            while (commonChars > 0 && !IsDirectorySeparator(first[commonChars -1]))
+                commonChars--;
+
+            return commonChars;
+        }
+
+        public static string CreateRelativePath(string from, string to)
+        {
+            // TODO: Normalize
+
+            int commonLength = GetCommonPathLength(from, to);
+
+            // If there is nothing in common they can't share the same root,
+            // return the to path as is.
+            if (commonLength == 0)
+                return to;
+
+            // Trailing separators aren't significant
+            bool fromEndsInSeparator = EndsInDirectorySeparator(from);
+            int fromLength = from.Length - (fromEndsInSeparator ? 1 : 0);
+            int toLength = to.Length - (EndsInDirectorySeparator(to) ? 1 : 0);
+
+            // If we have effectively the same path, return string.Empty (or possibly ".")?
+            if (fromLength == toLength && commonLength >= fromLength) return string.Empty;
+
+            // We have the same root
+            // C:\Foo C:\Bar L3, S1 -> ..\Bar
+            // C:\Foo C:\Foo\Bar L6, S0 ->
+            // C:\Foo\Bar C:\Bar\Bar L3, S2 -> ..\..\Bar\Bar
+            // C:\Foo\Foo C:\Foo\Bar L7, S1 -> ..\Bar
+
+            StringBuilder sb = new StringBuilder(Math.Max(from.Length, to.Length) * 2);
+
+            // Add parent segments for segments past the common on the "from" path
+            if (commonLength < fromLength)
+            {
+                sb.Append(@"..\");
+                for (int i = commonLength; i < fromLength; i++)
+                    if (IsDirectorySeparator(from[i])) sb.Append(@"..\");
+            }
+
+            // If the entire "from" path is common and we didn't have a trailing separator we need to skip
+            // ahead one so we don't pull in the "to" separator.
+            if (!fromEndsInSeparator && commonLength == fromLength)
+                commonLength++;
+
+            // Now add the rest of the right
+            sb.Append(to, commonLength, toLength - commonLength);
+            return sb.ToString();
+        }
+
         private static StringBuffer InternalNormalizeDirectorySeparators(string path)
         {
             // Check to see if we need to normalize

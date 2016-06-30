@@ -9,6 +9,7 @@ namespace XTask.Utility
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -331,6 +332,38 @@ namespace XTask.Utility
             }
 
             return matchCount;
+        }
+
+        /// <summary>
+        /// Gets the leftmost count of common characters optionally ignoring case
+        /// </summary>
+        public static int FindLeftmostCommonCount(string first, string second, bool ignoreCase)
+        {
+            if (string.IsNullOrEmpty(first) || string.IsNullOrEmpty(second)) return 0;
+
+            int commonChars = 0;
+            int firstLength = first.Length;
+            int secondLength = second.Length;
+
+            unsafe
+            {
+                fixed (char* f = first)
+                fixed (char* s = second)
+                {
+                    char* l = f;
+                    char* r = s;
+
+                    while (*l != '\0' && *r != '\0'
+                        && (*l == *r || (ignoreCase && char.ToUpperInvariant((*l)) == char.ToUpperInvariant((*r)))))
+                    {
+                        commonChars++;
+                        l++;
+                        r++;
+                    }
+                }
+            }
+
+            return commonChars;
         }
     }
 }
