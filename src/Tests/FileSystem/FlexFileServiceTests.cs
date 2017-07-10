@@ -60,11 +60,11 @@ namespace XTask.Tests.FileSystem
             }
         }
 
-        [Theory
+        [Theory,
             // InlineData(@" "),  // 5 Access is denied (UnauthorizedAccess)
             // InlineData(@"...") // 5 
             // InlineData(@" \"), // 123
-            InlineData(@"A ")
+            InlineData(@"A "),
             InlineData(@"A.")
             ]
         public void CreateStreamsWithDifficultNames(string fileName)
@@ -143,9 +143,9 @@ namespace XTask.Tests.FileSystem
             }
         }
 
-        [Theory
-            InlineData("")
-            InlineData(":MyStream:$DATA")
+        [Theory,
+            InlineData(""),
+            InlineData(":MyStream:$DATA"),
             InlineData("::$DATA")]
         public void WriteAndReadStream(string appendix)
         {
@@ -189,9 +189,9 @@ namespace XTask.Tests.FileSystem
             }
         }
 
-        [Theory
-            InlineData("")
-            InlineData(":MyStream:$DATA")
+        [Theory,
+            InlineData(""),
+            InlineData(":MyStream:$DATA"),
             InlineData("::$DATA")]
         public void OpenNonExistantStream(string appendix)
         {
@@ -215,13 +215,13 @@ namespace XTask.Tests.FileSystem
             }
         }
 
-        [Theory
-            InlineData(@"a", @"C:\b", @"C:\b\a")
-            InlineData(@"C:a", @"C:\b", @"C:\b\a")
-            InlineData(@"C:a", @"D:\b", @"C:\Users\a")
-            InlineData(@"C:\a\b", @"C:\b", @"C:\a\b")
-            InlineData(@"a", @"D:\b", @"D:\b\a")
-            InlineData(@"D:a", @"D:\b", @"D:\b\a")
+        [Theory,
+            InlineData(@"a", @"C:\b", @"C:\b\a"),
+            InlineData(@"C:a", @"C:\b", @"C:\b\a"),
+            InlineData(@"C:a", @"D:\b", @"C:\Users\a"),
+            InlineData(@"C:\a\b", @"C:\b", @"C:\a\b"),
+            InlineData(@"a", @"D:\b", @"D:\b\a"),
+            InlineData(@"D:a", @"D:\b", @"D:\b\a"),
             InlineData(@"D:a", @"C:\b", @"D:\a")
             ]
         public void GetFullPathWithBasePathTests(string path, string basePath, string expected)

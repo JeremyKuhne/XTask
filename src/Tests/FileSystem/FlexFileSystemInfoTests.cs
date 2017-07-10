@@ -17,8 +17,8 @@ namespace XTask.Tests.FileSystem
 
     public class FlexFileSystemInfoTests
     {
-        [Theory
-            InlineData("")
+        [Theory,
+            InlineData(""),
             InlineData(Paths.ExtendedPathPrefix)]
         public void CreateInfoForRootDrive(string prefix)
         {
@@ -32,8 +32,8 @@ namespace XTask.Tests.FileSystem
             info.Path.Should().Be(driveRoot);
         }
 
-        [Theory
-            InlineData(@"\\.\pipe\")
+        [Theory,
+            InlineData(@"\\.\pipe\"),
             InlineData(@"\\?\pipe\")
 
             // Currently these throw as many file apis don't like the file handle that this creates- still figuring out the best way to handle it

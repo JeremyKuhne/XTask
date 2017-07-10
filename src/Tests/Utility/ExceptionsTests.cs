@@ -16,7 +16,7 @@ namespace XTask.Tests.Utility
 {
     public class ExceptionsTests
     {
-        [Theory
+        [Theory,
             MemberData("KnownExceptions")
             ]
         public void AreIoExceptions(Exception exception)

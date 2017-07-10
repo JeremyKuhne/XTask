@@ -14,7 +14,7 @@ namespace XTask.Tests.Tasks
 
     public class TaskServiceTests
     {
-        [Theory
+        [Theory,
             InlineData("defaults"),
             InlineData("interactive"),
             InlineData("help")]

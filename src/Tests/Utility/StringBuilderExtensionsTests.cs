@@ -51,12 +51,12 @@ namespace XTask.Tests.Utility
             sb.ToString().Should().Be(expected, "specified '{0}' with column width of {1}, {2} justified", value, width, justification);
         }
 
-        [Theory
-            InlineData("", new char[] { }, new string[] { "" })
-            InlineData("foo:bar", new char[] { ':' }, new string[] { "foo", "bar" })
-            InlineData(":foo:bar", new char[] { ':' }, new string[] { "", "foo", "bar" })
-            InlineData("foo::bar", new char[] { ':' }, new string[] { "foo", "", "bar" })
-            InlineData("foo:bar:", new char[] { ':' }, new string[] { "foo", "bar", "" })
+        [Theory,
+            InlineData("", new char[] { }, new string[] { "" }),
+            InlineData("foo:bar", new char[] { ':' }, new string[] { "foo", "bar" }),
+            InlineData(":foo:bar", new char[] { ':' }, new string[] { "", "foo", "bar" }),
+            InlineData("foo::bar", new char[] { ':' }, new string[] { "foo", "", "bar" }),
+            InlineData("foo:bar:", new char[] { ':' }, new string[] { "foo", "bar", "" }),
             InlineData("foo\0bar", new char[] { '\0' }, new string[] { "foo", "bar" })
             ]
         public void SplitTests(string value, char[] splitCharacters, string[] expected)

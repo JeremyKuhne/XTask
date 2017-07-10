@@ -15,8 +15,8 @@ namespace XTask.Tests.Utility
 
     public class EnumsTests
     {
-        [Theory
-            InlineData(FileAttributes.ReadOnly, new FileAttributes[] { FileAttributes.ReadOnly })
+        [Theory,
+            InlineData(FileAttributes.ReadOnly, new FileAttributes[] { FileAttributes.ReadOnly }),
             InlineData(FileAttributes.ReadOnly | FileAttributes.Hidden, new FileAttributes[] { FileAttributes.ReadOnly, FileAttributes.Hidden })
             ]
         public void TestGetSetValues(FileAttributes value, FileAttributes[] expected)
