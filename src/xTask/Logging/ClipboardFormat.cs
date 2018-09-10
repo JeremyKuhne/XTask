@@ -9,7 +9,8 @@ namespace XTask.Logging
 {
     public enum ClipboardFormat
     {
-        Text,
+        UnicodeText,
+        AsciiText,
         Html,
         CommaSeparatedValues,
         XmlSpreadsheet,

@@ -62,7 +62,7 @@ namespace XTask.Tests.Utility
         public void SplitTests(string value, char[] splitCharacters, string[] expected)
         {
             StringBuilder sb = new StringBuilder(value);
-            sb.Split(splitCharacters).ShouldAllBeEquivalentTo(expected);
+            sb.Split(splitCharacters).Should().BeEquivalentTo(expected);
         }
     }
 }

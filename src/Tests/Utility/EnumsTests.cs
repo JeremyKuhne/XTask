@@ -21,7 +21,7 @@ namespace XTask.Tests.Utility
             ]
         public void TestGetSetValues(FileAttributes value, FileAttributes[] expected)
         {
-            Enums.GetSetValues(value).ShouldBeEquivalentTo(expected);
+            Enums.GetSetValues(value).Should().BeEquivalentTo(expected);
         }
     }
 }

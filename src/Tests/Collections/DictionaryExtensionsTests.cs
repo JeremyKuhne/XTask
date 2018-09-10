@@ -20,10 +20,10 @@ namespace XTask.Tests.Collections
         {
             var dictionary = new Dictionary<string, string>();
             Action action = () => dictionary.UpdateIfPresent(null, "");
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
             dictionary = null;
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
 
             var dictionaryTwo = new Dictionary<int, int>();
@@ -38,10 +38,10 @@ namespace XTask.Tests.Collections
         {
             var dictionary = new Dictionary<string, string>();
             Action action = () => dictionary.AddOrUpdate(null, "");
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
             dictionary = null;
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
 
             var dictionaryTwo = new Dictionary<int, int>();
@@ -72,15 +72,15 @@ namespace XTask.Tests.Collections
 
             // Null argument checks
             Action action = action = () => dictionary.AddOrUpdate(key: null, addValue: null, updateValueFactory: nullUpdater);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
 
             action = () => dictionary.AddOrUpdate(key: "foo", addValue: null, updateValueFactory: nullUpdater);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("updateValueFactory");
 
             dictionary = null;
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
         }
 
@@ -103,15 +103,15 @@ namespace XTask.Tests.Collections
 
             // Null argument checks
             Action action = action = () => dictionary.AddOrUpdate(key: null, addValue: null, updateValueFactory: nullUpdater);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
 
             action = () => dictionary.AddOrUpdate(key: "foo", addValue: null, updateValueFactory: nullUpdater);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("updateValueFactory");
 
             dictionary = null;
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
         }
 
@@ -142,19 +142,19 @@ namespace XTask.Tests.Collections
 
             // Null argument checks
             Action action = action = () => dictionary.AddOrUpdate(key: null, addValueFactory: adder, updateValueFactory: nullUpdater);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
 
             action = () => dictionary.AddOrUpdate(key: "foo", addValueFactory: adder, updateValueFactory: nullUpdater);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("updateValueFactory");
 
             action = () => dictionary.AddOrUpdate(key: "foo", addValueFactory: nullAdder, updateValueFactory: updater);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("addValueFactory");
 
             dictionary = null;
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
         }
 
@@ -166,11 +166,11 @@ namespace XTask.Tests.Collections
             dictionary.GetOrAdd("fookey", "foo").Should().Be("bar");
 
             Action action = () => dictionary.GetOrAdd(null, "");
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
 
             dictionary = null;
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
         }
 
@@ -189,15 +189,15 @@ namespace XTask.Tests.Collections
             dictionary.GetOrAdd("fookey", adder).Should().Be("bar");
 
             Action action = () => dictionary.GetOrAdd(null, addValueFactory: adder);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
 
             action = () => dictionary.GetOrAdd("fookey", addValueFactory: null);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("addValueFactory");
 
             dictionary = null;
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
         }
 
@@ -217,7 +217,7 @@ namespace XTask.Tests.Collections
 
             dictionary = null;
             Action action = () => dictionary.TryRemoveValues("zing");
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
         }
 
@@ -234,11 +234,11 @@ namespace XTask.Tests.Collections
             dictionary.Count.Should().Be(0);
 
             Action action = () => dictionary.TryRemove(key: null);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
 
             dictionary = null;
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
         }
 
@@ -257,11 +257,11 @@ namespace XTask.Tests.Collections
             dictionary.Count.Should().Be(1);
 
             Action action = () => dictionary.TryRemove(keys: null);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("keys");
 
             dictionary = null;
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
         }
 
@@ -281,11 +281,11 @@ namespace XTask.Tests.Collections
             dictionary.Count.Should().Be(0);
 
             Action action = () => dictionary.TryRemove(key: null, value: out removed);
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
 
             dictionary = null;
-            action.ShouldThrow<ArgumentNullException>()
+            action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
         }
     }

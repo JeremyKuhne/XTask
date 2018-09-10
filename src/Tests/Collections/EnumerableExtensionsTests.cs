@@ -26,11 +26,11 @@ namespace XTask.Tests.Collections
         {
             IEnumerable<int> source = null;
             Action action = () => source.WhereNot(this.IsGreaterThanZero);
-            action.ShouldThrow<ArgumentNullException>().And.ParamName.Should().Be("source");
+            action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("source");
 
             source = Enumerable.Empty<int>();
             action = () => source.WhereNot(null);
-            action.ShouldThrow<ArgumentNullException>().And.ParamName.Should().Be("predicate");
+            action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("predicate");
         }
 
         [Fact]
@@ -46,11 +46,11 @@ namespace XTask.Tests.Collections
             IEnumerable<int> first = null;
             IEnumerable<IEnumerable<int>> second = null;
             Action action = () => first.Concat(second);
-            action.ShouldThrow<ArgumentNullException>().And.ParamName.Should().Be("first");
+            action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("first");
 
             first = Enumerable.Empty<int>();
             action = () => first.Concat(second);
-            action.ShouldThrow<ArgumentNullException>().And.ParamName.Should().Be("second");
+            action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("second");
         }
 
         [Fact]

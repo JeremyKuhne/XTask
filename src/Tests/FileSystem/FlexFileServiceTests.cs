@@ -199,7 +199,7 @@ namespace XTask.Tests.FileSystem
             {
                 string filePath = cleaner.GetTestPath() + appendix;
                 Action action = () => cleaner.FileService.CreateFileStream(filePath, FileMode.Open);
-                action.ShouldThrow<FileNotFoundException>();
+                action.Should().Throw<FileNotFoundException>();
             }
         }
 

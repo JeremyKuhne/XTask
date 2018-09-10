@@ -91,7 +91,7 @@ namespace XTask.Systems.File.Concrete.Flex
                 string driveLetter = _extendedFileService.GetDriveLetter(_fileService, path);
                 if (!string.IsNullOrEmpty(driveLetter))
                 {
-                    string environmentPath = ProcessDesktopMethods.GetEnvironmentVariable("=" + driveLetter.Substring(0, 2));
+                    string environmentPath = Processes.GetEnvironmentVariable("=" + driveLetter.Substring(0, 2));
                     if (environmentPath != null)
                     {
                         AddEntry(environmentPath);

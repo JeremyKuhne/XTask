@@ -36,17 +36,17 @@ namespace XTask.Systems.File.Concrete.DotNet
             get { return _fileSystemInfo.Exists; }
         }
 
-        public virtual DateTime CreationTime
+        public virtual DateTimeOffset CreationTime
         {
             get { return _fileSystemInfo.CreationTime; }
         }
 
-        public virtual DateTime LastAccessTime
+        public virtual DateTimeOffset LastAccessTime
         {
             get { return _fileSystemInfo.LastAccessTime; }
         }
 
-        public virtual DateTime LastWriteTime
+        public virtual DateTimeOffset LastWriteTime
         {
             get { return _fileSystemInfo.LastWriteTime; }
         }

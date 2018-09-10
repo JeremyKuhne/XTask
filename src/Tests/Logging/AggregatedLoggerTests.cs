@@ -31,7 +31,7 @@ namespace XTask.Tests.Logging
         public void NullConstructorShouldThrow()
         {
             Action action = () => new AggregatedLogger(null);
-            action.ShouldThrow<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]

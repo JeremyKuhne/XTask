@@ -13,7 +13,16 @@ namespace XTask.Logging
 
     public class CsvLogger : Logger, IClipboardSource, IDisposable
     {
-        private StreamWriter _streamWriter = new StreamWriter(new MemoryStream(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        private MemoryStream _stream;
+        private StreamWriter _streamWriter;
+
+        public CsvLogger()
+        {
+            _stream = new MemoryStream();
+
+            // Do we have to look up the code page here? It doesn't look like Excel supports UTF-8
+            _streamWriter = new StreamWriter(_stream, Encoding.ASCII);
+        }
 
         protected override void WriteInternal(WriteStyle style, string value)
         {
@@ -41,7 +50,7 @@ namespace XTask.Logging
 
         public ClipboardData GetClipboardData()
         {
-            return new ClipboardData { Data = _streamWriter.BaseStream.Length > 0 ? _streamWriter.BaseStream : null, Format = ClipboardFormat.CommaSeparatedValues };
+            return new ClipboardData { Data = _stream.Length > 0 ? _stream.GetBuffer() : null, Format = ClipboardFormat.CommaSeparatedValues };
         }
 
         private void Dispose(bool disposing)

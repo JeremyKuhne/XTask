@@ -52,7 +52,7 @@ namespace XTask.Tests.Utility
         public void DoesNotCatchUnknownExceptions()
         {
             Action action = () => { throw new Exception(); };
-            action.ShouldThrow<Exception>();
+            action.Should().Throw<Exception>();
         }
 
         [Fact]

@@ -5,9 +5,9 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Win32.SafeHandles;
 using System;
-using WInterop.FileManagement;
-using WInterop.Handles;
+using WInterop.Storage;
 
 namespace XTask.Systems.File.Concrete.Flex
 {
@@ -22,35 +22,29 @@ namespace XTask.Systems.File.Concrete.Flex
         {
         }
 
-        new static internal IFileSystemInformation Create(FindResult findResult, string directory, IFileService fileService)
+        new static internal IFileSystemInformation Create(ref RawFindData findData, IFileService fileService)
         {
-            if ((findResult.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) != 0) throw new ArgumentOutOfRangeException(nameof(findResult));
+            if ((findData.FileAttributes & FileAttributes.Directory) != 0) throw new ArgumentOutOfRangeException(nameof(findData));
 
             var fileInfo = new FileInformation(fileService);
-            fileInfo.PopulateData(findResult, directory);
+            fileInfo.PopulateData(ref findData);
+            fileInfo.Length = findData.FileSize;
             return fileInfo;
         }
 
-        new internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, FileBasicInfo info, IFileService fileService)
+        new internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, FileBasicInformation info, IFileService fileService)
         {
-            if ((info.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) != 0) throw new ArgumentOutOfRangeException(nameof(info));
+            if ((info.FileAttributes & FileAttributes.Directory) != 0) throw new ArgumentOutOfRangeException(nameof(info));
 
             var fileInfo = new FileInformation(fileService);
             fileInfo.PopulateData(originalPath, fileHandle, info);
             return fileInfo;
         }
 
-        protected override void PopulateData(FindResult findResult, string directory)
-        {
-            base.PopulateData(findResult, directory);
-            Length = findResult.Length;
-            _directory = Paths.GetDirectory(findResult.SearchPath);
-        }
-
-        protected override void PopulateData(string originalPath, SafeFileHandle fileHandle, FileBasicInfo info)
+        protected override void PopulateData(string originalPath, SafeFileHandle fileHandle, FileBasicInformation info)
         {
             base.PopulateData(originalPath, fileHandle, info);
-            Length = (ulong)FileMethods.GetFileSize(fileHandle);
+            Length = (ulong)Storage.GetFileSize(fileHandle);
             _directory = Paths.GetDirectory(Path);
         }
 

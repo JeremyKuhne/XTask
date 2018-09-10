@@ -70,13 +70,15 @@ namespace XTask.Tasks
             {
                 if (_aggregatedLogger != null)
                 {
-                    List<ClipboardData> allData = new List<ClipboardData>();
-                    allData.Add(_richTextLogger.GetClipboardData());
-                    allData.Add(_textLogger.GetClipboardData());
-                    allData.Add(_csvLogger.GetClipboardData());
-                    allData.Add(_spreadsheetLogger.GetClipboardData());
+                    List<ClipboardData> allData = new List<ClipboardData>
+                    {
+                        _richTextLogger.GetClipboardData(),
+                        _textLogger.GetClipboardData(),
+                        _csvLogger.GetClipboardData(),
+                        _spreadsheetLogger.GetClipboardData()
+                    };
 
-                    Clipboard.AddToClipboard(allData.ToArray());
+                    ClipboardHelper.SetClipboardData(allData.ToArray());
                     _richTextLogger = null;
 
                     _csvLogger.Dispose();

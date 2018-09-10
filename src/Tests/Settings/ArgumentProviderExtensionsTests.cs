@@ -58,7 +58,7 @@ namespace XTask.Tests.Settings
             fileService.GetAttributes("Foo").Returns(x => { throw new FileNotFoundException(); });
 
             Action action = () => arguments.GetDirectories(fileService);
-            action.ShouldThrow<TaskArgumentException>();
+            action.Should().Throw<TaskArgumentException>();
         }
 
         [Fact]

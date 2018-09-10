@@ -5,10 +5,10 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
-using WInterop.FileManagement;
-using WInterop.Handles;
+using WInterop.Storage;
 
 namespace XTask.Systems.File.Concrete.Flex
 {
@@ -19,12 +19,12 @@ namespace XTask.Systems.File.Concrete.Flex
         {
         }
 
-        new static internal IFileSystemInformation Create(FindResult findResult, string directory, IFileService fileService)
+        new static internal IFileSystemInformation Create(ref RawFindData findData, IFileService fileService)
         {
-            if ((findResult.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) == 0) throw new ArgumentOutOfRangeException(nameof(findResult));
+            if ((findData.FileAttributes & FileAttributes.Directory) == 0) throw new ArgumentOutOfRangeException(nameof(findData));
 
             var directoryInfo = new DirectoryInformation(fileService);
-            directoryInfo.PopulateData(findResult, directory);
+            directoryInfo.PopulateData(ref findData);
             return directoryInfo;
         }
 
@@ -37,9 +37,9 @@ namespace XTask.Systems.File.Concrete.Flex
             return directoryInfo;
         }
 
-        new internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, FileBasicInfo info, IFileService fileService)
+        new internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, FileBasicInformation info, IFileService fileService)
         {
-            if ((info.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) == 0) throw new ArgumentOutOfRangeException(nameof(info));
+            if ((info.FileAttributes & FileAttributes.Directory) == 0) throw new ArgumentOutOfRangeException(nameof(info));
 
             var directoryInfo = new DirectoryInformation(fileService);
             directoryInfo.PopulateData(originalPath, fileHandle, info);
@@ -73,53 +73,15 @@ namespace XTask.Systems.File.Concrete.Flex
             // We've already normalized our base directory.
             string extendedDirectory = Paths.AddExtendedPrefix(directory);
 
-            // The assertion here is that we want to find files that match the desired pattern in all subdirectories, even if the
-            // subdirectories themselves don't match the pattern. That requires two passes to avoid overallocating for directories
-            // with a large number of files.
+            var transformFilter = new FindTransformFilter(excludeAttributes, fileService);
+            FindOperation<IFileSystemInformation> findOperation = new FindOperation<IFileSystemInformation>(
+                extendedDirectory,
+                searchPattern,
+                recursive: searchOption == System.IO.SearchOption.AllDirectories ? true : false,
+                transformFilter,
+                transformFilter);
 
-            // First look for items that match the given search pattern in the current directory
-            using (FindOperation findOperation = new FindOperation(Paths.Combine(extendedDirectory, searchPattern)))
-            {
-                FindResult findResult;
-                while ((findResult = findOperation.GetNextResult()) != null)
-                {
-                    bool isDirectory = (findResult.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) == FileAttributes.FILE_ATTRIBUTE_DIRECTORY;
-
-                    if ((findResult.Attributes & excludeAttributes) == 0
-                        && findResult.FileName != "."
-                        && findResult.FileName != ".."
-                        && ((isDirectory && childType == ChildType.Directory)
-                            || (!isDirectory && childType == ChildType.File)))
-                    {
-                        yield return FileSystemInformation.Create(findResult, directory, fileService);
-                    }
-                }
-            }
-
-            if (searchOption != System.IO.SearchOption.AllDirectories) yield break;
-
-            // Now recurse into each subdirectory
-            using (FindOperation findOperation = new FindOperation(Paths.Combine(extendedDirectory, "*"), directoriesOnly: true))
-            {
-                FindResult findResult;
-                while ((findResult = findOperation.GetNextResult()) != null)
-                {
-                    // Unfortunately there is no guarantee that the API will return only directories even if we ask for it
-                    bool isDirectory = (findResult.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) == FileAttributes.FILE_ATTRIBUTE_DIRECTORY;
-
-                    if ((findResult.Attributes & excludeAttributes) == 0
-                        && isDirectory
-                        && findResult.FileName != "."
-                        && findResult.FileName != "..")
-                    {
-                        foreach (var child in EnumerateChildrenInternal(Paths.Combine(directory, findResult.FileName), childType, searchPattern,
-                            searchOption, excludeAttributes, fileService))
-                        {
-                            yield return child;
-                        }
-                    }
-                }
-            }
+            return findOperation;
         }
     }
 }

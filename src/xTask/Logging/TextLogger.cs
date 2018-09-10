@@ -38,7 +38,7 @@ namespace XTask.Logging
 
         public ClipboardData GetClipboardData()
         {
-            return new ClipboardData { Data = _text.Length > 0 ? ToString() : null, Format = ClipboardFormat.Text };
+            return new ClipboardData { Data = _text.Length > 0 ? ToString() : null, Format = ClipboardFormat.UnicodeText };
         }
     }
 }

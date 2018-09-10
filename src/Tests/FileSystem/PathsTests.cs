@@ -242,10 +242,10 @@ namespace XTask.Tests.FileSystem
         public void CombineThrowsOnNull()
         {
             Action action = () => Paths.Combine((string)null, null);
-            action.ShouldThrow<ArgumentNullException>("null string should throw");
+            action.Should().Throw<ArgumentNullException>("null string should throw");
 
             action = () => Paths.Combine((StringBuilder)null, null);
-            action.ShouldThrow<ArgumentNullException>("null stringbuilder should throw");
+            action.Should().Throw<ArgumentNullException>("null stringbuilder should throw");
         }
 
         [Theory,
@@ -268,7 +268,7 @@ namespace XTask.Tests.FileSystem
         public void NormalizeDirectorySeparatorsThrowsOnNull()
         {
             Action action = () => Paths.NormalizeDirectorySeparators(null);
-            action.ShouldThrow<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>();
         }
 
         [Theory,

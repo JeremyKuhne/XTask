@@ -27,7 +27,7 @@ namespace XTask.Tasks
                 return new SimpleTaskRegistry();
             });
 
-            _applicationName = applicationName ?? Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().MainModule.FileName);
+            _applicationName = applicationName ?? Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
             _generalHelpString = generalHelpString ?? XTaskStrings.HelpGeneral;
         }
 

@@ -159,21 +159,21 @@ namespace XTask.Tests.Utility
             ]
         public void SplitCommandLineTests(string value, string[] expected)
         {
-            Strings.SplitCommandLine(value).ShouldAllBeEquivalentTo(expected);
+            Strings.SplitCommandLine(value).Should().BeEquivalentTo(expected);
         }
 
         [Fact]
         public void SplitThrowsForNullPointer()
         {
             Action action = () => Strings.Split(IntPtr.Zero, 0, ' ');
-            action.ShouldThrow<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
         public void SplitThrowsForNegativeLength()
         {
             Action action = () => Strings.Split(new IntPtr(1), -1, ' ');
-            action.ShouldThrow<ArgumentOutOfRangeException>();
+            action.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [Fact]
@@ -195,7 +195,7 @@ namespace XTask.Tests.Utility
         {
             fixed (void* start = input)
             {
-                Strings.Split(new IntPtr(start), input.Length, splitChars).ShouldAllBeEquivalentTo(input.Split(splitChars));
+                Strings.Split(new IntPtr(start), input.Length, splitChars).Should().BeEquivalentTo(input.Split(splitChars));
             }
         }
 

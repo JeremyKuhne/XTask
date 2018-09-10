@@ -58,7 +58,7 @@ namespace XTask.Tests.Utility
                 .Do(x=> { throw new Exception(); });
 
             Action action = () => console.WriteLockedColor(ConsoleColor.Black, "Foo");
-            action.ShouldThrow<Exception>();
+            action.Should().Throw<Exception>();
 
             console.Received(1).ResetColor();
         }

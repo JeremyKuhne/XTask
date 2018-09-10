@@ -173,7 +173,7 @@ namespace XTask.Logging
             _priorControlCharacter = false;
             foreach (var row in table.Rows)
             {
-                this._richText.Append(rowHeader);
+                _richText.Append(rowHeader);
                 if (headerRow) _richText.Append(@"\b");
                 for (int i = 0; i < row.Length; i++)
                 {
@@ -191,7 +191,7 @@ namespace XTask.Logging
                             alignment = @"\ql";
                             break;
                     }
-                    _richText.AppendFormat(@"\pard\intbl\widctlpar{0} {1}\cell", alignment, this.Escape(row[i]));
+                    _richText.AppendFormat(@"\pard\intbl\widctlpar{0} {1}\cell", alignment, Escape(row[i]));
                 }
 
                 if (headerRow)
@@ -201,7 +201,7 @@ namespace XTask.Logging
                 }
                 _richText.Append(@"\row}");
             }
-            this._priorControlCharacter = true;
+            _priorControlCharacter = true;
         }
 
         public void Save(string path)
@@ -257,7 +257,7 @@ namespace XTask.Logging
                 @"\pard" +                // Reset paragraph formatting to default
                 @"\sl0" +                 // Auto line spacing
                 @"\slmult1" +             // \sl is relative to "Single" line spacing (must follow \sl)
-                @"\fs" + DoubleFontSize;  // Font size in half points             
+                @"\fs" + DoubleFontSize;  // Font size in half points
         }
 
         //   Paragraph and Spacing

@@ -17,12 +17,12 @@ namespace XTask.Tests.Logging
         {
             public string RichTextBuffer
             {
-                get { return this._richText.ToString(); }
+                get { return _richText.ToString(); }
             }
 
             public string TestEscaping(string value)
             {
-                return this.Escape(value);
+                return Escape(value);
             }
         }
 

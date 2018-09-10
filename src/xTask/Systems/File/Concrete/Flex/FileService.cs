@@ -6,9 +6,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using WInterop.DirectoryManagement;
-using WInterop.ErrorHandling;
-using WInterop.FileManagement;
+using WInterop.Errors;
+using WInterop.Storage;
 
 namespace XTask.Systems.File.Concrete.Flex
 {
@@ -47,14 +46,14 @@ namespace XTask.Systems.File.Concrete.Flex
             path = Paths.AddExtendedPrefix(NormalizeIfNotExtended(path));
 
             // Flags match what FileStream does internally
-            return FileMethods.CreateFileStream(
+            return Storage.CreateFileStream(
                 path,
                 access,
                 share,
                 mode,
                 fileAttributes: 0,
-                fileFlags: FileFlags.NONE,
-                securityFlags: SecurityQosFlags.SECURITY_SQOS_PRESENT | SecurityQosFlags.SECURITY_ANONYMOUS);
+                fileFlags: FileFlags.None,
+                securityFlags: SecurityQosFlags.QosPresent | SecurityQosFlags.Anonymous);
         }
 
         public void CreateDirectory(string path)
@@ -62,7 +61,7 @@ namespace XTask.Systems.File.Concrete.Flex
             if (path == null) throw new ArgumentNullException(nameof(path));
             path = GetFullPath(path);
             int pathRootLength = Paths.GetRootLength(path);
-            if (pathRootLength < 0) throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_BAD_PATHNAME);
+            if (pathRootLength < 0) throw WindowsError.ERROR_BAD_PATHNAME.GetException();
 
             int i = pathRootLength;
             string subDirectory;
@@ -82,13 +81,13 @@ namespace XTask.Systems.File.Concrete.Flex
 
                 // CreateDirectory will refuse paths that are over MAX_PATH - 12, so we always want to add the prefix
                 subDirectory = Paths.AddExtendedPrefix(subDirectory, addIfUnderLegacyMaxPath: true);
-                var info = FileMethods.TryGetFileInfo(Paths.AddExtendedPrefix(subDirectory));
+                var info = Storage.TryGetFileInfo(Paths.AddExtendedPrefix(subDirectory));
                 if (!info.HasValue)
                 {
                     // Doesn't exist, try to create it
-                    DirectoryMethods.CreateDirectory(subDirectory);
+                    Storage.CreateDirectory(subDirectory);
                 }
-                else if ((info.Value.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) == FileAttributes.FILE_ATTRIBUTE_DIRECTORY)
+                else if ((info.Value.FileAttributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
                     // Directory exists, move on
                     continue;
@@ -96,7 +95,7 @@ namespace XTask.Systems.File.Concrete.Flex
                 else
                 {
                     // File exists
-                    throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_FILE_EXISTS, subDirectory);
+                    throw WindowsError.ERROR_FILE_EXISTS.GetException(subDirectory);
                 }
             }
         }
@@ -104,22 +103,22 @@ namespace XTask.Systems.File.Concrete.Flex
         public void DeleteFile(string path)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
-            FileMethods.DeleteFile(Paths.AddExtendedPrefix(NormalizeIfNotExtended(path)));
+            Storage.DeleteFile(Paths.AddExtendedPrefix(NormalizeIfNotExtended(path)));
         }
 
         private void DeleteDirectoryRecursive(string path)
         {
-            var info = FileMethods.TryGetFileInfo(path);
+            var info = Storage.TryGetFileInfo(path);
             if (!info.HasValue)
             {
                 // Nothing found
-                throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_PATH_NOT_FOUND, path);
+                WindowsError.ERROR_PATH_NOT_FOUND.GetException(path);
             }
 
-            if ((info.Value.Attributes & FileAttributes.FILE_ATTRIBUTE_DIRECTORY) != FileAttributes.FILE_ATTRIBUTE_DIRECTORY)
+            if ((info.Value.FileAttributes & FileAttributes.Directory) != FileAttributes.Directory)
             {
                 // Not a directory, a file
-                throw ErrorHelper.GetIoExceptionForError(WinErrors.ERROR_FILE_EXISTS, path);
+                throw WindowsError.ERROR_FILE_EXISTS.GetException(path);
             }
 
             //if (attributes.HasFlag(FileAttributes.ReadOnly))
@@ -128,7 +127,7 @@ namespace XTask.Systems.File.Concrete.Flex
             //    NativeMethods.FileManagement.SetFileAttributes(path, attributes & ~FileAttributes.ReadOnly);
             //}
 
-            if ((info.Value.Attributes & FileAttributes.FILE_ATTRIBUTE_REPARSE_POINT) != FileAttributes.FILE_ATTRIBUTE_REPARSE_POINT)
+            if ((info.Value.FileAttributes & FileAttributes.ReparsePoint) != FileAttributes.ReparsePoint)
             {
                 // Remove the subdirectories and files
                 // Reparse points are simply disconnected, they don't need to be emptied.
@@ -156,7 +155,7 @@ namespace XTask.Systems.File.Concrete.Flex
             }
 
             // We've either emptied or we're a reparse point, delete the directory
-            DirectoryMethods.RemoveDirectory(path);
+            Storage.RemoveDirectory(path);
         }
 
         public void DeleteDirectory(string path, bool deleteChildren = false)
@@ -172,7 +171,7 @@ namespace XTask.Systems.File.Concrete.Flex
             }
             else
             {
-                DirectoryMethods.RemoveDirectory(path);
+                Storage.RemoveDirectory(path);
             }
         }
 
@@ -209,11 +208,11 @@ namespace XTask.Systems.File.Concrete.Flex
             if (basePath == null || !Paths.IsPartiallyQualified(path))
             {
                 // Fixed, or we don't have a base path
-                return FileMethods.GetFullPathName(path);
+                return Storage.GetFullPathName(path);
             }
             else
             {
-                return FileMethods.GetFullPathName(Paths.Combine(basePath, path));
+                return Storage.GetFullPathName(Paths.Combine(basePath, path));
             }
         }
 
@@ -226,13 +225,13 @@ namespace XTask.Systems.File.Concrete.Flex
         public System.IO.FileAttributes GetAttributes(string path)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
-            return (System.IO.FileAttributes)FileMethods.GetFileAttributesEx(Paths.AddExtendedPrefix(NormalizeIfNotExtended(path))).Attributes;
+            return (System.IO.FileAttributes)Storage.GetFileAttributesExtended(Paths.AddExtendedPrefix(NormalizeIfNotExtended(path))).FileAttributes;
         }
 
         public void SetAttributes(string path, System.IO.FileAttributes attributes)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
-            FileMethods.SetFileAttributes(Paths.AddExtendedPrefix(NormalizeIfNotExtended(path)), (FileAttributes)attributes);
+            Storage.SetFileAttributes(Paths.AddExtendedPrefix(NormalizeIfNotExtended(path)), (FileAttributes)attributes);
         }
 
         public void CopyFile(string existingPath, string newPath, bool overwrite = false)
@@ -240,7 +239,7 @@ namespace XTask.Systems.File.Concrete.Flex
             if (existingPath == null) throw new ArgumentNullException(nameof(existingPath));
             if (newPath == null) throw new ArgumentNullException(nameof(newPath));
 
-            FileMethods.CopyFile(
+            Storage.CopyFile(
                 Paths.AddExtendedPrefix(NormalizeIfNotExtended(existingPath)),
                 Paths.AddExtendedPrefix(NormalizeIfNotExtended(newPath)),
                 overwrite);

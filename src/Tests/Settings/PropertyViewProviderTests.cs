@@ -55,7 +55,7 @@ namespace XTask.Tests.Settings
         {
             PropertyViewProvider provider = new PropertyViewProvider();
             TestObjectWithView testObject = new TestObjectWithView();
-            provider.GetTypeView(testObject).ShouldBeEquivalentTo(testObject);
+            provider.GetTypeView(testObject).Should().Equal(testObject);
         }
 
         [Fact]

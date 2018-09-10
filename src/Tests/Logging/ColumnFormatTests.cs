@@ -19,7 +19,7 @@ namespace XTask.Tests.Logging
         {
             ColumnFormat[] baseLine = { new ColumnFormat(1, ContentVisibility.ShowAll), new ColumnFormat(1), new ColumnFormat(1) };
             ColumnFormat[] columns = ColumnFormat.FromCount(3);
-            columns.ShouldBeEquivalentTo(baseLine, "as specified in helper constuctor");
+            columns.Should().BeEquivalentTo(baseLine, "as specified in helper constuctor");
         }
 
         [Fact]
@@ -27,7 +27,7 @@ namespace XTask.Tests.Logging
         {
             ColumnFormat[] baseLine = { new ColumnFormat(4, ContentVisibility.ShowAll), new ColumnFormat(6) };
             ColumnFormat[] columns = ColumnFormat.FromWidths(4, -6);
-            columns.ShouldBeEquivalentTo(baseLine, "as specified in helper constuctor");
+            columns.Should().BeEquivalentTo(baseLine, "as specified in helper constuctor");
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace XTask.Tests.Logging
         {
             ColumnFormat[] columns = ColumnFormat.FromWidths(4, 6);
             Action action = () => ColumnFormat.ScaleColumnWidths(1, columns);
-            action.ShouldThrow<ArgumentException>()
+            action.Should().Throw<ArgumentException>()
                 .And.ParamName.Should().Be("fullWidth");
         }
     }

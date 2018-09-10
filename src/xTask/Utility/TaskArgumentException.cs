@@ -23,7 +23,7 @@ namespace XTask.Utility
         }
 
         public TaskArgumentException(string format, params object[] args)
-            : base(String.Format(CultureInfo.CurrentUICulture, format, args))
+            : base(string.Format(CultureInfo.CurrentUICulture, format, args))
         {
         }
 

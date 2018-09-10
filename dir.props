@@ -1,19 +1,25 @@
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Condition="Exists('..\dir.props')" Project="..\dir.props" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
- 
+
+  <PropertyGroup>
+    <!-- SDK props pull in common props -->
+    <ImportCommonProps Condition="'$(ImportCommonProps)' == '' and '$(ImportSDKProps)' == 'true'">false</ImportCommonProps>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
+          Condition="'$(ImportCommonProps)' != 'false' and Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
 
   <!-- Common repo directories -->
   <PropertyGroup>
-    <ProjectDir>$(MSBuildThisFileDirectory)</ProjectDir>
-    <SourceDir>$(ProjectDir)src/</SourceDir>
+    <RepoDir>$(MSBuildThisFileDirectory)</RepoDir>
+    <SourceDir>$(ProjectDir)src\</SourceDir>
 
     <!-- Output directories -->
-    <BinDir Condition="'$(BinDir)'==''">$(ProjectDir)bin/</BinDir>
-    <ObjDir Condition="'$(ObjDir)'==''">$(BinDir)obj/</ObjDir>
+    <BinDir Condition="'$(BinDir)'==''">$(RepoDir)bin\</BinDir>
+    <ObjDir Condition="'$(ObjDir)'==''">$(BinDir)obj\</ObjDir>
 
     <!-- Input Directories -->
-    <PackagesDir Condition="'$(PackagesDir)'==''">$(ProjectDir)packages/</PackagesDir>
+    <PackagesDir Condition="'$(PackagesDir)'==''">$(RepoDir)packages\</PackagesDir>
   </PropertyGroup>
 
   <!-- Set default Configuration and Platform -->
@@ -27,13 +33,13 @@
     <DebugSymbols Condition="'$(DebugSymbols)' == ''">true</DebugSymbols>
     <Optimize Condition="'$(Optimize)' == ''">false</Optimize>
     <DebugType Condition="'$(DebugType)' == ''">full</DebugType>
-    <DefineConstants>$(DefineConstants),DEBUG,TRACE</DefineConstants>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugSymbols Condition="'$(DebugSymbols)' == ''">true</DebugSymbols>
     <Optimize Condition="'$(Optimize)' == ''">true</Optimize>
     <DebugType Condition="'$(DebugType)' == ''">pdbonly</DebugType>
-    <DefineConstants>$(DefineConstants),TRACE</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
   </PropertyGroup>
 
   <!-- Set up the default output and intermediate paths -->
@@ -41,8 +47,33 @@
     <BaseOutputPath Condition="'$(BaseOutputPath)'==''">$(BinDir)</BaseOutputPath>
     <OutputPath Condition="'$(OutputPath)'==''">$(BaseOutputPath)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
 
-    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'==''">$(ObjDir)</BaseIntermediateOutputPath>
+    <!--
+        Putting the project at the root rather than after the platform/configuration allows usages of BaseIntermediateOutputPath
+        that implicitly expect it to be project isolated to work. $(ProjectAssetsFile) depends on this. (New to VS 2017)
+    -->
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'==''">$(ObjDir)$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <IntermediateOutputRootPath Condition="'$(IntermediateOutputRootPath)' == ''">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\</IntermediateOutputRootPath>
-    <IntermediateOutputPath Condition="'$(IntermediateOutputPath)' == ''">$(IntermediateOutputRootPath)$(MSBuildProjectName)\</IntermediateOutputPath>
+    <IntermediateOutputPath Condition="'$(IntermediateOutputPath)' == ''">$(IntermediateOutputRootPath)\</IntermediateOutputPath>
+
+    <!--
+        Note that SDK targets add the target framework to $(IntermediateOutputPath) and $(OutputPath). (via Microsoft.NET.TargetFrameworkInference.targets)
+        $(AppendTargetFrameworkToOutputPath) can be used to skip this behavior.
+    -->
   </PropertyGroup>
+
+  <!-- Other settings -->
+  <PropertyGroup>
+    <!-- We're generating our own assembly info in our common project -->
+    <GenerateAssemblyInfo Condition="'$(GenerateAssemblyInfo)' == ''">false</GenerateAssemblyInfo>
+
+    <!-- Latest and greatest C# please -->
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <!-- https://github.com/Microsoft/msbuild/issues/1392 -->
+  <!-- <ItemDefinitionGroup Condition="'$(ImportSDKProps)' == 'true'"> -->
+    <!-- <Compile><Visible>true</Visible></Compile> -->
+  <!-- </ItemDefinitionGroup> -->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition="'$(ImportSDKProps)' == 'true'" />
+  <Import Project="il.props" Condition="'$(ImportILProps)' == 'true'" />
 </Project>

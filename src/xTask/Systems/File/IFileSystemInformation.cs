@@ -36,17 +36,17 @@ namespace XTask.Systems.File
         /// <summary>
         /// Creation time for the file/directory
         /// </summary>
-        DateTime CreationTime { get; }
+        DateTimeOffset CreationTime { get; }
 
         /// <summary>
         /// Last access time for the file/directory
         /// </summary>
-        DateTime LastAccessTime { get; }
+        DateTimeOffset LastAccessTime { get; }
 
         /// <summary>
         /// Last write time for the file/directory
         /// </summary>
-        DateTime LastWriteTime { get; }
+        DateTimeOffset LastWriteTime { get; }
 
         /// <summary>
         /// Attributes for the file/directory

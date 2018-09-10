@@ -1,248 +1,39 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), dir.props))\dir.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{76222A0D-64B2-40B7-BF35-E702D2D10834}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>XTask</RootNamespace>
-    <AssemblyName>xtask</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <WarningLevel>4</WarningLevel>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <!-- Default configurations to help VS understand the options -->
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-  </PropertyGroup>
-  <PropertyGroup>
+    <RootNamespace>XTask</RootNamespace>
+    <AssemblyName>XTask</AssemblyName>
     <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
     <AssemblyOriginatorKeyFile>XTaskKey.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>
-    </StartupObject>
+    <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Build.Framework" />
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.IO.FileSystem, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.FileSystem.4.0.0\lib\net46\System.IO.FileSystem.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.0.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="WInterop, Version=0.1.0.0, Culture=neutral, PublicKeyToken=1ea30a2edb2b5ea2, processorArchitecture=MSIL">
-      <HintPath>..\packages\WInterop.0.1.1-alpha-051811856\lib\portable-net46+win+dnxcore50+netcore50+uap10.0\WInterop.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="WInterop.Desktop, Version=0.1.0.0, Culture=neutral, PublicKeyToken=1ea30a2edb2b5ea2, processorArchitecture=MSIL">
-      <HintPath>..\packages\WInterop.Desktop.0.1.1-alpha-051811856\lib\portable-net46+win+dnxcore50+netcore50+uap10.0\WInterop.Desktop.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+    <PackageReference Include="WInterop.Desktop" Version="0.3.1-alpha-090911715" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Build\BuildArgumentParser.cs" />
-    <Compile Include="Build\BuildTaskBridge.cs" />
-    <Compile Include="Build\BuildTaskExecution.cs" />
-    <Compile Include="Build\BuildTaskInteraction.cs" />
-    <Compile Include="Build\TaskItem.cs" />
-    <Compile Include="Collections\Cache.cs" />
-    <Compile Include="Collections\ListExtensions.cs" />
-    <Compile Include="Services\SimpleServiceProvider.cs" />
-    <Compile Include="Systems\Configuration\Concrete\ConfigurationManager.cs" />
-    <Compile Include="Systems\Configuration\Concrete\ConfigurationSectionGroupWrapper.cs" />
-    <Compile Include="Systems\Configuration\Concrete\ConfigurationWrapper.cs" />
-    <Compile Include="Systems\Configuration\IConfiguration.cs" />
-    <Compile Include="Systems\Configuration\IConfigurationManager.cs" />
-    <Compile Include="Systems\Configuration\IConfigurationSectionGroup.cs" />
-    <Compile Include="Systems\Console\Concrete\ConcreteConsoleService.cs" />
-    <Compile Include="Systems\Console\IConsoleService.cs" />
-    <Compile Include="Systems\File\AlternateStreamInformation.cs" />
-    <Compile Include="Systems\File\Concrete\DotNet\DirectoryInformation.cs" />
-    <Compile Include="Systems\File\Concrete\DotNet\FileService.cs" />
-    <Compile Include="Systems\File\Concrete\DotNet\FileInformation.cs" />
-    <Compile Include="Systems\File\Concrete\Flex\CurrentDirectory.cs" />
-    <Compile Include="Systems\File\Concrete\Flex\DirectoryInformation.cs" />
-    <Compile Include="Systems\File\Concrete\Flex\FileInformation.cs" />
-    <Compile Include="Systems\File\Concrete\Flex\FileSystemInformation.cs" />
-    <Compile Include="Systems\File\Concrete\DotNet\FileSystemInformation.cs" />
-    <Compile Include="Systems\File\DirectoryInformationExtensions.cs" />
-    <Compile Include="Systems\File\Concrete\ExtendedFileService.cs" />
-    <Compile Include="Systems\File\ExtendedFileServiceExtensions.cs" />
-    <Compile Include="Systems\File\FileExistsException.cs" />
-    <Compile Include="Systems\File\FileInformationExtensions.cs" />
-    <Compile Include="Systems\File\FileServiceExtensions.cs" />
-    <Compile Include="Systems\File\FileSystemFeature.cs" />
-    <Compile Include="Systems\File\FileType.cs" />
-    <Compile Include="Systems\File\IExtendedFileService.cs" />
-    <Compile Include="Systems\File\VolumeInformation.cs" />
-    <Compile Include="Settings\ArgumentProvider.cs" />
-    <Compile Include="Systems\File\IExtendedFileSystemInformation.cs" />
-    <Compile Include="Tasks\HiddenAttribute.cs" />
-    <Compile Include="Tasks\ITaskEntry.cs" />
-    <Compile Include="Tasks\UnknownTask.cs" />
-    <Compile Include="Tasks\TaskInteraction.cs" />
-    <Compile Include="Tasks\TaskService.cs" />
-    <Compile Include="Tasks\InteractiveTask.cs" />
-    <Compile Include="Systems\File\IDirectoryInformation.cs" />
-    <Compile Include="Systems\File\IFileInformation.cs" />
-    <Compile Include="Systems\File\IFileSystemInformation.cs" />
-    <Compile Include="Logging\IClipboardSource.cs" />
-    <Compile Include="Metrics\NullFeatureUsageTracker.cs" />
-    <Compile Include="Services\FlexServiceProvider.cs" />
-    <Compile Include="Services\ITypedServiceProvider.cs" />
-    <Compile Include="Logging\AggregatedLogger.cs" />
-    <Compile Include="Logging\BuildLogger.cs" />
-    <Compile Include="Logging\ColumnFormat.cs" />
-    <Compile Include="Logging\ConsoleLogger.cs" />
-    <Compile Include="Logging\ContentVisibility.cs" />
-    <Compile Include="Logging\CsvLogger.cs" />
-    <Compile Include="Logging\HtmlLogger.cs" />
-    <Compile Include="Logging\ILogger.cs" />
-    <Compile Include="Logging\ILoggers.cs" />
-    <Compile Include="Logging\ITable.cs" />
-    <Compile Include="Logging\Justification.cs" />
-    <Compile Include="Logging\Logger.cs" />
-    <Compile Include="Logging\Loggers.cs" />
-    <Compile Include="Logging\LoggerType.cs" />
-    <Compile Include="Logging\RichTextLogger.cs" />
-    <Compile Include="Logging\Table.cs" />
-    <Compile Include="Logging\TextLogger.cs" />
-    <Compile Include="Logging\TextTableLogger.cs" />
-    <Compile Include="Logging\WriteStyle.cs" />
-    <Compile Include="Logging\XmlSpreadsheetLogger.cs" />
-    <Compile Include="Metrics\IFeatureUsageTracker.cs" />
-    <Compile Include="Metrics\IUsageTrackedTask.cs" />
-    <Compile Include="Metrics\TrackedTask.cs" />
-    <Compile Include="Metrics\TrackedTaskRegistry.cs" />
-    <Compile Include="Settings\CommandLineParser.cs" />
-    <Compile Include="Settings\ArgumentProviderExtensions.cs" />
-    <Compile Include="Settings\ArgumentSettingsProvider.cs" />
-    <Compile Include="Settings\ClientSetting.cs" />
-    <Compile Include="Settings\ClientSettings.cs" />
-    <Compile Include="Settings\ClientSettingsView.cs" />
-    <Compile Include="Settings\IArgumentProvider.cs" />
-    <Compile Include="Settings\IClientSettings.cs" />
-    <Compile Include="Settings\IClientSettingsView.cs" />
-    <Compile Include="Settings\IStringProperty.cs" />
-    <Compile Include="Settings\SettingsLocation.cs" />
-    <Compile Include="Settings\StandardOptions.cs" />
-    <Compile Include="Settings\StringProperty.cs" />
-    <Compile Include="Tasks\ConsoleTaskExecution.cs" />
-    <Compile Include="Tasks\ConsoleTaskInteraction.cs" />
-    <Compile Include="Tasks\DefaultsTask.cs" />
-    <Compile Include="Tasks\HelpTask.cs" />
-    <Compile Include="Tasks\ITask.cs" />
-    <Compile Include="Tasks\ITaskDocumentation.cs" />
-    <Compile Include="Tasks\ITaskExecutor.cs" />
-    <Compile Include="Tasks\ITaskInteraction.cs" />
-    <Compile Include="Tasks\ITaskOptionDefaults.cs" />
-    <Compile Include="Tasks\ITaskOutputHandler.cs" />
-    <Compile Include="Tasks\ITaskRegistry.cs" />
-    <Compile Include="Tasks\ITaskService.cs" />
-    <Compile Include="Tasks\SimpleTaskRegistry.cs" />
-    <Compile Include="Tasks\Task.cs" />
-    <Compile Include="Tasks\TaskExecution.cs" />
-    <Compile Include="Tasks\TaskExtensions.cs" />
-    <Compile Include="Tasks\TaskRegistry.cs" />
-    <Compile Include="Utility\Arrays.cs" />
-    <Compile Include="Utility\AssemblyResolver.cs" />
-    <Compile Include="Logging\Clipboard.cs" />
-    <Compile Include="Logging\ClipboardData.cs" />
-    <Compile Include="Logging\ClipboardFormat.cs" />
-    <Compile Include="Utility\AutoGeneratedConstants.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AutoGeneratedConstants.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Utility\ComparerBase.cs" />
-    <Compile Include="Systems\File\Concrete\Flex\FileService.cs" />
-    <Compile Include="Settings\DefaultTypeView.cs" />
-    <Compile Include="Collections\DictionaryExtensions.cs" />
-    <Compile Include="Collections\EnumerableExtensions.cs" />
-    <Compile Include="Systems\Console\ConsoleHelper.cs" />
-    <Compile Include="Utility\Enums.cs" />
-    <Compile Include="Utility\Exceptions.cs" />
-    <Compile Include="Tasks\ExitCode.cs" />
-    <Compile Include="Systems\File\FileCleaner.cs" />
-    <Compile Include="Systems\File\Files.cs" />
-    <Compile Include="Systems\File\IFileService.cs" />
-    <Compile Include="Services\ImplementedServiceProvider.cs" />
-    <Compile Include="Settings\IProperty.cs" />
-    <Compile Include="Settings\IPropertyView.cs" />
-    <Compile Include="Settings\IPropertyViewProvider.cs" />
-    <Compile Include="Systems\File\PathFormat.cs" />
-    <Compile Include="Systems\File\Paths.cs" />
-    <Compile Include="Settings\Property.cs" />
-    <Compile Include="Settings\PropertyView.cs" />
-    <Compile Include="Settings\PropertyViewProvider.cs" />
-    <Compile Include="Utility\Registry.cs" />
-    <Compile Include="Utility\RegistryHive.cs" />
-    <Compile Include="Utility\StringBuilderCache.cs" />
-    <Compile Include="Utility\StringBuilderExtensions.cs" />
-    <Compile Include="Utility\Strings.cs" />
-    <Compile Include="Utility\TaskArgumentException.cs" />
-    <Compile Include="Utility\TaskException.cs" />
-    <Compile Include="Utility\TaskNotFoundException.cs" />
-    <Compile Include="Utility\Types.cs" />
-    <Compile Include="Utility\XmlEscaper.cs" />
-    <Compile Include="XTaskStrings1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>XTaskStrings.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="XTaskStrings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>XTaskStrings1.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Utility\AutoGeneratedConstants.tt">
+    <None Update="Utility\AutoGeneratedConstants.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AutoGeneratedConstants.cs</LastGenOutput>
-    </Content>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
     </None>
-    <None Include="XTaskKey.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <TransformOnBuild>true</TransformOnBuild>
-    <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
-  </PropertyGroup>
-  <Import Project="..\packages\Unofficial.Microsoft.VisualStudio.TextTemplating.12.0.0.0\build\Unofficial.Microsoft.VisualStudio.TextTemplating.targets" Condition="Exists('..\packages\Unofficial.Microsoft.VisualStudio.TextTemplating.12.0.0.0\build\Unofficial.Microsoft.VisualStudio.TextTemplating.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Unofficial.Microsoft.VisualStudio.TextTemplating.12.0.0.0\build\Unofficial.Microsoft.VisualStudio.TextTemplating.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Unofficial.Microsoft.VisualStudio.TextTemplating.12.0.0.0\build\Unofficial.Microsoft.VisualStudio.TextTemplating.targets'))" />
-  </Target>
+  <ItemGroup>
+    <Compile Update="XTaskStrings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>XTaskStrings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="XTaskStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>XTaskStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

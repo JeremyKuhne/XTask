@@ -28,7 +28,7 @@ namespace XTask.Tests.FileSystem
 
             CurrentDirectory cd = new CurrentDirectory(fileService, extendedFileService);
             Action action = () => cd.SetCurrentDirectory("a");
-            action.ShouldThrow<ArgumentException>();
+            action.Should().Throw<ArgumentException>();
         }
     }
 }
