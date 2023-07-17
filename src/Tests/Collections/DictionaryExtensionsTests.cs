@@ -1,18 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using FluentAssertions;
+using XTask.Collections;
+using Xunit;
 
 namespace XTask.Tests.Collections
 {
-    using System;
-    using System.Collections.Generic;
-    using FluentAssertions;
-    using XTask.Collections;
-    using Xunit;
-
     public class DictionaryExtensionsTests
     {
         [Fact]
@@ -273,8 +269,7 @@ namespace XTask.Tests.Collections
                 { "three", "bar" }
             };
 
-            string removed;
-            dictionary.TryRemove("four", out removed).Should().BeFalse();
+            dictionary.TryRemove("four", out string removed).Should().BeFalse();
             removed.Should().BeNull();
             dictionary.TryRemove("three", out removed).Should().BeTrue();
             removed.Should().Be("bar");

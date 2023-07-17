@@ -1,28 +1,24 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using XTask.Utility;
 
 namespace XTask.Systems.File
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Security.Cryptography;
-    using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
-    using XTask.Utility;
-
     public static class Files
     {
-        private static MD5 s_MD5 = new MD5CryptoServiceProvider();
+        private static readonly MD5 s_MD5 = MD5.Create();
 
         /// <summary>
-        /// Finds all files in a given set of paths that contain the specified string
+        ///  Finds all files in a given set of paths that contain the specified string.
         /// </summary>
         /// <param name="value">The string to search for</param>
         /// <param name="ignoreCase">True to ignore case</param>
@@ -33,7 +29,7 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Finds all files in a given set of paths that contain the specified regex
+        ///  Finds all files in a given set of paths that contain the specified regex.
         /// </summary>
         /// <param name="regex">The string to search for</param>
         /// <param name="ignoreCase">True to ignore case</param>
@@ -54,23 +50,21 @@ namespace XTask.Systems.File
                 throw new TaskArgumentException(exception.Message);
             }
 
-            ConcurrentBag<string> matchingPaths = new ConcurrentBag<string>();
+            ConcurrentBag<string> matchingPaths = new();
 
             Parallel.ForEach(paths, path =>
             {
                 if (!fileService.FileExists(path)) { return; }
 
                 Stream stream = fileService.CreateFileStream(path);
-                using (StreamReader reader = new StreamReader(stream))
+                using StreamReader reader = new(stream);
+                string line;
+                while ((line = reader.ReadLine()) is not null)
                 {
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
+                    if (r.IsMatch(line))
                     {
-                        if (r.IsMatch(line))
-                        {
-                            matchingPaths.Add(path);
-                            break;
-                        }
+                        matchingPaths.Add(path);
+                        break;
                     }
                 }
             });
@@ -79,7 +73,7 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Simple line counter for a file, no error handling
+        ///  Simple line counter for a file, no error handling.
         /// </summary>
         public static int CountLines(this IFileService fileService, string path)
         {
@@ -90,7 +84,7 @@ namespace XTask.Systems.File
             char[] buffer = new char[8 * 1024];
 
             Stream stream = fileService.CreateFileStream(path);
-            using (StreamReader reader = new StreamReader(stream))
+            using (StreamReader reader = new(stream))
             {
                 int read;
                 while ((read = reader.Read(buffer, 0, buffer.Length)) > 0)
@@ -116,26 +110,24 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Reads lines from the given path
+        ///  Reads lines from the given path.
         /// </summary>
         public static IEnumerable<string> ReadLines(this IFileService fileService, string path)
         {
             Stream stream = fileService.CreateFileStream(path);
 
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                string line = reader.ReadLine();
+            using StreamReader reader = new(stream);
+            string line = reader.ReadLine();
 
-                while (line != null)
-                {
-                    yield return line;
-                    line = reader.ReadLine();
-                }
+            while (line is not null)
+            {
+                yield return line;
+                line = reader.ReadLine();
             }
         }
 
         /// <summary>
-        /// Attempts to delete the given file, returns error message if unsuccessful
+        ///  Attempts to delete the given file, returns error message if unsuccessful.
         /// </summary>
         public static string TryDelete(this IFileService fileService, string file)
         {
@@ -153,7 +145,7 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns the MD5 hash for the given file's contents, or null if failed
+        ///  Returns the MD5 hash for the given file's contents, or <see langword="null"/> if failed.
         /// </summary>
         public static byte[] GetHash(this IFileService fileService, string path)
         {
@@ -162,11 +154,9 @@ namespace XTask.Systems.File
                 // Console.WriteLine("Hashing {0}...", localPath);
                 if (!string.IsNullOrEmpty(path) & fileService.FileExists(path))
                 {
-                    using (Stream fileStream = fileService.CreateFileStream
-                        (path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        return s_MD5.ComputeHash(fileStream);
-                    }
+                    using Stream fileStream = fileService.CreateFileStream
+                        (path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    return s_MD5.ComputeHash(fileStream);
                 }
             }
             catch (IOException)

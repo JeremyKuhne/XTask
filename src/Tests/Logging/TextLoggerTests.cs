@@ -1,22 +1,18 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using XTask.Logging;
+using Xunit;
 
 namespace XTask.Tests.Logging
 {
-    using FluentAssertions;
-    using XTask.Logging;
-    using Xunit;
-
     public class TextLoggerTests
     {
         [Fact]
         public void SimpleWrite()
         {
-            TextLogger logger = new TextLogger();
+            TextLogger logger = new();
             logger.Write("Foo");
             logger.ToString().Should().Be("Foo");
         }
@@ -24,15 +20,15 @@ namespace XTask.Tests.Logging
         [Fact]
         public void SimpleWriteClipboardData()
         {
-            TextLogger logger = new TextLogger();
+            TextLogger logger = new();
             logger.Write("Foo");
-            logger.GetClipboardData().Data.Should().Be("Foo");
+            logger.GetClipboardData().CharData.ToString().Should().Be("Foo");
         }
 
         [Fact]
         public void SimpleUnderline()
         {
-            TextLogger logger = new TextLogger();
+            TextLogger logger = new();
             logger.Write(WriteStyle.Underline, "Foo");
             logger.ToString().Should().Be("Foo\r\n---");
         }
@@ -40,8 +36,8 @@ namespace XTask.Tests.Logging
         [Fact]
         public void NoLogNullClipboardData()
         {
-            TextLogger logger = new TextLogger();
-            logger.GetClipboardData().Data.Should().BeNull();
+            TextLogger logger = new();
+            logger.GetClipboardData().HasData.Should().BeFalse();
         }
     }
 }

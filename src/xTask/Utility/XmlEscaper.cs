@@ -1,16 +1,12 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Net;
 
 namespace XTask.Utility
 {
-    using System.Net;
-
     /// <summary>
-    /// Simple helper to escape / unescape XML strings
+    ///  Simple helper to escape / unescape XML strings
     /// </summary>
     public static class XmlEscaper
     {

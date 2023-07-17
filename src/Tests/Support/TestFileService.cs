@@ -1,18 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using NSubstitute;
+using System;
+using System.IO;
+using System.Text;
+using XTask.Systems.File;
 
 namespace XTask.Tests.Support
 {
-    using NSubstitute;
-    using System;
-    using System.IO;
-    using System.Text;
-    using XTask.Systems.File;
-
     public static class TestFileServices
     {
         public static IFileService CreateSubstituteForFile(out string path, string content)
@@ -25,8 +21,8 @@ namespace XTask.Tests.Support
  
         public abstract class SimpleFileService : IFileService
         {
-            private string _path;
-            private Stream _stream;
+            private readonly string _path;
+            private readonly Stream _stream;
 
             public SimpleFileService(string path, string content)
             {
@@ -56,7 +52,7 @@ namespace XTask.Tests.Support
 
             public FileAttributes GetAttributes(string path)
             {
-                if (string.Equals(path, this._path, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(path, _path, StringComparison.OrdinalIgnoreCase))
                 {
                     return FileAttributes.Normal;
                 }

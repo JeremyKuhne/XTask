@@ -1,16 +1,12 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using DotNetConfiguration = System.Configuration;
 
 namespace XTask.Systems.Configuration.Concrete
 {
-    using DotNetConfiguration = System.Configuration;
-
     /// <summary>
-    /// Simple wrapper to abstract the .NET ConfigurationManager
+    ///  Simple wrapper to abstract the .NET ConfigurationManager.
     /// </summary>
     public class ConfigurationManager : IConfigurationManager
     {
@@ -20,13 +16,13 @@ namespace XTask.Systems.Configuration.Concrete
                 new DotNetConfiguration.ExeConfigurationFileMap() { ExeConfigFilename = filePath },
                 DotNetConfiguration.ConfigurationUserLevel.None);
 
-            return configuration == null ? null : new ConfigurationWrapper(configuration);
+            return configuration is null ? null : new ConfigurationWrapper(configuration);
         }
 
         public IConfiguration OpenConfiguration(DotNetConfiguration.ConfigurationUserLevel userLevel)
         {
             DotNetConfiguration.Configuration configuration = DotNetConfiguration.ConfigurationManager.OpenExeConfiguration(userLevel);
-            return configuration == null ? null : new ConfigurationWrapper(configuration);
+            return configuration is null ? null : new ConfigurationWrapper(configuration);
         }
     }
 }

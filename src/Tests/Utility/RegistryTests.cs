@@ -1,20 +1,16 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Security;
+using FluentAssertions;
+using XTask.Utility;
+using Xunit;
 
 namespace XTask.Tests.Utility
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Security;
-    using FluentAssertions;
-    using XTask.Utility;
-    using Xunit;
-
     public class RegistryTests
     {
         private class TestRegistry : Registry
@@ -26,10 +22,10 @@ namespace XTask.Tests.Utility
         }
 
         [Theory,
-            MemberData("KnownExceptions")]
+            MemberData(nameof(KnownExceptions))]
         public void CatchesExpectedExceptions(Exception exception)
         {
-            Action action = () => { throw exception; };
+            void action() { throw exception; }
             TestRegistry.TestRegistryExceptionWrapper(action).Should().Be(exception);
         }
 
@@ -58,69 +54,61 @@ namespace XTask.Tests.Utility
         [Fact]
         public void BasicTests()
         {
-            using (RegistryTestContext context = new RegistryTestContext())
-            {
-                Registry.RetrieveRegistryValue<string>(RegistryHive.CurrentUser, context.InstanceKey, "").Should().Be("DefaultValue", "default value for key returned with empty string");
-                Registry.SetRegistryValue<string>(RegistryHive.CurrentUser, context.InstanceKey, null, "NewValue").Should().Be(true, "setting default value should be successful");
-                Registry.RetrieveRegistryValue<string>(RegistryHive.CurrentUser, context.InstanceKey, null).Should().Be("NewValue", "default value for key returned with null");
-                Registry.RetrieveRegistryValue<byte[]>(RegistryHive.CurrentUser, context.InstanceKey, "MeaningBinary").Should().Equal(RegistryTestContext.ByteArray, "byte array should be identical");
-                Registry.RetrieveRegistryValue<string[]>(RegistryHive.CurrentUser, context.InstanceKey, "MeaningStringArray").Should().Equal(RegistryTestContext.StringArray, "string array should be identical");
+            using RegistryTestContext context = new();
+            Registry.RetrieveRegistryValue<string>(RegistryHive.CurrentUser, context.InstanceKey, "").Should().Be("DefaultValue", "default value for key returned with empty string");
+            Registry.SetRegistryValue(RegistryHive.CurrentUser, context.InstanceKey, null, "NewValue").Should().Be(true, "setting default value should be successful");
+            Registry.RetrieveRegistryValue<string>(RegistryHive.CurrentUser, context.InstanceKey, null).Should().Be("NewValue", "default value for key returned with null");
+            Registry.RetrieveRegistryValue<byte[]>(RegistryHive.CurrentUser, context.InstanceKey, "MeaningBinary").Should().Equal(RegistryTestContext.ByteArray, "byte array should be identical");
+            Registry.RetrieveRegistryValue<string[]>(RegistryHive.CurrentUser, context.InstanceKey, "MeaningStringArray").Should().Equal(RegistryTestContext.StringArray, "string array should be identical");
 
-                bool? triState = true;
-                Registry.SetRegistryValue(RegistryHive.CurrentUser, context.InstanceKey, "Foo", triState).Should().BeTrue("successfully set triState bool with default type");
-                Registry.RetrieveRegistryValue<bool>(RegistryHive.CurrentUser, context.InstanceKey, "Foo").Should().BeTrue("successfully retrieved bool? as bool");
-                Registry.RetrieveRegistryValue<bool?>(RegistryHive.CurrentUser, context.InstanceKey, "Foo").Should().BeTrue("successfully retrieved bool? as bool?");
-                triState = null;
-                Registry.SetRegistryValue(RegistryHive.CurrentUser, context.InstanceKey, "Foo", triState).Should().BeTrue("successfully set tristate bool as null");
-                Registry.RetrieveRegistryValue<bool?>(RegistryHive.CurrentUser, context.InstanceKey, "Foo").Should().NotHaveValue("successfully retrieved bool? as null bool?");
+            bool? triState = true;
+            Registry.SetRegistryValue(RegistryHive.CurrentUser, context.InstanceKey, "Foo", triState).Should().BeTrue("successfully set triState bool with default type");
+            Registry.RetrieveRegistryValue<bool>(RegistryHive.CurrentUser, context.InstanceKey, "Foo").Should().BeTrue("successfully retrieved bool? as bool");
+            Registry.RetrieveRegistryValue<bool?>(RegistryHive.CurrentUser, context.InstanceKey, "Foo").Should().BeTrue("successfully retrieved bool? as bool?");
+            triState = null;
+            Registry.SetRegistryValue(RegistryHive.CurrentUser, context.InstanceKey, "Foo", triState).Should().BeTrue("successfully set tristate bool as null");
+            Registry.RetrieveRegistryValue<bool?>(RegistryHive.CurrentUser, context.InstanceKey, "Foo").Should().NotHaveValue("successfully retrieved bool? as null bool?");
 
-                Registry.GetSubkeyNames(RegistryHive.CurrentUser, context.InstanceKey).Should().HaveCount(2);
-            }
+            Registry.GetSubkeyNames(RegistryHive.CurrentUser, context.InstanceKey).Should().HaveCount(2);
         }
 
         [Fact]
         public void GetAllSubkeysTest_SetValueNoKey()
         {
-            using (RegistryTestContext context = new RegistryTestContext())
-            {
-                string subkey = context.InstanceKey + @"\Flozzle";
-                Registry.SetRegistryValue<string>(RegistryHive.CurrentUser, subkey, "Nozzle", "Wozzle").Should().BeTrue();
-                Registry.RetrieveRegistryValue<string>(RegistryHive.CurrentUser, subkey, "Nozzle").Should().Be("Wozzle");
-            }
+            using RegistryTestContext context = new();
+            string subkey = context.InstanceKey + @"\Flozzle";
+            Registry.SetRegistryValue(RegistryHive.CurrentUser, subkey, "Nozzle", "Wozzle").Should().BeTrue();
+            Registry.RetrieveRegistryValue<string>(RegistryHive.CurrentUser, subkey, "Nozzle").Should().Be("Wozzle");
         }
 
         [Fact]
         public void GetAllSubkeysTest_SubKeysNoValues()
         {
-            using (RegistryTestContext context = new RegistryTestContext())
-            {
-                Registry.RetrieveAllRegistrySubkeyValues<string>(RegistryHive.CurrentUser, context.InstanceKey).Should().BeEmpty();
-            }
+            using RegistryTestContext context = new();
+            Registry.RetrieveAllRegistrySubkeyValues<string>(RegistryHive.CurrentUser, context.InstanceKey).Should().BeEmpty();
         }
 
         [Fact]
         public void GetAllSubkeysTest_SubKeysValues()
         {
-            using (RegistryTestContext context = new RegistryTestContext())
-            {
-                Registry.SetRegistryValue<string>(RegistryHive.CurrentUser, context.InstanceKey + @"\Foo", "Foo1", "one");
-                Registry.SetRegistryValue<string>(RegistryHive.CurrentUser, context.InstanceKey + @"\Foo", "Foo2", "two");
-                Registry.SetRegistryValue<string>(RegistryHive.CurrentUser, context.InstanceKey + @"\Bar", null, "three");
-                Registry.RetrieveAllRegistrySubkeyValues<string>(RegistryHive.CurrentUser, context.InstanceKey).Should().BeEquivalentTo("one", "two", "three");
-            }
+            using RegistryTestContext context = new();
+            Registry.SetRegistryValue(RegistryHive.CurrentUser, context.InstanceKey + @"\Foo", "Foo1", "one");
+            Registry.SetRegistryValue(RegistryHive.CurrentUser, context.InstanceKey + @"\Foo", "Foo2", "two");
+            Registry.SetRegistryValue(RegistryHive.CurrentUser, context.InstanceKey + @"\Bar", null, "three");
+            Registry.RetrieveAllRegistrySubkeyValues<string>(RegistryHive.CurrentUser, context.InstanceKey).Should().BeEquivalentTo("one", "two", "three");
         }
 
         private class RegistryTestContext : IDisposable
         {
             public string InstanceKey;
             private const string TestSubKey = @"Test\UnitTests\RegistryHelper\";
-            public static byte[] ByteArray = new byte[] { 0x42, 0x42, 0x42, 0x70 };
+            public static byte[] ByteArray = "BBBp"u8.ToArray();
             public static string[] StringArray = new string[] { "The", "meaning", "of", "life" };
 
             public RegistryTestContext()
             {
-                this.InstanceKey = RegistryTestContext.TestSubKey + Guid.NewGuid().ToString();
-                Microsoft.Win32.RegistryKey testSubKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(this.InstanceKey);
+                InstanceKey = RegistryTestContext.TestSubKey + Guid.NewGuid().ToString();
+                Microsoft.Win32.RegistryKey testSubKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(InstanceKey);
 
                 testSubKey.SetValue(null, "DefaultValue");
                 testSubKey.SetValue("MeaningDWord", 42, Microsoft.Win32.RegistryValueKind.DWord);
@@ -135,11 +123,11 @@ namespace XTask.Tests.Utility
 
             public void Dispose()
             {
-                Microsoft.Win32.RegistryKey testSubKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(this.InstanceKey);
-                if (testSubKey != null)
+                Microsoft.Win32.RegistryKey testSubKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(InstanceKey);
+                if (testSubKey is not null)
                 {
                     testSubKey.Close();
-                    Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(this.InstanceKey);
+                    Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(InstanceKey);
                 }
             }
         }

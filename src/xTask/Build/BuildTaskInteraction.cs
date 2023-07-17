@@ -1,23 +1,19 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using XTask.Logging;
+using XTask.Services;
+using XTask.Settings;
+using XTask.Tasks;
+using MSBuildFramework = Microsoft.Build.Framework;
 
 namespace XTask.Build
 {
-    using System;
-    using XTask.Logging;
-    using Services;
-    using XTask.Settings;
-    using XTask.Tasks;
-    using MSBuildFramework = Microsoft.Build.Framework;
-
     public sealed class BuildTaskInteraction : TaskInteraction
     {
-        private ITaskOutputHandler _outputHandler;
-        private Lazy<BuildTaskLoggers> _loggers;
+        private readonly ITaskOutputHandler _outputHandler;
+        private readonly Lazy<BuildTaskLoggers> _loggers;
 
         private BuildTaskInteraction(
             ITask task,
@@ -41,21 +37,15 @@ namespace XTask.Build
             return new BuildTaskInteraction(task, arguments, outputHandler, buildEngine, services);
         }
 
-        public override void Output(object value)
-        {
-            _outputHandler.HandleOutput(value);
-        }
+        public override void Output(object value) => _outputHandler.HandleOutput(value);
 
-        protected override ILoggers GetDefaultLoggers()
-        {
-            return _loggers.Value;
-        }
+        protected override ILoggers GetDefaultLoggers() => _loggers.Value;
 
         private sealed class BuildTaskLoggers : Loggers
         {
             public BuildTaskLoggers(MSBuildFramework.IBuildEngine buildEngine, ITask task, IArgumentProvider arguments)
             {
-                BuildLogger logger = new BuildLogger(buildEngine, task.GetType().ToString());
+                BuildLogger logger = new(buildEngine, task.GetType().ToString());
                 RegisterLogger(LoggerType.Result, logger);
                 RegisterLogger(LoggerType.Status, logger);
             }

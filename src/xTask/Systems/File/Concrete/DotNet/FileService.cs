@@ -1,24 +1,16 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.IO;
 
 namespace XTask.Systems.File.Concrete.DotNet
 {
-    using System;
-    using System.IO;
+    using File = System.IO.File;
 
     /// <summary>
-    /// File service that exclusively uses the .NET IO implementation to back it
+    ///  File service that exclusively uses the .NET IO implementation to back it
     /// </summary>
-    /// <remarks>
-    /// Does not support long paths or extended syntax. (As of .NET 4.6)
-    /// 
-    /// Standard .NET implementations are not very performant- they typically do way more validation than is necessary
-    /// before calling Win32 APIs.
-    /// </remarks>
     public class FileService : IFileService
     {
         public string CurrentDirectory
@@ -62,7 +54,7 @@ namespace XTask.Systems.File.Concrete.DotNet
 
         public string GetFullPath(string path, string basePath = null)
         {
-            if (basePath == null || !Paths.IsPartiallyQualified(path))
+            if (basePath is null || !Paths.IsPartiallyQualified(path))
             {
                 // Fixed, or we don't have a base path
                 return Path.GetFullPath(path);

@@ -1,18 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Linq;
+using XTask.Logging;
+using XTask.Systems.File;
+using XTask.Tasks;
 
 namespace XFile.Tasks
 {
-    using System;
-    using System.Linq;
-    using XTask.Logging;
-    using XTask.Systems.File;
-    using XTask.Tasks;
-
     public class EchoTask : FileTaskWithTarget
     {
         protected override ExitCode ExecuteFileTask()
@@ -20,13 +16,13 @@ namespace XFile.Tasks
             string target = Arguments.GetOption<string>("target", "t");
             int redirector = Array.IndexOf(Arguments.Targets, ">");
 
-            if (target == null && redirector == -1)
+            if (target is null && redirector == -1)
             {
                 ResultLog.WriteLine(string.Join(" ", Arguments.Targets));
                 return ExitCode.Success;
             }
 
-            if (target == null)
+            if (target is null)
             {
                 if (redirector == Arguments.Targets.Length - 1)
                 {
@@ -43,6 +39,6 @@ namespace XFile.Tasks
             return ExitCode.Success;
         }
 
-        public override string Summary { get { return XFileStrings.EchoTaskSummary; } }
+        public override string Summary => XFileStrings.EchoTaskSummary;
     }
 }

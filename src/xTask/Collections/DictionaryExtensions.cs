@@ -1,17 +1,13 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
 
 namespace XTask.Collections
 {
-    using System;
-    using System.Collections.Generic;
-
     /// <summary>
-    /// Useful extensions for IDictionary(TKey,TValue).
+    ///  Useful extensions for IDictionary(TKey,TValue).
     /// </summary>
     public static class DictionaryExtensions
     {
@@ -19,11 +15,11 @@ namespace XTask.Collections
         /// Updates the key/value pair if the key already exists.
         /// </summary>
         /// <returns>"true" if updated</returns>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="key"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="key"/> is null.</exception>
         public static bool UpdateIfPresent<TKey, TValue>(this IDictionary<TKey, TValue> source, TKey key, TValue value)
         {
-            if (source == null) { throw new ArgumentNullException(nameof(source)); }
-            if (key == null) { throw new ArgumentNullException(nameof(key)); }
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+            if (key is null) { throw new ArgumentNullException(nameof(key)); }
             if (source.ContainsKey(key))
             {
                 source[key] = value;
@@ -36,14 +32,14 @@ namespace XTask.Collections
         }
 
         /// <summary>
-        /// Adds a key/value pair if the key does not already exist, or updates the key/value pair
-        /// if the key already exists.
+        ///  Adds a key/value pair if the key does not already exist, or updates the key/value pair
+        ///  if the key already exists.
         /// </summary>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="key"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="key"/> is null.</exception>
         public static void AddOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> source, TKey key, TValue value)
         {
-            if (source == null) { throw new ArgumentNullException(nameof(source)); }
-            if (key == null) { throw new ArgumentNullException(nameof(key)); }
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+            if (key is null) { throw new ArgumentNullException(nameof(key)); }
             if (source.ContainsKey(key))
             {
                 source[key] = value;
@@ -55,21 +51,21 @@ namespace XTask.Collections
         }
 
         /// <summary>
-        /// Adds a key/value pair if the key does not already exist, or updates the key/value pair
-        /// if the key already exists.
+        ///  Adds a key/value pair if the key does not already exist, or updates the key/value pair
+        ///  if the key already exists.
         /// </summary>
         /// <param name="addValue">Value to use if adding.</param>
         /// <param name="updateValueFactory">Value factory to use if updating (takes originalKey & originalValue, returns updatedValue).</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="key"/> or <paramref name="updateValueFactory"/> are null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="key"/> or <paramref name="updateValueFactory"/> are null.</exception>
         /// <returns>The new value for the key.</returns>
         public static TValue AddOrUpdate<TKey, TValue>(
             this IDictionary<TKey, TValue> source, TKey key,
             TValue addValue,
             Func<TKey, TValue, TValue> updateValueFactory)
         {
-            if (source == null) { throw new ArgumentNullException(nameof(source)); }
-            if (key == null) { throw new ArgumentNullException(nameof(key)); }
-            if (updateValueFactory == null) { throw new ArgumentNullException(nameof(updateValueFactory)); }
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+            if (key is null) { throw new ArgumentNullException(nameof(key)); }
+            if (updateValueFactory is null) { throw new ArgumentNullException(nameof(updateValueFactory)); }
             if (source.ContainsKey(key))
             {
                 TValue updatedValue = updateValueFactory(key, source[key]);
@@ -84,21 +80,21 @@ namespace XTask.Collections
         }
 
         /// <summary>
-        /// Adds a key/value pair if the key does not already exist, or updates the key/value pair
-        /// if the key already exists.
+        ///  Adds a key/value pair if the key does not already exist, or updates the key/value pair
+        ///  if the key already exists.
         /// </summary>
         /// <param name="addValue">Value to use if adding.</param>
         /// <param name="updateValueFactory">Value factory to use if updating (takes originalValue, returns updatedValue).</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="key"/> or <paramref name="updateValueFactory"/> are null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="key"/> or <paramref name="updateValueFactory"/> are null.</exception>
         /// <returns>The new value for the key.</returns>
         public static TValue AddOrUpdate<TKey, TValue>(
             this IDictionary<TKey, TValue> source, TKey key,
             TValue addValue,
             Func<TValue, TValue> updateValueFactory)
         {
-            if (source == null) { throw new ArgumentNullException(nameof(source)); }
-            if (key == null) { throw new ArgumentNullException(nameof(key)); }
-            if (updateValueFactory == null) { throw new ArgumentNullException(nameof(updateValueFactory)); }
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+            if (key is null) { throw new ArgumentNullException(nameof(key)); }
+            if (updateValueFactory is null) { throw new ArgumentNullException(nameof(updateValueFactory)); }
             if (source.ContainsKey(key))
             {
                 TValue updatedValue = updateValueFactory(source[key]);
@@ -113,12 +109,12 @@ namespace XTask.Collections
         }
 
         /// <summary>
-        /// Adds a key/value pair if the key does not already exist, or updates the key/value pair
-        /// if the key already exists.
+        ///  Adds a key/value pair if the key does not already exist, or updates the key/value pair
+        ///  if the key already exists.
         /// </summary>
         /// <param name="addValueFactory">Value factory to use if adding (takes originalKey and returns updatedValue).</param>
         /// <param name="updateValueFactory">Value factory to use if updating (takes originalKey & originalValue, returns updatedValue).</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="key"/>, <paramref name="addValueFactory"/>, or <paramref name="updateValueFactory"/> are null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/>, <paramref name="addValueFactory"/>, or <paramref name="updateValueFactory"/> is null.</exception>
         /// <returns>The new value for the key.</returns>
         public static TValue AddOrUpdate<TKey, TValue>(
             this IDictionary<TKey, TValue> source,
@@ -126,10 +122,10 @@ namespace XTask.Collections
             Func<TKey, TValue> addValueFactory,
             Func<TKey, TValue, TValue> updateValueFactory)
         {
-            if (source == null) { throw new ArgumentNullException(nameof(source)); }
-            if (key == null) { throw new ArgumentNullException(nameof(key)); }
-            if (addValueFactory == null) { throw new ArgumentNullException(nameof(addValueFactory)); }
-            if (updateValueFactory == null) { throw new ArgumentNullException(nameof(updateValueFactory)); }
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+            if (key is null) { throw new ArgumentNullException(nameof(key)); }
+            if (addValueFactory is null) { throw new ArgumentNullException(nameof(addValueFactory)); }
+            if (updateValueFactory is null) { throw new ArgumentNullException(nameof(updateValueFactory)); }
             if (source.ContainsKey(key))
             {
                 TValue updatedValue = updateValueFactory(key, source[key]);
@@ -145,17 +141,17 @@ namespace XTask.Collections
         }
 
         /// <summary>
-        /// Adds a key/value pair if the key does not already exist.
+        ///  Adds a key/value pair if the key does not already exist.
         /// </summary>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="key"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="key"/> is null.</exception>
         /// <returns>The value for the key.</returns>
         public static TValue GetOrAdd<TKey, TValue>(
             this IDictionary<TKey, TValue> source,
             TKey key,
             TValue value)
         {
-            if (source == null) { throw new ArgumentNullException(nameof(source)); }
-            if (key == null) { throw new ArgumentNullException(nameof(key)); }
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+            if (key is null) { throw new ArgumentNullException(nameof(key)); }
             if (source.ContainsKey(key))
             {
                 return source[key];
@@ -168,20 +164,19 @@ namespace XTask.Collections
         }
 
         /// <summary>
-        /// Adds a key/value pair if the key does not already exist.
+        ///  Adds a key/value pair if the key does not already exist.
         /// </summary>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="key"/> or <paramref name="addValueFactory"/> are null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="key"/> or <paramref name="addValueFactory"/> are null.</exception>
         /// <returns>The value for the key.</returns>
         public static TValue GetOrAdd<TKey, TValue>(
             this IDictionary<TKey, TValue> source,
             TKey key,
             Func<TKey, TValue> addValueFactory)
         {
-            if (source == null) { throw new ArgumentNullException(nameof(source)); }
-            if (key == null) { throw new ArgumentNullException(nameof(key)); }
-            if (addValueFactory == null) { throw new ArgumentNullException(nameof(addValueFactory)); }
-            TValue value;
-            if (!source.TryGetValue(key, out value))
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+            if (key is null) { throw new ArgumentNullException(nameof(key)); }
+            if (addValueFactory is null) { throw new ArgumentNullException(nameof(addValueFactory)); }
+            if (!source.TryGetValue(key, out TValue value))
             {
                 value = addValueFactory(key);
                 source.Add(key, value);
@@ -190,16 +185,16 @@ namespace XTask.Collections
         }
 
         /// <summary>
-        /// Removes all entries with the specified value
+        ///  Removes all entries with the specified value.
         /// </summary>
         /// <returns>"true" if anything was removed</returns>
         public static bool TryRemoveValues<TKey, TValue>(
             this IDictionary<TKey, TValue> source,
             TValue value)
         {
-            if (source == null) { throw new ArgumentNullException(nameof(source)); }
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
 
-            List<TKey> keysForValue = new List<TKey>();
+            List<TKey> keysForValue = new();
             foreach (KeyValuePair<TKey, TValue> entry in source)
             {
                 if (entry.Value.Equals(value))
@@ -211,16 +206,16 @@ namespace XTask.Collections
         }
 
         /// <summary>
-        /// Attempts to a set of keys from the dictionary.
+        ///  Attempts to a set of keys from the dictionary.
         /// </summary>
         /// <returns>'true' if any successfully removed</returns>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="keys"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="keys"/> is null.</exception>
         public static bool TryRemove<TKey, TValue>(
             this IDictionary<TKey, TValue> source,
             params TKey[] keys)
         {
-            if (source == null) { throw new ArgumentNullException(nameof(source)); }
-            if (keys == null) { throw new ArgumentNullException(nameof(keys)); }
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+            if (keys is null) { throw new ArgumentNullException(nameof(keys)); }
 
             bool anyRemoved = false;
             foreach (TKey key in keys)
@@ -231,31 +226,31 @@ namespace XTask.Collections
         }
 
         /// <summary>
-        /// Attempts to remove a key from the dictionary.
+        ///  Attempts to remove a key from the dictionary.
         /// </summary>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="key"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="key"/> is null.</exception>
         /// <returns>'true' if successfully removed</returns>
         public static bool TryRemove<TKey, TValue>(
             this IDictionary<TKey, TValue> source,
             TKey key)
         {
-            if (source == null) { throw new ArgumentNullException(nameof(source)); }
-            if (key == null) { throw new ArgumentNullException(nameof(key)); }
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+            if (key is null) { throw new ArgumentNullException(nameof(key)); }
             return source.Remove(key);
         }
 
         /// <summary>
-        /// Attempts to remove key and return the value from the dictionary.
+        ///  Attempts to remove key and return the value from the dictionary.
         /// </summary>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="key"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="key"/> is null.</exception>
         /// <returns>'true' if successfully removed</returns>
         public static bool TryRemove<TKey, TValue>(
             this IDictionary<TKey, TValue> source,
             TKey key,
             out TValue value)
         {
-            if (source == null) { throw new ArgumentNullException(nameof(source)); }
-            if (key == null) { throw new ArgumentNullException(nameof(key)); }
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+            if (key is null) { throw new ArgumentNullException(nameof(key)); }
 
             if (source.TryGetValue(key, out value))
             {

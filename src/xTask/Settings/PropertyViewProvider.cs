@@ -1,22 +1,18 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
 
 namespace XTask.Settings
 {
-    using System;
-    using System.Collections.Generic;
-
     /// <summary>
-    /// Basic implementation of a property view provider. Allows registering property view wrappers
-    /// for types that don't implement IPropertyView. Also has a basic ToString default view.
+    ///  Basic implementation of a property view provider. Allows registering property view wrappers
+    ///  for types that don't implement IPropertyView. Also has a basic ToString default view.
     /// </summary>
     public class PropertyViewProvider : IPropertyViewProvider
     {
-        private Dictionary<Type, object> _propertyViewers = new Dictionary<Type, object>();
+        private readonly Dictionary<Type, object> _propertyViewers = new();
 
         public void RegisterPropertyViewer<T>(PropertyViewConstructor<T> propertyViewer)
         {
@@ -25,13 +21,14 @@ namespace XTask.Settings
 
         public IPropertyView GetTypeView<T>(T value)
         {
-            // Look for built-in type view support, registered type view, then fall back on default
-            IPropertyView typeView = value as IPropertyView;
-            if (typeView != null) return typeView;
+            // Look for built-in type view support, registered type view, then fall back on default.
+            if (value is IPropertyView typeView)
+            {
+                return typeView;
+            }
 
-            object propertyViewer;
             Type valueType = value.GetType();
-            if (_propertyViewers.TryGetValue(valueType, out propertyViewer))
+            if (_propertyViewers.TryGetValue(valueType, out object propertyViewer))
             {
                 Delegate constructor = (Delegate)propertyViewer;
                 return (IPropertyView)constructor.DynamicInvoke(value);

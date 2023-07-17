@@ -1,20 +1,16 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Collections.Generic;
+using System.Linq;
+using System.IO;
+using XTask.Collections;
 
 namespace XTask.Systems.File.Concrete.DotNet
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.IO;
-    using XTask.Collections;
-
     public class DirectoryInformation : FileSystemInformation, IDirectoryInformation
     {
-        private DirectoryInfo _directoryInfo;
+        private readonly DirectoryInfo _directoryInfo;
 
         public DirectoryInformation(DirectoryInfo directoryInfo, IFileService fileService) : base(directoryInfo, fileService)
         {

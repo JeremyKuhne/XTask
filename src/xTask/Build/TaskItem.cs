@@ -1,22 +1,18 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using MSBuildFramework = Microsoft.Build.Framework;
 
 namespace XTask.Build
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Linq;
-    using MSBuildFramework = Microsoft.Build.Framework;
-
     public class TaskItem : MarshalByRefObject, MSBuildFramework.ITaskItem
     {
-        ConcurrentDictionary<string, string> _metadata = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, string> _metadata = new(StringComparer.OrdinalIgnoreCase);
 
         public IDictionary CloneCustomMetadata()
         {
@@ -33,8 +29,7 @@ namespace XTask.Build
 
         public string GetMetadata(string metadataName)
         {
-            string value;
-            _metadata.TryGetValue(metadataName, out value);
+            _metadata.TryGetValue(metadataName, out string value);
             return value;
         }
 
@@ -52,8 +47,7 @@ namespace XTask.Build
 
         public void RemoveMetadata(string metadataName)
         {
-            string value;
-            _metadata.TryRemove(metadataName, out value);
+            _metadata.TryRemove(metadataName, out string value);
         }
 
         public void SetMetadata(string metadataName, string metadataValue)

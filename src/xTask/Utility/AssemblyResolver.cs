@@ -1,26 +1,22 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using XTask.Settings;
+using XTask.Systems.File;
+using XTask.Tasks;
 
 namespace XTask.Utility
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using Settings;
-    using Systems.File;
-    using Tasks;
-
     public class AssemblyResolver
     {
         public ResolveEventHandler AssemblyResolveFallback;
 
-        protected HashSet<string> _resolutionPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        protected HashSet<string> _assembliesToResolve = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        protected HashSet<string> _resolutionPaths = new(StringComparer.OrdinalIgnoreCase);
+        protected HashSet<string> _assembliesToResolve = new(StringComparer.OrdinalIgnoreCase);
 
         protected IFileService FileService { get; private set; }
 
@@ -31,7 +27,7 @@ namespace XTask.Utility
 
         public static AssemblyResolver Create(IArgumentProvider arguments, IFileService fileService)
         {
-            AssemblyResolver resolver = new AssemblyResolver(fileService);
+            AssemblyResolver resolver = new(fileService);
             resolver.Initialize(arguments);
             return resolver;
         }
@@ -78,7 +74,11 @@ namespace XTask.Utility
 
         protected virtual Uri GetToolLocation()
         {
+#if NETFRAMEWORK
             return new Uri(typeof(TaskExecution).Assembly.CodeBase);
+#else
+            return new Uri(typeof(TaskExecution).Assembly.Location);
+#endif
         }
 
         public Assembly Domain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -88,7 +88,7 @@ namespace XTask.Utility
                 return null;
             }
 
-            AssemblyName assemblyName = new AssemblyName(args.Name);
+            AssemblyName assemblyName = new(args.Name);
 
             // Only load assemblies we know of
             if (!_assembliesToResolve.Any(assemblyName.Name.StartsWith))
@@ -123,12 +123,12 @@ namespace XTask.Utility
                 }
             }
 
-            if (AssemblyResolveFallback != null)
+            if (AssemblyResolveFallback is not null)
             {
-                foreach (ResolveEventHandler invoker in AssemblyResolveFallback.GetInvocationList())
+                foreach (ResolveEventHandler invoker in AssemblyResolveFallback.GetInvocationList().OfType<ResolveEventHandler>())
                 {
                     Assembly assembly = invoker.Invoke(this, args);
-                    if (assembly != null)
+                    if (assembly is not null)
                     {
                         return assembly;
                     }

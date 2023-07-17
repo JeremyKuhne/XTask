@@ -1,15 +1,11 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
 
 namespace XTask.Utility
 {
-    using System;
-    using System.Collections.Generic;
-
     public static class Enums
     {
         /// <summary>
@@ -20,7 +16,7 @@ namespace XTask.Utility
         /// </remarks>
         public static Array GetSetValues(Enum enumeration)
         {
-            List<object> setValues = new List<object>();
+            List<object> setValues = new();
             foreach (object possibleValue in Enum.GetValues(enumeration.GetType()))
             {
                 if (enumeration.HasFlag((Enum)possibleValue))

@@ -1,18 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace XTask.Utility
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Diagnostics;
-    using System.Globalization;
-
     public static class Types
     {
         /// <summary>
@@ -26,7 +22,7 @@ namespace XTask.Utility
         /// </remarks>
         public static T ConvertType<T>(object source)
         {
-            if (source == null) { return default(T); }
+            if (source is null) { return default; }
 
             Type type = typeof(T);
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -82,13 +78,13 @@ namespace XTask.Utility
                 try
                 {
                     TypeConverter typeConverter = TypeDescriptor.GetConverter(type);
-                    if (typeConverter != null && typeConverter.CanConvertFrom(source.GetType()))
+                    if (typeConverter is not null && typeConverter.CanConvertFrom(source.GetType()))
                     {
                         return (T)typeConverter.ConvertFrom(source);
                     }
                     else
                     {
-                        if (type.IsEnum && source != null)
+                        if (type.IsEnum && source is not null)
                         {
                             try
                             {
@@ -99,10 +95,10 @@ namespace XTask.Utility
                                 }
                                 else
                                 {
-                                    if (default(T) == null)
+                                    if (default(T) is null)
                                     {
                                         // We were asked for a nullable enum, allow a null
-                                        return default(T);
+                                        return default;
                                     }
 
                                     Array values = Enum.GetValues(type);
@@ -111,7 +107,7 @@ namespace XTask.Utility
                                         return (T)values.GetValue(0);
                                     }
 
-                                    return default(T);
+                                    return default;
                                 }
                             }
                             catch (Exception e)
@@ -155,7 +151,7 @@ namespace XTask.Utility
                 return (T)(object)source.ToString();
             }
 
-            return default(T);
+            return default;
         }
 
         /// <summary>

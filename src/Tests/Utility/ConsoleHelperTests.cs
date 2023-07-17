@@ -1,29 +1,24 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using FluentAssertions;
+using NSubstitute;
+using XTask.Systems.Console;
+using Xunit;
 
 namespace XTask.Tests.Utility
 {
-    using System;
-    using System.Collections.Generic;
-    using FluentAssertions;
-    using NSubstitute;
-    using XTask;
-    using XTask.Systems.Console;
-    using Xunit;
-
     public class ConsoleHelperTests
     {
         [Theory,
-            MemberData("AnswerData")]
+            MemberData(nameof(AnswerData))]
         public void AnswersReturnExpected(string answer, bool expected)
         {
             IConsoleService console = Substitute.For<IConsoleService>();
             console.ReadLine().Returns(answer);
-            console.QueryYesNo(String.Empty).Should().Be(expected);
+            console.QueryYesNo(string.Empty).Should().Be(expected);
         }
 
         public static IEnumerable<object[]> AnswerData

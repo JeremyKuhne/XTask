@@ -1,18 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Text;
+using FluentAssertions;
+using XTask.Logging;
+using XTask.Utility;
+using Xunit;
 
 namespace XTask.Tests.Utility
 {
-    using System.Text;
-    using FluentAssertions;
-    using XTask.Logging;
-    using XTask.Utility;
-    using Xunit;
-
     public class StringBuilderExtensionsTests
     {
         [Theory,
@@ -28,7 +24,7 @@ namespace XTask.Tests.Utility
             InlineData("FooBar", Justification.Centered, 4, "FooB")]
         public void WriteColumn(string value, Justification justification, int width, string expected)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.WriteColumn(value, justification, width);
             sb.ToString().Should().Be(expected, "'{0}' with column width of {1}, {2} justified", value, width, justification);
         }
@@ -46,7 +42,7 @@ namespace XTask.Tests.Utility
             InlineData("FooBar", Justification.Centered, 4, "FooB")]
         public void WriteColumnNoRightPadding(string value, Justification justification, int width, string expected)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.WriteColumn(value, justification, width, noRightPadding: true);
             sb.ToString().Should().Be(expected, "specified '{0}' with column width of {1}, {2} justified", value, width, justification);
         }
@@ -61,7 +57,7 @@ namespace XTask.Tests.Utility
             ]
         public void SplitTests(string value, char[] splitCharacters, string[] expected)
         {
-            StringBuilder sb = new StringBuilder(value);
+            StringBuilder sb = new(value);
             sb.Split(splitCharacters).Should().BeEquivalentTo(expected);
         }
     }

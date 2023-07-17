@@ -1,8 +1,4 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace XTask.Systems.Configuration.Concrete
@@ -10,11 +6,11 @@ namespace XTask.Systems.Configuration.Concrete
     using System.Configuration;
 
     /// <summary>
-    /// Simple wrapper to abstract a configuration object
+    ///  Simple wrapper to abstract a configuration object
     /// </summary>
     public class ConfigurationWrapper : IConfiguration
     {
-        private Configuration _configuration;
+        private readonly Configuration _configuration;
 
         public ConfigurationWrapper(Configuration configuration)
         {
@@ -24,7 +20,7 @@ namespace XTask.Systems.Configuration.Concrete
         public IConfigurationSectionGroup GetSectionGroup(string sectionGroupName)
         {
             ConfigurationSectionGroup sectionGroup = _configuration.GetSectionGroup(sectionGroupName);
-            return sectionGroup == null ? null : new ConfigurationSectionGroupWrapper(sectionGroup);
+            return sectionGroup is null ? null : new ConfigurationSectionGroupWrapper(sectionGroup);
         }
 
         public string FilePath
@@ -34,7 +30,7 @@ namespace XTask.Systems.Configuration.Concrete
 
         public IConfigurationSectionGroup AddSectionGroup(string sectionGroupName)
         {
-            UserSettingsGroup userGroup = new UserSettingsGroup();
+            UserSettingsGroup userGroup = new();
             _configuration.SectionGroups.Add(sectionGroupName, userGroup);
 
             return new ConfigurationSectionGroupWrapper(userGroup);

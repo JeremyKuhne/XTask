@@ -1,16 +1,12 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using XTask.Logging;
+using Xunit;
 
 namespace XTask.Tests.Logging
 {
-    using FluentAssertions;
-    using XTask.Logging;
-    using Xunit;
-
     public class RichTextLoggerTests
     {
         private class TestRichTextLogger : RichTextLogger
@@ -36,7 +32,7 @@ namespace XTask.Tests.Logging
             InlineData("\tAll for {愛}.", "\\tab All for \\{\\u24859\\'3f\\}.")]
         public void TestEscaping(string value, string expected)
         {
-            TestRichTextLogger logger = new TestRichTextLogger();
+            TestRichTextLogger logger = new();
             logger.TestEscaping(value).Should().Be(expected);
         }
 
@@ -48,7 +44,7 @@ namespace XTask.Tests.Logging
             InlineData(WriteStyle.Fixed | WriteStyle.Underline, @"Foo", @"\f1\ul Foo\f0\ul0")]
         public void TestFormatting(WriteStyle style, string value, string expected)
         {
-            TestRichTextLogger logger = new TestRichTextLogger();
+            TestRichTextLogger logger = new();
             logger.Write(style, value);
             logger.RichTextBuffer.Should().Be(expected);
         }
@@ -67,10 +63,12 @@ namespace XTask.Tests.Logging
             table.AddRow("Foo", "Bar", "FooBar");
             table.AddRow("one", "two", "three");
 
-            RichTextLogger logger = new RichTextLogger();
+            RichTextLogger logger = new();
             logger.Write(table);
             string output = logger.ToString();
-            output.Should().Be(TestData.RtfSimpleTableOutputExpected);
+            output.Should().Be("""
+            {\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\fhiminor\f0\fnil\fcharset0 Calibri;}{\f1\fmodern\fcharset0 Consolas;}}\uc1\pard\sl0\slmult1\fs22{\trowd\trgaph100\trrh-260\trpaddl100\trpaddr100\trpaddfl3\trpaddfr3\cellx1872\cellx5616\cellx9360\b\pard\intbl\widctlpar\ql Foo\cell\pard\intbl\widctlpar\qc Bar\cell\pard\intbl\widctlpar\qr FooBar\cell\b0\row}{\trowd\trgaph100\trrh-260\trpaddl100\trpaddr100\trpaddfl3\trpaddfr3\cellx1872\cellx5616\cellx9360\pard\intbl\widctlpar\ql one\cell\pard\intbl\widctlpar\qc two\cell\pard\intbl\widctlpar\qr three\cell\row}}
+            """);
         }
     }
 }

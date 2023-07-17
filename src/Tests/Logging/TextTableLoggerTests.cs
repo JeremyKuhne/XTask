@@ -1,18 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Text;
+using FluentAssertions;
+using XTask.Logging;
+using XTask.Utility;
+using Xunit;
 
 namespace XTask.Tests.Logging
 {
-    using System.Text;
-    using FluentAssertions;
-    using XTask.Logging;
-    using XTask.Utility;
-    using Xunit;
-
     public class TextTableLoggerTests
     {
         private class TextTableLoggerTester : TextTableLogger
@@ -22,22 +18,22 @@ namespace XTask.Tests.Logging
             public TextTableLoggerTester(int tableWidth)
             {
                 this.tableWidth = tableWidth;
-                this.Output = new StringBuilder();
+                Output = new StringBuilder();
             }
 
-            protected override int TableWidth { get { return this.tableWidth; } }
-            public void SetTableWidth(int width) { this.tableWidth = width; }
+            protected override int TableWidth { get { return tableWidth; } }
+            public void SetTableWidth(int width) { tableWidth = width; }
             public StringBuilder Output { get; private set; }
 
             protected override void WriteInternal(WriteStyle style, string value)
             {
                 if (style.HasFlag(WriteStyle.Underline))
                 {
-                    this.Output.Append(Strings.Underline(value));
+                    Output.Append(Strings.Underline(value));
                 }
                 else
                 {
-                    this.Output.Append(value);
+                    Output.Append(value);
                 }
             }
         }
@@ -50,7 +46,7 @@ namespace XTask.Tests.Logging
             table.AddRow("One", "Two", "Three");
             table.AddRow("Four", "Five", "Six");
 
-            TextTableLoggerTester logger = new TextTableLoggerTester(40);
+            TextTableLoggerTester logger = new(40);
             logger.Write(table);
             logger.Output.ToString().Should().Be("One   Two   Three\r\nFour  Five  Six\r\n");
         }
@@ -63,7 +59,7 @@ namespace XTask.Tests.Logging
             table.AddRow("One", "Two", "Three");
             table.AddRow("Four", "Five", "Six");
 
-            TextTableLoggerTester logger = new TextTableLoggerTester(6);
+            TextTableLoggerTester logger = new(6);
             logger.Write(table);
             logger.Output.ToString().Should().Be("O T T\r\nF F S\r\n");
         }
@@ -75,7 +71,7 @@ namespace XTask.Tests.Logging
             table.AddRow("One", "Two", "Three");
             table.AddRow("Four", "Five", "Six");
 
-            TextTableLoggerTester logger = new TextTableLoggerTester(40);
+            TextTableLoggerTester logger = new(40);
             logger.Write(table);
             logger.Output.ToString().Should().Be("One   Two   Three \r\n----- ----- ------\r\nFour  Five  Six\r\n");
         }
@@ -87,7 +83,7 @@ namespace XTask.Tests.Logging
             table.AddRow("One", "Two", "Three");
             table.AddRow("Four", "Five", "Six");
 
-            TextTableLoggerTester logger = new TextTableLoggerTester(6);
+            TextTableLoggerTester logger = new(6);
             logger.Write(table);
             logger.Output.ToString().Should().Be("O T T\r\n- - -\r\nF F S\r\n");
         }
@@ -99,7 +95,7 @@ namespace XTask.Tests.Logging
             table.AddRow("One", "Two", "Now is the time for all good men to come to the aid of their country.");
             table.AddRow("Four", "Five", "Sixes");
 
-            TextTableLoggerTester logger = new TextTableLoggerTester(20);
+            TextTableLoggerTester logger = new(20);
             logger.Write(table);
             logger.Output.ToString().Should().Be("One Two Now is the \r\n--- --- -----------\r\nFou Fiv Sixes\r\n");
         }
@@ -112,7 +108,7 @@ namespace XTask.Tests.Logging
             table.AddRow("One", "Two", "Now is the time for all good men to come to the aid of their country.");
             table.AddRow("Four", "Five", "Sixes");
 
-            TextTableLoggerTester logger = new TextTableLoggerTester(120);
+            TextTableLoggerTester logger = new(120);
             logger.Write(table);
             logger.Output.ToString().Should().Be("One   Two   Now is the time for all good men to come to the aid of their country.\r\nFour  Five  Sixes\r\n");
         }
@@ -125,7 +121,7 @@ namespace XTask.Tests.Logging
             table.AddRow("One", "Two", "Now is the time for all good men.");
             table.AddRow("Now is the time for all good men.", "Five", "Sixes");
 
-            TextTableLoggerTester logger = new TextTableLoggerTester(80);
+            TextTableLoggerTester logger = new(80);
             logger.Write(table);
             logger.Output.ToString().Should().Be("One                                Two   Now is the time for all good men.\r\nNow is the time for all good men.  Five  Sixes\r\n");
         }
@@ -138,7 +134,7 @@ namespace XTask.Tests.Logging
             table.AddRow("Foo\t     \t\t\t\r\n\t\t\t- Things\r\n\tThat");
             table.AddRow("Four");
 
-            TextTableLoggerTester logger = new TextTableLoggerTester(40);
+            TextTableLoggerTester logger = new(40);
             logger.Write(table);
             logger.Output.ToString().Should().Be("Foo - Things That\r\nFour\r\n");
         }

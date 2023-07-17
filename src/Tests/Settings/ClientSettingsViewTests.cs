@@ -1,23 +1,18 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using NSubstitute;
+using System.Configuration;
+using System.IO;
+using System.Xml;
+using XTask.Settings;
+using XTask.Systems.Configuration;
+using XTask.Systems.File;
+using Xunit;
 
 namespace XTask.Tests.Settings
 {
-    using FluentAssertions;
-    using NSubstitute;
-    using System;
-    using System.Configuration;
-    using System.IO;
-    using System.Xml;
-    using XTask.Settings;
-    using Systems.Configuration;
-    using Systems.File;
-    using Xunit;
-
     public class ClientSettingsViewTests
     {
         private class TestClientSettingsView : ClientSettingsView
@@ -27,17 +22,17 @@ namespace XTask.Tests.Settings
 
             public IConfiguration TestGetConfiguration(ConfigurationUserLevel userLevel)
             {
-                return this.GetConfiguration(userLevel);
+                return GetConfiguration(userLevel);
             }
 
             public IConfiguration TestGetContainingConfigurationIfDifferent()
             {
-                return this.GetContainingConfigurationIfDifferent();
+                return GetContainingConfigurationIfDifferent();
             }
 
             public IConfiguration TestGetConfiguration(SettingsLocation location)
             {
-                return this.GetConfiguration(location);
+                return GetConfiguration(location);
             }
 
             public static XmlNode TestSerializeToXmlElement(string serializedValue)
@@ -65,7 +60,7 @@ namespace XTask.Tests.Settings
             configurationManager.OpenConfiguration("").ReturnsForAnyArgs(allOtherConfigurations);
 
 
-            TestClientSettingsView view = new TestClientSettingsView(configurationManager, fileService);
+            TestClientSettingsView view = new(configurationManager, fileService);
 
             // None should return the none configuration, others should find the allOther via the TestFilePath lookup
             view.TestGetConfiguration(ConfigurationUserLevel.None).Should().Be(noneConfiguration);
@@ -93,7 +88,7 @@ namespace XTask.Tests.Settings
             configuration.FilePath.Returns("TestFilePath");
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
 
-            TestClientSettingsView view = new TestClientSettingsView(configurationManager, null);
+            TestClientSettingsView view = new(configurationManager, null);
 
             view.GetConfigurationPath(SettingsLocation.Executable).Should().Be("TestFilePath");
         }
@@ -132,7 +127,7 @@ namespace XTask.Tests.Settings
             // Null should be treated as empty string
             XmlNode node = TestClientSettingsView.TestSerializeToXmlElement(null);
             node.Should().NotBeNull();
-            node.InnerXml.Should().Be(String.Empty);
+            node.InnerXml.Should().Be(string.Empty);
         }
 
         [Fact]

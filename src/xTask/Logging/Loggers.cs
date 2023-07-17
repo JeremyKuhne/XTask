@@ -1,18 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Collections.Generic;
 
 namespace XTask.Logging
 {
-    using System.Collections.Generic;
-
     public class Loggers : ILoggers
     {
-        private Dictionary<LoggerType, ILogger> _loggers = new Dictionary<LoggerType, ILogger>();
-        private static NullLogger NullLog = new NullLogger();
+        private readonly Dictionary<LoggerType, ILogger> _loggers = new();
+        private static readonly NullLogger NullLog = new();
 
         protected void RegisterLogger(LoggerType loggerType, ILogger logger)
         {
@@ -23,8 +19,7 @@ namespace XTask.Logging
         {
             get
             {
-                ILogger logger;
-                if (_loggers.TryGetValue(loggerType, out logger))
+                if (_loggers.TryGetValue(loggerType, out ILogger logger))
                 {
                     return logger;
                 }

@@ -1,25 +1,21 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using FluentAssertions;
+using NSubstitute;
+using XTask.Logging;
+using Xunit;
 
 namespace XTask.Tests.Logging
 {
-    using System;
-    using FluentAssertions;
-    using NSubstitute;
-    using XTask.Logging;
-    using Xunit;
-
     public class AggregatedLoggerTests
     {
         public abstract class TestLogger : Logger
         {
             protected override void WriteInternal(WriteStyle style, string value)
             {
-                this.TestWriteInternal(style, value);
+                TestWriteInternal(style, value);
             }
 
             public void TestWriteInternal(WriteStyle style, string value)
@@ -37,7 +33,7 @@ namespace XTask.Tests.Logging
         [Fact]
         public void EmptyArrayShouldNotThow()
         {
-            AggregatedLogger logger = new AggregatedLogger(new ILogger[0]);
+            AggregatedLogger logger = new(new ILogger[0]);
             logger.Write("Foo");
         }
 
@@ -46,7 +42,7 @@ namespace XTask.Tests.Logging
         {
             TestLogger loggerOne = Substitute.ForPartsOf<TestLogger>();
             TestLogger loggerTwo = Substitute.ForPartsOf<TestLogger>();
-            AggregatedLogger logger = new AggregatedLogger(loggerOne, loggerTwo);
+            AggregatedLogger logger = new(loggerOne, loggerTwo);
 
             logger.Write("Foo");
             ITable table = Table.Create(1);

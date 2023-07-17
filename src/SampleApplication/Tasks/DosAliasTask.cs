@@ -1,15 +1,11 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Linq;
+using XTask.Tasks;
 
 namespace XFile.Tasks
 {
-    using System.Linq;
-    using XTask.Tasks;
-
     public class DosAliasTask : FileTask
     {
         protected override ExitCode ExecuteFileTask()
@@ -34,6 +30,6 @@ namespace XFile.Tasks
             return ExitCode.Success;
         }
 
-        public override string Summary { get { return XFileStrings.DosAliasTaskSummary; } }
+        public override string Summary => XFileStrings.DosAliasTaskSummary;
     }
 }

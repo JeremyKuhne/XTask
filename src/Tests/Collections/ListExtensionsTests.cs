@@ -1,17 +1,13 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Collections.Generic;
+using FluentAssertions;
+using XTask.Collections;
+using Xunit;
 
 namespace XTask.Tests.Collections
 {
-    using System.Collections.Generic;
-    using FluentAssertions;
-    using XTask.Collections;
-    using Xunit;
-
     public class ListExtensionsTests
     {
         [Fact]
@@ -26,7 +22,7 @@ namespace XTask.Tests.Collections
         {
             // In theory we could get back the exact same order- really unlikely, particularly with larger collections
             int[] source = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-            List<int> items = new List<int>(source);
+            List<int> items = new(source);
             items.Shuffle();
             items.Should().NotEqual(source);
         }

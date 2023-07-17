@@ -1,8 +1,4 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -15,100 +11,109 @@ using XTask.Utility;
 namespace XTask.Systems.File
 {
     /// <summary>
-    /// Path related helpers.
+    ///  Path related helpers.
     /// </summary>
     /// <remarks>
-    /// Code in here should NOT touch actual IO.
+    ///  Code in here should NOT touch actual IO.
     /// </remarks>
     public static class Paths
     {
         /// <summary>
-        /// Legacy maximum path length in Windows (without using extended syntax).
+        ///  Legacy maximum path length in Windows (without using extended syntax).
         /// </summary>
         public const int MaxPath = 260;
 
         /// <summary>
-        /// Maximum path size using extended syntax or path APIs in the FlexFileService (default).
+        ///  Maximum path size using extended syntax or path APIs in the FlexFileService (default).
         /// </summary>
         /// <remarks>
-        /// Windows APIs need extended syntax to get past 260 characters (including the null terminator).
+        ///  <para>
+        ///   Windows APIs need extended syntax to get past 260 characters (including the null terminator) unless
+        ///   the application is manifested to enable long paths and the appropriate registry key is set. See
+        ///   <see href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation">
+        ///    Maximum Path Length Limitation
+        ///   </see>.
+        ///  </para>
         /// </remarks>
         public const int MaxLongPath = short.MaxValue;
 
         /// <summary>
-        /// Path prefix for NT paths
+        ///  Path prefix for NT paths
         /// </summary>
         public const string NTPathPrefix = @"\??\";
 
         /// <summary>
-        /// Path prefix for extended paths
+        ///  Path prefix for extended paths
         /// </summary>
         public const string ExtendedPathPrefix = @"\\?\";
 
         /// <summary>
-        /// Path prefix for extended UNC paths
+        ///  Path prefix for extended UNC paths
         /// </summary>
         public const string ExtendedUncPrefix = @"\\?\UNC\";
 
         /// <summary>
-        /// Path prefix for UNC paths.
+        ///  Path prefix for UNC paths.
         /// </summary>
         public const string UncPrefix = @"\\";
 
         /// <summary>
-        /// Path prefix for device paths
+        ///  Path prefix for device paths
         /// </summary>
         public const string DevicePathPrefix = @"\\.\";
 
         /// <summary>
-        /// Path prefix for device UNC paths
+        ///  Path prefix for device UNC paths
         /// </summary>
         public const string DeviceUncPrefix = @"\\.\UNC\";
 
         /// <summary>
-        /// Global root define
+        ///  Global root define
         /// </summary>
         public const string GlobalRoot = @"GLOBALROOT";
 
         // - Paths are case insensitive (NTFS supports sensitivity, but it is not enabled by default)
-        // - Backslash is the "correct" separator for path components. Windows APIs convert forward slashes to backslashes, except for "\\?\"
+        // - Backslash is the "correct" separator for path components. Windows APIs convert forward slashes to
+        //   backslashes, except for device paths "\\?\", "\??\", "\\.\".
         //
         // References
         // ==========
         //
         // "Naming Files, Paths, and Namespaces"
-        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247.aspx
+        // https://learn.microsoft.com/windows/win32/fileio/naming-a-file
         //
         private static readonly char[] s_DirectorySeparatorCharacters = new char[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar };
 
         /// <summary>
-        /// The default directory separator
+        ///  The default directory separator.
         /// </summary>
-        public static readonly char DirectorySeparator = System.IO.Path.DirectorySeparatorChar;
+        public const char DirectorySeparator = '\\';
 
         /// <summary>
-        /// The alternate directory separator
+        ///  The alternate directory separator.
         /// </summary>
-        public static readonly char AltDirectorySeparator = System.IO.Path.AltDirectorySeparatorChar;
+        public const char AltDirectorySeparator = '/';
 
         /// <summary>
-        /// Volume separator character
+        ///  Volume separator character.
         /// </summary>
-        public static readonly char VolumeSeparator = System.IO.Path.VolumeSeparatorChar;
+        public static readonly char VolumeSeparator = ':';
 
         /// <summary>
-        /// Returns true if the path specified is relative to the current drive or working directory.
-        /// Returns false if the path is fixed to a specific drive or UNC path.  This method does no
-        /// validation of the path (URIs will be returned as relative as a result).
+        ///  Returns <see langword="true"/> if the path specified is relative to the current drive or working directory.
+        ///  Returns <see langword="false"/> if the path is fixed to a specific drive or UNC path. This method does no
+        ///  validation of the path (URIs will be returned as relative as a result).
         /// </summary>
         /// <remarks>
-        /// Handles paths that use the alternate directory separator.  It is a frequent mistake to
-        /// assume that rooted paths (Path.IsPathRooted) are not relative.  This isn't the case.
+        ///  <para>
+        ///   Handles paths that use the alternate directory separator.  It is a frequent mistake to
+        ///   assume that rooted paths (Path.IsPathRooted) are not relative.  This isn't the case.
+        ///  </para>
         /// </remarks>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="path"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="path"/> is <see langword="null"/>.</exception>
         public static bool IsPartiallyQualified(string path)
         {
-            if (path == null) { throw new ArgumentNullException("path"); }
+            if (path is null) { throw new ArgumentNullException(nameof(path)); }
             if (path.Length < 2)
             {
                 // It isn't fixed, it must be relative.  There is no way to specify a fixed
@@ -131,7 +136,7 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns true if the given path has any of the specified extensions
+        ///  Returns true if the given path has any of the specified extensions
         /// </summary>
         public static bool HasExtension(string path, params string[] extensions)
         {
@@ -140,7 +145,7 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Attempt to retreive a file extension (with period), if any, from the given path or file name. Does not throw.
+        ///  Attempt to retreive a file extension (with period), if any, from the given path or file name. Does not throw.
         /// </summary>
         public static string GetExtension(string pathOrFileName)
         {
@@ -157,9 +162,9 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns the index of the extension for the given path.  Does not validate paths in any way.
+        ///  Returns the index of the extension for the given path. Does not validate paths in any way.
         /// </summary>
-        /// <returns>The index of the period</returns>
+        /// <returns>The index of the period.</returns>
         private static int FindExtensionOffset(string pathOrFileName)
         {
             if (string.IsNullOrEmpty(pathOrFileName)) { return -1; }
@@ -195,7 +200,8 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns the path up to the last directory separator or the root if already at the root (e.g. "C:\", "\\Server\Share\", etc.).
+        ///  Returns the path up to the last directory separator or the root if already at the root
+        ///  (e.g. "C:\", "\\Server\Share\", etc.).
         /// </summary>
         /// <returns>The directory path / root or null if the path is unknown.</returns>
         public static string GetDirectory(string path)
@@ -204,13 +210,12 @@ namespace XTask.Systems.File
             if (directoryLength < 0) return null;
 
             path = path.Substring(0, directoryLength);
-            return AddTrailingSeparator(path);
+            return EnsureTrailingSeparator(path);
         }
 
         private static int GetDirectoryOrRootLength(string path, bool skipTrailingSlashes = false)
         {
-            int rootLength;
-            PathFormat pathFormat = GetPathFormat(path, out rootLength);
+            PathFormat pathFormat = GetPathFormat(path, out int rootLength);
             if (pathFormat == PathFormat.UnknownFormat) return -1;
 
             int length = path.Length;
@@ -228,7 +233,8 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns the file or directory name for the given path or null if already at the root or the path is unknown.
+        ///  Returns the file or directory name for the given path or <see langword="null"/> if already at the
+        ///  root or the path is unknown.
         /// </summary>
         public static string GetFileOrDirectoryName(string path)
         {
@@ -248,12 +254,12 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Finds the topmost directories for the specified paths that contain the paths passed in.
+        ///  Finds the topmost directories for the specified paths that contain the paths passed in.
         /// </summary>
         public static IEnumerable<string> FindCommonRoots(IEnumerable<string> paths)
         {
-            HashSet<string> roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (paths == null) { return roots; }
+            HashSet<string> roots = new(StringComparer.OrdinalIgnoreCase);
+            if (paths is null) { return roots; }
 
             foreach (string path in paths)
             {
@@ -288,33 +294,31 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns the root for the given path or null if the path format can't be determined.
+        ///  Returns the root for the given path or null if the path format can't be determined.
         /// </summary>
         public static string GetRoot(string path)
         {
-            int rootLength;
-            GetPathFormat(path, out rootLength);
+            GetPathFormat(path, out int rootLength);
             if (rootLength < 0) return null;
             else return path.Substring(0, rootLength);
         }
 
         /// <summary>
-        /// Returns the length of the root for the given path or -1 if the path format can't be determined.
+        ///  Returns the length of the root for the given path or -1 if the path format can't be determined.
         /// </summary>
         public static int GetRootLength(string path)
         {
-            int rootLength;
-            GetPathFormat(path, out rootLength);
+            GetPathFormat(path, out int rootLength);
             return rootLength;
         }
 
         /// <summary>
-        /// Copies the casing from the source path to the target path, matching from the right.
+        ///  Copies the casing from the source path to the target path, matching from the right.
         /// </summary>
         public static string ReplaceCasing(string sourcePath, string targetPath)
         {
-            if (sourcePath == null) throw new ArgumentNullException(nameof(sourcePath));
-            if (targetPath == null) throw new ArgumentNullException(nameof(targetPath));
+            if (sourcePath is null) throw new ArgumentNullException(nameof(sourcePath));
+            if (targetPath is null) throw new ArgumentNullException(nameof(targetPath));
 
             bool sourceEndsInSeparator = EndsInDirectorySeparator(sourcePath);
             bool targetEndsInSeparator = EndsInDirectorySeparator(targetPath);
@@ -349,23 +353,23 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Gets the format of the specified path.
+        ///  Gets the format of the specified path.
         /// </summary>
         /// <remarks>
-        /// Does not look for invalid characters beyond what makes for an indeterminate path.
+        ///  <para>
+        ///   Does not look for invalid characters beyond what makes for an indeterminate path.
+        ///  </para>
         /// </remarks>
-        public static PathFormat GetPathFormat(string path)
-        {
-            int rootLength;
-            return GetPathFormat(path, out rootLength);
-        }
+        public static PathFormat GetPathFormat(string path) => GetPathFormat(path, out _);
 
         /// <summary>
-        /// Gets the format and root length of the specified path. Returns -1 for the root length
-        /// if the path format can't be determined.
+        ///  Gets the format and root length of the specified path. Returns -1 for the root length
+        ///  if the path format can't be determined.
         /// </summary>
         /// <remarks>
-        /// Does not look for invalid characters beyond what makes for an indeterminate path.
+        ///  <para>
+        ///   Does not look for invalid characters beyond what makes for an indeterminate path.
+        ///  </para>
         /// </remarks>
         public unsafe static PathFormat GetPathFormat(string path, out int rootLength)
         {
@@ -374,7 +378,7 @@ namespace XTask.Systems.File
             rootLength = -1;
             int pathLength;
 
-            if (path == null || (pathLength = path.Length) == 0 || path[0] == ':')
+            if (path is null || (pathLength = path.Length) == 0 || path[0] == ':')
             {
                 return PathFormat.UnknownFormat;
             }
@@ -458,7 +462,7 @@ namespace XTask.Systems.File
                 }
 
                 // We've got a colon in the drive letter position, check for a valid drive letter
-                char drive = Char.ToUpperInvariant(path[0]);
+                char drive = char.ToUpperInvariant(path[0]);
                 if (!(drive >= 'A' && drive <= 'Z'))
                 {
                     // Not a valid drive identifier
@@ -530,7 +534,7 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns true if the path begins with a directory separator.
+        ///  Returns <see langword="true"/> if the path begins with a directory separator.
         /// </summary>
         public static bool BeginsWithDirectorySeparator(string path)
         {
@@ -543,11 +547,11 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns true if the path begins with a directory separator.
+        ///  Returns <see langword="true"/> if the path begins with a directory separator.
         /// </summary>
         public static bool BeginsWithDirectorySeparator(StringBuilder path)
         {
-            if (path == null || path.Length == 0)
+            if (path is null || path.Length == 0)
             {
                 return false;
             }
@@ -556,7 +560,7 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns true if the path ends in a directory separator.
+        ///  Returns <see langword="true"/> if the path ends in a directory separator.
         /// </summary>
         public static bool EndsInDirectorySeparator(string path)
         {
@@ -570,11 +574,11 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns true if the path ends in a directory separator.
+        ///  Returns <see langword="true"/> if the path ends in a directory separator.
         /// </summary>
         public static bool EndsInDirectorySeparator(StringBuilder path)
         {
-            if (path == null || path.Length == 0)
+            if (path is null || path.Length == 0)
             {
                 return false;
             }
@@ -584,7 +588,7 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns true if the given character is a directory separator.
+        ///  Returns <see langword="true"/> if the given character is a directory separator.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDirectorySeparator(char character)
@@ -593,31 +597,28 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Ensures that the specified path ends in a directory separator.
+        ///  Ensures that the specified path ends in a directory separator.
         /// </summary>
         /// <returns>The path with an appended directory separator if necessary.</returns>
-        /// <exception cref="System.ArgumentNullException">Thrown if path is null.</exception>
-        public static string AddTrailingSeparator(string path)
+        /// <exception cref="ArgumentNullException">
+        ///  <paramref name="path"/> is <see langword="null"/>.
+        /// </exception>
+        public static string EnsureTrailingSeparator(string path)
         {
-            if (path == null) { throw new ArgumentNullException(nameof(path)); }
-            if (EndsInDirectorySeparator(path))
-            {
-                return path;
-            }
-            else
-            {
-                return path + DirectorySeparator;
-            }
+            if (path is null) { throw new ArgumentNullException(nameof(path)); }
+            return EndsInDirectorySeparator(path) ? path : path + DirectorySeparator;
         }
 
         /// <summary>
-        /// Ensures that the specified path does not end in a directory separator.
+        ///  Ensures that the specified path does not end in a directory separator.
         /// </summary>
         /// <returns>The path with an appended directory separator if necessary.</returns>
-        /// <exception cref="System.ArgumentNullException">Thrown if path is null.</exception>
+        /// <exception cref="ArgumentNullException">
+        ///  <paramref name="path"/> is <see langword="null"/>.
+        /// </exception>
         public static string RemoveTrailingSeparators(string path)
         {
-            if (path == null) { throw new ArgumentNullException(nameof(path)); }
+            if (path is null) { throw new ArgumentNullException(nameof(path)); }
             if (EndsInDirectorySeparator(path))
             {
                 return path.TrimEnd(s_DirectorySeparatorCharacters);
@@ -629,14 +630,14 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Returns true if the given path is extended and will skip normalization and MAX_PATH checks.
+        ///  Returns <see langword="true"/> if the given path is extended and will skip normalization and MAX_PATH checks.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsExtended(string path)
         {
             // While paths like "//?/C:/" will work, they're treated the same as "\\.\" paths.
             // Skipping of normalization will *only* occur if back slashes ('\') are used.
-            return path != null
+            return path is not null
                 && path.Length >= ExtendedPathPrefix.Length
                 && path[0] == '\\'
                 && (path[1] == '\\' || path[1] == '?')
@@ -644,59 +645,63 @@ namespace XTask.Systems.File
                 && path[3] == '\\';
         }
 
-        /// <summary>
-        /// Returns true if the given path is a device path.
-        /// </summary>
-        /// <remarks>
-        /// This will return true if the path returns any of the following with either forward or back slashes.
-        ///  \\?\  \??\  \\.\
-        /// </remarks>
+        /// <inheritdoc cref="IsDevice(ReadOnlySpan{char})"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsDevice(string path)
-        {
-            return path != null
-                && path.Length >= DevicePathPrefix.Length
-                && IsDirectorySeparator(path[0])
-                &&
-                (
-                    ( IsDirectorySeparator(path[1]) && ( path[2] == '.' || path[2] == '?' ))
-                    || ( path[1] == '?' && path[2] == '?' )
-                )
-                && IsDirectorySeparator(path[3]);
-        }
+        public static bool IsDevice(string path) => path is not null && IsDevice(path.AsSpan());
 
         /// <summary>
-        /// Returns true if the given path is extended.
+        ///  Returns <see langword="true"/> if the given path is a device path.
+        /// </summary>
+        /// <remarks>
+        ///  <para>
+        ///   This will return <see langword="true"/> if the path returns any of the following.
+        ///   <code>\\?\</code><code>\??\</code><code>\\.\</code>
+        ///  </para>
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsDevice(ReadOnlySpan<char> path)
+            => path.Length >= DevicePathPrefix.Length
+                && (path[0] == '\\' || path[0] == '/')
+                && (path[3] == '\\' || path[3] == '/')
+                &&
+                (
+                    ((path[1] == '\\' || path[1] == '/') && (path[2] == '.' || path[2] == '?'))
+                        || (path[1] == '?' && path[2] == '?')
+                );
+
+        /// <summary>
+        ///  Returns <see langword="true"/> if the given path is extended.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsExtendedUnc(string path)
         {
-            return path != null
+            return path is not null
                 && path.Length >= ExtendedUncPrefix.Length
                 && IsExtended(path)
-                && Char.ToUpper(path[4]) == 'U'
-                && Char.ToUpper(path[5]) == 'N'
-                && Char.ToUpper(path[6]) == 'C'
+                && char.ToUpper(path[4]) == 'U'
+                && char.ToUpper(path[5]) == 'N'
+                && char.ToUpper(path[6]) == 'C'
                 && IsDirectorySeparator(path[7]);
         }
 
+        /// <inheritdoc cref="IsDeviceUnc(ReadOnlySpan{char})"/>
+        public static bool IsDeviceUnc(string path) => path is not null && IsDeviceUnc(path.AsSpan());
+
         /// <summary>
-        /// Returns true if the given path is a device path.
+        ///  Returns <see langword="true"/> if the given path is a device path.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsDeviceUnc(string path)
-        {
-            return path != null
-                && path.Length >= DeviceUncPrefix.Length
+        public static bool IsDeviceUnc(ReadOnlySpan<char> path)
+            => path.Length >= DeviceUncPrefix.Length
                 && IsDevice(path)
-                && Char.ToUpper(path[4]) == 'U'
-                && Char.ToUpper(path[5]) == 'N'
-                && Char.ToUpper(path[6]) == 'C'
+                && (path[4] == 'U' || path[4] == 'u')
+                && (path[5] == 'N' || path[5] == 'n')
+                && (path[6] == 'C' || path[6] == 'C')
+                && char.ToUpper(path[5]) == 'N'
+                && char.ToUpper(path[6]) == 'C'
                 && IsDirectorySeparator(path[7]);
-        }
 
         /// <summary>
-        /// Remove the extended prefix from the given path if present.
+        ///  Remove the extended prefix from the given path if present.
         /// </summary>
         public unsafe static string RemoveExtendedPrefix(string path)
         {
@@ -711,9 +716,9 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Adds the extended path prefix (\\?\) if not already present.
+        ///  Adds the extended path prefix (\\?\) if not already present.
         /// </summary>
-        /// <param name="addIfUnderLegacyMaxPath">If false, will not add the extended prefix unless needed.</param>
+        /// <param name="addIfUnderLegacyMaxPath">If <see langword="false"/>, will not add the extended prefix unless needed.</param>
         public unsafe static string AddExtendedPrefix(string path, bool addIfUnderLegacyMaxPath = false)
         {
             if (IsExtended(path)
@@ -727,6 +732,7 @@ namespace XTask.Systems.File
             {
                 // Device is equivalent to extended in the namespace that it accesses. (@"\\?\C:\" == @"\\.\C:\")
                 // The difference is that it doesn't skip normalization and is blocked at MAX_PATH.
+#if NETFRAMEWORK
                 string newPath = string.Copy(path);
                 fixed (char* c = newPath)
                 {
@@ -738,6 +744,13 @@ namespace XTask.Systems.File
                 }
 
                 return newPath;
+#else
+                string.Create(path.Length, path, (Span<char> buffer, string path) =>
+                {
+                    path.CopyTo(buffer);
+                    ExtendedPathPrefix.AsSpan().CopyTo(buffer);
+                });
+#endif
             }
 
             if (!path.StartsWith(UncPrefix, StringComparison.OrdinalIgnoreCase))
@@ -756,13 +769,13 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Combines two strings, adding a directory separator between if needed.
-        /// Does not validate path characters.
+        ///  Combines two strings, adding a directory separator between if needed.
+        ///  Does not validate path characters.
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="path1"/> is null.</exception>
         public static string Combine(string path1, string path2)
         {
-            if (path1 == null) throw new ArgumentNullException(nameof(path1));
+            if (path1 is null) throw new ArgumentNullException(nameof(path1));
 
             // Add nothing to something is something
             if (string.IsNullOrEmpty(path2)) return path1;
@@ -784,16 +797,16 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Combines two string builders into the first string builder, adding a directory separator between if needed.
-        /// Does not validate path characters.
+        ///  Combines two string builders into the first string builder, adding a directory separator between if needed.
+        ///  Does not validate path characters.
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="path1"/> is null.</exception>
         public static void Combine(StringBuilder path1, string path2)
         {
-            if (path1 == null) throw new ArgumentNullException(nameof(path1));
+            if (path1 is null) throw new ArgumentNullException(nameof(path1));
 
             // Add nothing to something is something
-            if (path2 == null || path2.Length == 0) return;
+            if (path2 is null || path2.Length == 0) return;
 
             if (!EndsInDirectorySeparator(path1) && !BeginsWithDirectorySeparator(path2))
             {
@@ -807,13 +820,13 @@ namespace XTask.Systems.File
         }
 
         /// <summary>
-        /// Normalize the directory separators in the given path. Makes alternate directory separators into default separators and
-        /// collapses runs of separators. Will keep initial two separators as these have special meaning (UNC or extended path).
-        /// Does not collpase relative segments.
+        ///  Normalize the directory separators in the given path. Makes alternate directory separators into default separators and
+        ///  collapses runs of separators. Will keep initial two separators as these have special meaning (UNC or extended path).
+        ///  Does not collpase relative segments.
         /// </summary>
         public static string NormalizeDirectorySeparators(string path)
         {
-            if (path == null) throw new ArgumentNullException(nameof(path));
+            if (path is null) throw new ArgumentNullException(nameof(path));
 
             // Check to see if we need to normalize
             bool normalized = true;

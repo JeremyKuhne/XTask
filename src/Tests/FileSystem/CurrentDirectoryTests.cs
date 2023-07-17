@@ -1,19 +1,15 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using System;
+using XTask.Systems.File;
+using XTask.Systems.File.Concrete.Flex;
+using Xunit;
+using NSubstitute;
 
 namespace XTask.Tests.FileSystem
 {
-    using FluentAssertions;
-    using System;
-    using Systems.File;
-    using XTask.Systems.File.Concrete.Flex;
-    using Xunit;
-    using NSubstitute;
-
     public class CurrentDirectoryTests
     {
         [Fact]
@@ -26,7 +22,7 @@ namespace XTask.Tests.FileSystem
             fileService.GetAttributes("").ReturnsForAnyArgs(System.IO.FileAttributes.Directory);
             extendedFileService.GetVolumeName("").ReturnsForAnyArgs("TestRoot");
 
-            CurrentDirectory cd = new CurrentDirectory(fileService, extendedFileService);
+            CurrentDirectory cd = new(fileService, extendedFileService);
             Action action = () => cd.SetCurrentDirectory("a");
             action.Should().Throw<ArgumentException>();
         }

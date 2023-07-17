@@ -1,18 +1,12 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Logging;
+using XTask.Services;
+using XTask.Settings;
 
 namespace XTask.Tasks
 {
-    using System;
-    using Logging;
-    using Services;
-    using Settings;
-    using Utility;
-
     public abstract class Task : ImplementedServiceProvider, ITask, ITaskExecutor, ITaskDocumentation
     {
         private ITaskInteraction _interaction;
@@ -52,15 +46,15 @@ namespace XTask.Tasks
             // IEEE Std 1003.1 http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap12.html
 
             ILogger logger = interaction.Loggers[LoggerType.Result];
-            if (string.IsNullOrEmpty(this.GeneralHelp))
+            if (string.IsNullOrEmpty(GeneralHelp))
             {
                 logger.Write(XTaskStrings.HelpNone);
                 return;
             }
 
-            logger.WriteLine(WriteStyle.Fixed, this.GeneralHelp);
+            logger.WriteLine(WriteStyle.Fixed, GeneralHelp);
 
-            string optionDetails = this.OptionDetails;
+            string optionDetails = OptionDetails;
             if (string.IsNullOrEmpty(optionDetails)) { return; }
 
             logger.WriteLine();

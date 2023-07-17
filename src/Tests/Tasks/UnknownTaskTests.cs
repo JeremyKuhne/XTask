@@ -1,27 +1,22 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using NSubstitute;
+using XTask.Logging;
+using XTask.Settings;
+using XTask.Tasks;
+using Xunit;
 
 namespace XTask.Tests.Tasks
 {
-    using FluentAssertions;
-    using NSubstitute;
-    using XTask.Logging;
-    using XTask.Settings;
-    using XTask.Tasks;
-    using XTask.Utility;
-    using Xunit;
-
     public class UnknownTaskTests
     {
         [Fact]
         public void UnknownTaskLogsHelp()
         {
             ITaskRegistry registry = Substitute.For<ITaskRegistry>();
-            UnknownTask task = new UnknownTask(registry, "GeneralHelp");
+            UnknownTask task = new(registry, "GeneralHelp");
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             ILoggers loggers = Substitute.For<ILoggers>();
             interaction.Loggers.Returns(loggers);
@@ -36,7 +31,7 @@ namespace XTask.Tests.Tasks
         public void NoParameters()
         {
             ITaskRegistry registry = Substitute.For<ITaskRegistry>();
-            UnknownTask task = new UnknownTask(registry, "GeneralHelp");
+            UnknownTask task = new(registry, "GeneralHelp");
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             ILoggers loggers = Substitute.For<ILoggers>();
             interaction.Loggers.Returns(loggers);
@@ -51,7 +46,7 @@ namespace XTask.Tests.Tasks
         public void UnkownCommand()
         {
             ITaskRegistry registry = Substitute.For<ITaskRegistry>();
-            UnknownTask task = new UnknownTask(registry, "GeneralHelp");
+            UnknownTask task = new(registry, "GeneralHelp");
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
             string commandName = "Foo";

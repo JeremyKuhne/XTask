@@ -1,17 +1,13 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Threading;
 
 namespace XTask.Collections
 {
-    using System;
-    using System.Threading;
-
     /// <summary>
-    /// Light weight multithreaded fixed size cache class.
+    ///  Light weight multithreaded fixed size cache class.
     /// </summary>
     public class Cache<T> : IDisposable where T : class, new()
     {
@@ -19,7 +15,7 @@ namespace XTask.Collections
         protected readonly T[] _itemsCache;
 
         /// <summary>
-        /// Create a cache with space for the specified number of items.
+        ///  Create a cache with space for the specified number of items.
         /// </summary>
         public Cache(int cacheSpace)
         {
@@ -28,7 +24,7 @@ namespace XTask.Collections
         }
 
         /// <summary>
-        /// Get an item from the cache or create one if none are available.
+        ///  Get an item from the cache or create one if none are available.
         /// </summary>
         public virtual T Acquire()
         {
@@ -37,30 +33,27 @@ namespace XTask.Collections
             for (int i = 0; i < _itemsCache.Length; i++)
             {
                 item = Interlocked.Exchange(ref _itemsCache[i], null);
-                if (item != null) return item;
+                if (item is not null) return item;
             }
 
             return new T();
         }
 
         /// <summary>
-        /// Release an item back to the cache, disposing if no room is available.
+        ///  Release an item back to the cache, disposing if no room is available.
         /// </summary>
         public virtual void Release(T item)
         {
             for (int i = 0; i < _itemsCache.Length; i++)
             {
                 item = Interlocked.Exchange(ref _itemsCache[i], item);
-                if (item == null) return;
+                if (item is null) return;
             }
 
             (item as IDisposable)?.Dispose();
         }
 
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-        }
+        public void Dispose() => Dispose(disposing: true);
 
         protected virtual void Dispose(bool disposing)
         {

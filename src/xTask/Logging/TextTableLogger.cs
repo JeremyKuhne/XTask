@@ -1,17 +1,13 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using XTask.Utility;
 
 namespace XTask.Logging
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using XTask.Utility;
-
     public abstract class TextTableLogger : Logger
     {
         protected abstract int TableWidth { get; }
@@ -20,11 +16,11 @@ namespace XTask.Logging
         {
             // Get the desired column widths in characters
             int columnCount = table.ColumnFormats.Length;
-            int[] columnWidths = ColumnFormat.ScaleColumnWidths(this.TableWidth, table.ColumnFormats);
+            int[] columnWidths = ColumnFormat.ScaleColumnWidths(TableWidth, table.ColumnFormats);
 
             // Convert tabs to spaces so we can layout properly and
             // get our max widths to see if we fall under the TableWidth
-            List<string[]> rowsCopy = new List<string[]>();
+            List<string[]> rowsCopy = new();
             int[] maxColumnWidth = new int[columnCount];
             foreach (var row in table.Rows)
             {
@@ -126,7 +122,7 @@ namespace XTask.Logging
 
             bool headerRow = table.HasHeader;
 
-            StringBuilder rowBuilder = new StringBuilder(TableWidth + 1);
+            StringBuilder rowBuilder = new(TableWidth + 1);
             foreach (var row in rowsCopy)
             {
                 rowBuilder.Clear();

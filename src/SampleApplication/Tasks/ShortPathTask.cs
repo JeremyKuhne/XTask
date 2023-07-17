@@ -1,14 +1,10 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Tasks;
 
 namespace XFile.Tasks
 {
-    using XTask.Tasks;
-
     public class ShortPathTask : FileTaskWithTarget
     {
         protected override ExitCode ExecuteFileTask()
@@ -17,6 +13,6 @@ namespace XFile.Tasks
             return ExitCode.Success;
         }
 
-        public override string Summary { get { return XFileStrings.ShortPathTaskSummary; } }
+        public override string Summary => XFileStrings.ShortPathTaskSummary;
     }
 }

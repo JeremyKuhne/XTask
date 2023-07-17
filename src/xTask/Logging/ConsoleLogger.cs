@@ -1,17 +1,13 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using XTask.Systems.Console;
+using XTask.Utility;
 
 namespace XTask.Logging
 {
-    using System;
-    using System.Collections.Generic;
-    using XTask.Systems.Console;
-    using XTask.Utility;
-
     public class ConsoleLogger : TextTableLogger
     {
         private class ColorLookup : Tuple<WriteStyle, ConsoleColor>
@@ -25,10 +21,10 @@ namespace XTask.Logging
             public ConsoleColor ConsoleColor { get { return Item2; } }
         }
 
-        private static ConsoleLogger s_Instance;
+        private static readonly ConsoleLogger s_Instance;
 
-        private ConsoleColor _baseColor;
-        private List<ColorLookup> _colorTable;
+        private readonly ConsoleColor _baseColor;
+        private readonly List<ColorLookup> _colorTable;
 
         protected ConsoleLogger()
         {

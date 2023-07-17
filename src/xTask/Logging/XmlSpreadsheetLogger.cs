@@ -1,25 +1,21 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.IO;
+using System.Security;
+using System.Text;
 
 namespace XTask.Logging
 {
-    using System;
-    using System.IO;
-    using System.Security;
-    using System.Text;
-
     public class XmlSpreadsheetLogger : Logger, IClipboardSource, IDisposable
     {
         // Excel is super picky about the format of the XML, unable to make XDocument output that made it happy.
 
         private bool _anyData;
 
-        private MemoryStream _stream;
-        private StreamWriter _streamWriter;
+        private readonly MemoryStream _stream;
+        private readonly StreamWriter _streamWriter;
 
         public XmlSpreadsheetLogger()
         {
@@ -35,15 +31,16 @@ namespace XTask.Logging
 
         private void Initialize()
         {
-            _streamWriter.WriteLine(
-@"<?xml version='1.0' encoding='utf-8' standalone='yes'?>
-<?mso-application progid='Excel.Sheet'?>
-<Workbook xmlns='urn:schemas-microsoft-com:office:spreadsheet'
- xmlns:o='urn:schemas-microsoft-com:office:office'
- xmlns:x='urn:schemas-microsoft-com:office:excel'
- xmlns:ss='urn:schemas-microsoft-com:office:spreadsheet'
- xmlns:html='http://www.w3.org/TR/REC-html40'>
- <Worksheet ss:Name='XTaskSheet'>");
+            _streamWriter.WriteLine("""
+                <?xml version='1.0' encoding='utf-8' standalone='yes'?>
+                <?mso-application progid='Excel.Sheet'?>
+                <Workbook xmlns='urn:schemas-microsoft-com:office:spreadsheet'
+                 xmlns:o='urn:schemas-microsoft-com:office:office'
+                 xmlns:x='urn:schemas-microsoft-com:office:excel'
+                 xmlns:ss='urn:schemas-microsoft-com:office:spreadsheet'
+                 xmlns:html='http://www.w3.org/TR/REC-html40'>
+                 <Worksheet ss:Name='XTaskSheet'>
+                """);
         }
 
         public override void Write(ITable table)
@@ -69,15 +66,18 @@ namespace XTask.Logging
         {
             if (!_anyData)
             {
-                return new ClipboardData { Data = null, Format = ClipboardFormat.XmlSpreadsheet };
+                return default;
             }
 
-            _streamWriter.WriteLine(
-@" </Worksheet>
-</Workbook>");
+            _streamWriter.WriteLine("""
+                </Worksheet>
+               </Workbook>
+               """);
             _streamWriter.Flush();
 
-            return new ClipboardData { Data = _stream.GetBuffer(), Format = ClipboardFormat.XmlSpreadsheet };
+            return new ClipboardData(
+                new ArraySegment<byte>(_stream.GetBuffer(), 0, (int)_stream.Length),
+                ClipboardFormat.XmlSpreadsheet);
         }
 
         private void Dispose(bool disposing)

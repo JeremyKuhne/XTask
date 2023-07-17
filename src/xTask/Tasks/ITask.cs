@@ -1,16 +1,12 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Services;
 
 namespace XTask.Tasks
 {
-    using XTask.Services;
-
     /// <summary>
-    /// Standard task interface
+    ///  Standard task interface
     /// </summary>
     public interface ITask : ITypedServiceProvider
     {

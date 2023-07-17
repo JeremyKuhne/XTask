@@ -1,28 +1,24 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using XTask.Utility;
+using XTask.Systems.Configuration;
+using XTask.Systems.File;
 
 namespace XTask.Settings
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using XTask.Utility;
-    using Systems.Configuration;
-    using Systems.File;
-
     /// <summary>
-    /// Argument provider that provides default arguments from IClientSettings
+    ///  Argument provider that provides default arguments from IClientSettings.
     /// </summary>
     public class ArgumentSettingsProvider : IArgumentProvider, IClientSettings
     {
-        private IClientSettings _clientSettings;
-        private IArgumentProvider _argumentProvider;
-        private string _settingsSection;
+        private readonly IClientSettings _clientSettings;
+        private readonly IArgumentProvider _argumentProvider;
+        private readonly string _settingsSection;
 
         protected ArgumentSettingsProvider(string settingsSection, IArgumentProvider argumentProvider, IClientSettings clientSettings)
             : base()
@@ -32,11 +28,17 @@ namespace XTask.Settings
             _clientSettings = clientSettings;
         }
 
-        public static ArgumentSettingsProvider Create(IArgumentProvider argumentProvider, IConfigurationManager configurationManager, IFileService fileService, string settingsSection = null)
+        public static ArgumentSettingsProvider Create(
+            IArgumentProvider argumentProvider,
+            IConfigurationManager configurationManager,
+            IFileService fileService,
+            string settingsSection = null)
         {
             settingsSection = settingsSection ?? Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().MainModule.FileName) + ".Defaults";
-            ArgumentSettingsProvider settingsProvider = new ArgumentSettingsProvider(settingsSection, argumentProvider, ClientSettings.Create(settingsSection, configurationManager, fileService));
-            return settingsProvider;
+            return new ArgumentSettingsProvider(
+                settingsSection,
+                argumentProvider,
+                ClientSettings.Create(settingsSection, configurationManager, fileService));
         }
 
         public bool SaveSetting(SettingsLocation location, string name, string value) { return _clientSettings.SaveSetting(location, name, value); }
@@ -55,11 +57,11 @@ namespace XTask.Settings
 
         public T GetOption<T>(params string[] optionNames)
         {
-            if (optionNames == null || optionNames.Length == 0) { return default(T); }
+            if (optionNames is null || optionNames.Length == 0) { return default; }
 
             // Return the explict setting, if found
             object argumentValue = _argumentProvider.GetOption<object>(optionNames);
-            if (argumentValue != null)
+            if (argumentValue is not null)
             {
                 return Types.ConvertType<T>(argumentValue);
             }

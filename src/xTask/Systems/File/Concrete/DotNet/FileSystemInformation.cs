@@ -1,18 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.IO;
 
 namespace XTask.Systems.File.Concrete.DotNet
 {
-    using System;
-    using System.IO;
-
     public abstract class FileSystemInformation : IFileSystemInformation
     {
-        private FileSystemInfo _fileSystemInfo;
+        private readonly FileSystemInfo _fileSystemInfo;
         protected IFileService FileService { get; private set; }
 
         protected FileSystemInformation(FileSystemInfo fileSystemInfo, IFileService fileService)

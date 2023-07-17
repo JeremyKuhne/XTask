@@ -1,23 +1,19 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using FluentAssertions;
+using NSubstitute;
+using XTask.Systems.File;
+using XTask.Settings;
+using XTask.Utility;
+using Xunit;
+using System.IO;
 
 namespace XTask.Tests.Utility
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reflection;
-    using FluentAssertions;
-    using NSubstitute;
-    using XTask.Systems.File;
-    using XTask.Settings;
-    using XTask.Utility;
-    using Xunit;
-    using System.IO;
-
     public class AssemblyResolverTests
     {
         public class TestAssemblyResolver : AssemblyResolver
@@ -29,15 +25,15 @@ namespace XTask.Tests.Utility
 
             public static TestAssemblyResolver TestCreate(IArgumentProvider arguments, IFileService fileService)
             {
-                TestAssemblyResolver resolver = new TestAssemblyResolver(fileService);
+                TestAssemblyResolver resolver = new(fileService);
                 resolver.Initialize(arguments);
                 return resolver;
             }
 
             public void TestInitialize(IArgumentProvider arguments)
             {
-                this.Initialize(arguments);
-                this.AssemblyResolveFallback += this.TestFallBack_AssemblyResolve;
+                Initialize(arguments);
+                AssemblyResolveFallback += TestFallBack_AssemblyResolve;
             }
 
             public void TestLoadAssemblyFrom(string fullAssembly)
@@ -51,18 +47,18 @@ namespace XTask.Tests.Utility
 
             protected override Assembly LoadAssemblyFrom(string fullAssemblyPath)
             {
-                this.TestLoadAssemblyFrom(fullAssemblyPath);
+                TestLoadAssemblyFrom(fullAssemblyPath);
                 return Assembly.GetExecutingAssembly();
             }
 
             public IEnumerable<string> ResolutionPaths
             {
-                get { return this._resolutionPaths; }
+                get { return _resolutionPaths; }
             }
 
             public IEnumerable<string> AssembliesToResolve
             {
-                get { return this._assembliesToResolve; }
+                get { return _assembliesToResolve; }
             }
 
             public Assembly TestFallBack_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -88,7 +84,7 @@ namespace XTask.Tests.Utility
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
             TestAssemblyResolver testResolver = TestAssemblyResolver.TestCreate(arguments, null);
             ((object)testResolver.Domain_AssemblyResolve(null, new ResolveEventArgs(null))).Should().BeNull();
-            ((object)testResolver.Domain_AssemblyResolve(null, new ResolveEventArgs(String.Empty))).Should().BeNull();
+            ((object)testResolver.Domain_AssemblyResolve(null, new ResolveEventArgs(string.Empty))).Should().BeNull();
         }
 
         [Fact]
@@ -138,7 +134,7 @@ namespace XTask.Tests.Utility
         {
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
             IFileService fileService = Substitute.For<IFileService>();
-            ResolveEventArgs resolveArgs = new ResolveEventArgs("MyDependency");
+            ResolveEventArgs resolveArgs = new("MyDependency");
 
             TestAssemblyResolver testResolver = Substitute.ForPartsOf<TestAssemblyResolver>(fileService);
             testResolver.TestInitialize(arguments);

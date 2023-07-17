@@ -1,17 +1,12 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Systems.File;
 
 namespace XTask.Settings
 {
-    using System;
-    using Systems.File;
-
     /// <summary>
-    /// Standard command line argument parser.
+    ///  Standard command line argument parser.
     /// </summary>
     public class CommandLineParser : ArgumentProvider
     {
@@ -22,7 +17,7 @@ namespace XTask.Settings
 
         public void Parse(string[] arguments)
         {
-            if (arguments == null || arguments.Length == 0) { return; }
+            if (arguments is null || arguments.Length == 0) { return; }
 
             for (int i = 0; i < arguments.Length; i++)
             {

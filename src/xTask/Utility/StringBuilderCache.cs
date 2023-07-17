@@ -1,24 +1,20 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Collections;
+using System.Text;
 
 namespace XTask.Utility
 {
-    using Collections;
-    using System.Text;
-
     /// <summary>
     /// Allows limited reuse of StringBuilders to improve memory pressure
     /// </summary>
     public class StringBuilderCache : Cache<StringBuilder>
     {
-        internal static StringBuilderCache Instance = new StringBuilderCache();
+        internal static StringBuilderCache Instance = new();
 
-        private int _minCapcity;
-        private int _maxCapacity;
+        private readonly int _minCapcity;
+        private readonly int _maxCapacity;
 
         /// <summary>
         /// Create a StringBuilder cache.

@@ -1,29 +1,25 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using System;
+using XTask.Utility;
+using Xunit;
 
 namespace XTask.Tests.Utility
 {
-    using FluentAssertions;
-    using System;
-    using XTask.Utility;
-    using Xunit;
-
     public class StringsTests
     {
         [Fact]
         public void UnderlineNullString()
         {
-            Strings.Underline(null).Should().Be(String.Empty);
+            Strings.Underline(null).Should().Be(string.Empty);
         }
 
         [Fact]
         public void UnderlineEmptyString()
         {
-            Strings.Underline(String.Empty).Should().Be(String.Empty);
+            Strings.Underline(string.Empty).Should().Be(string.Empty);
         }
 
         [Fact]

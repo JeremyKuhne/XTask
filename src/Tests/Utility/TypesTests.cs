@@ -1,16 +1,12 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using XTask.Utility;
+using Xunit;
 
 namespace XTask.Tests.Utility
 {
-    using FluentAssertions;
-    using XTask.Utility;
-    using Xunit;
-
     public class TypesTests
     {
         [Fact]
@@ -63,8 +59,8 @@ namespace XTask.Tests.Utility
         [Fact]
         public void AssignableFrom()
         {
-            Foo foo = new Foo();
-            Bar bar = new Bar();
+            Foo foo = new();
+            Bar bar = new();
 
             Types.ConvertType<Foo>(foo).Should().Be(foo);
             Types.ConvertType<Bar>(bar).Should().Be(bar);

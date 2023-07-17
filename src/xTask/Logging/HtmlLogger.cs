@@ -1,23 +1,19 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Net;
+using System.Text;
+using XTask.Utility;
 
 namespace XTask.Logging
 {
-    using System;
-    using System.Net;
-    using System.Text;
-    using XTask.Utility;
-
     // Before we start using this we would want it to match the RTF formatter exactly.
     // The "rich" logging we're looking for is for Wordpad, Word, Outlook.
     public class HtmlLogger : Logger, IClipboardSource
     {
-        protected StringBuilder _htmlText = new StringBuilder(4096);
-        private int _initialLength;
+        protected StringBuilder _htmlText = new(4096);
+        private readonly int _initialLength;
 
         public HtmlLogger()
         {
@@ -94,28 +90,28 @@ namespace XTask.Logging
         }
 
         public ClipboardData GetClipboardData()
-        {
-            return new ClipboardData { Data = _htmlText.Length > _initialLength ? FormatForClipboard(ToString()) : null, Format = ClipboardFormat.Html };
-        }
+            => _htmlText.Length == _initialLength
+                ? default
+                : new(FormatForClipboard(ToString()).AsMemory(), ClipboardFormat.Html);
 
         // Adapted from Mike Stall's MSDN Blog:
         // http://blogs.msdn.com/b/jmstall/archive/2007/01/21/sample-code-html-clipboard.aspx
 
         /// <summary>
-        /// Wraps an html fragment in the HTML clipboard format
+        ///  Wraps an html fragment in the HTML clipboard format.
         /// </summary>
         /// <param name="htmlFragment">a html fragment</param>
         /// <param name="title">optional title of the HTML document (can be null)</param>
         /// <param name="sourceUrl">optional Source URL of the HTML document, for resolving relative links (can be null)</param>
         protected static string FormatForClipboard(string htmlFragment, string title = null, Uri sourceUrl = null)
         {
-            if (title == null) title = "From Clipboard";
+            title ??= "From Clipboard";
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             // Builds the CF_HTML header. See the format specification here:
-            // http://msdn.microsoft.com/en-us/library/aa767917.aspx
-            // http://msdn.microsoft.com/en-us/library/windows/desktop/ms649015.aspx
+            // http://msdn.microsoft.com/library/aa767917.aspx
+            // http://msdn.microsoft.com/library/windows/desktop/ms649015.aspx
 
             // 10 characters is enough for a GB on the clipboard
             sb.AppendLine("Format:HTML Format");
@@ -131,7 +127,7 @@ namespace XTask.Logging
             // sb.AppendLine("StartSelection:0000000000");
             // sb.AppendLine("EndSelection:0000000000");
 
-            if (sourceUrl != null)
+            if (sourceUrl is not null)
             {
                 sb.AppendFormat("SourceURL:{0}", sourceUrl);
             }

@@ -1,26 +1,21 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using NSubstitute;
+using XTask.Logging;
+using XTask.Tasks;
+using Xunit;
 
 namespace XTask.Tests.Tasks
 {
-    using FluentAssertions;
-    using NSubstitute;
-    using XTask.Logging;
-    using XTask.Tasks;
-    using XTask.Utility;
-    using Xunit;
-
     public class HelpTaskTests
     {
         [Fact]
         public void HelpLogsHelp()
         {
             ITaskRegistry registry = Substitute.For<ITaskRegistry>();
-            HelpTask task = new HelpTask(registry, "GeneralHelp");
+            HelpTask task = new(registry, "GeneralHelp");
 
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             ILoggers loggers = Substitute.For<ILoggers>();

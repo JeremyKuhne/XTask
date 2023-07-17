@@ -1,24 +1,18 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
+using NSubstitute;
+using XTask.Collections;
+using XTask.Logging;
+using XTask.Settings;
+using XTask.Tasks;
+using Xunit;
 
 namespace XTask.Tests.Tasks
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using FluentAssertions;
-    using NSubstitute;
-    using XTask.Collections;
-    using XTask.Logging;
-    using XTask.Settings;
-    using XTask.Tasks;
-    using XTask.Utility;
-    using Xunit;
-
     public class DefaultsTaskTests
     {
         [Fact]
@@ -27,7 +21,7 @@ namespace XTask.Tests.Tasks
             // Ensure we output the location table and all settings when listing settings
 
             // Set up loggers
-            List<ITable> outputTables = new List<ITable>();
+            List<ITable> outputTables = new();
             ILogger logger = Substitute.For<ILogger>();
             logger.Write(Arg.Do<ITable>(x => outputTables.Add(x)));
             ILoggers loggers = Substitute.For<ILoggers>();
@@ -37,7 +31,7 @@ namespace XTask.Tests.Tasks
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             interaction.Loggers.Returns(loggers);
             IArgumentProvider argumentProvider = Substitute.For<IArgumentProvider, IClientSettings>();
-            argumentProvider.GetOption<SettingsLocation?>(StandardOptions.List).Returns(new Nullable<SettingsLocation>(SettingsLocation.Local));
+            argumentProvider.GetOption<SettingsLocation?>(StandardOptions.List).Returns(new SettingsLocation?(SettingsLocation.Local));
             interaction.Arguments.Returns(argumentProvider);
 
             // Prepare the configuration results
@@ -52,7 +46,7 @@ namespace XTask.Tests.Tasks
             };
             ((IClientSettings)argumentProvider).GetAllSettings().Returns(settings);
 
-            DefaultsTask task = new DefaultsTask("Foo");
+            DefaultsTask task = new("Foo");
             task.Execute(interaction).Should().Be(ExitCode.Success);
 
             outputTables.Count.Should().Be(2, "table for locations and table for settings");
@@ -74,7 +68,7 @@ namespace XTask.Tests.Tasks
             // Set up to add settings
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             IArgumentProvider argumentProvider = Substitute.For<IArgumentProvider, IClientSettings>();
-            argumentProvider.GetOption<SettingsLocation?>(StandardOptions.Add).Returns(new Nullable<SettingsLocation>(SettingsLocation.Local));
+            argumentProvider.GetOption<SettingsLocation?>(StandardOptions.Add).Returns(new SettingsLocation?(SettingsLocation.Local));
             interaction.Arguments.Returns(argumentProvider);
 
             argumentProvider.Options.Returns(new Dictionary<string, string>
@@ -84,7 +78,7 @@ namespace XTask.Tests.Tasks
                     { StandardOptions.Remove[0], "three" },
                 });
 
-            DefaultsTask task = new DefaultsTask("Foo");
+            DefaultsTask task = new("Foo");
             task.Execute(interaction).Should().Be(ExitCode.Success);
 
             ((IClientSettings)argumentProvider).DidNotReceiveWithAnyArgs().SaveSetting(SettingsLocation.Local, "", "");
@@ -98,7 +92,7 @@ namespace XTask.Tests.Tasks
             // Set up to add settings
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             IArgumentProvider argumentProvider = Substitute.For<IArgumentProvider, IClientSettings>();
-            argumentProvider.GetOption<SettingsLocation?>(StandardOptions.Add).Returns(new Nullable<SettingsLocation>(SettingsLocation.Local));
+            argumentProvider.GetOption<SettingsLocation?>(StandardOptions.Add).Returns(new SettingsLocation?(SettingsLocation.Local));
             interaction.Arguments.Returns(argumentProvider);
 
             argumentProvider.Options.Returns(new Dictionary<string, string>
@@ -106,7 +100,7 @@ namespace XTask.Tests.Tasks
                     { "Boy", "Howdy" }
                 });
 
-            DefaultsTask task = new DefaultsTask("Foo");
+            DefaultsTask task = new("Foo");
             task.Execute(interaction).Should().Be(ExitCode.Success);
 
             ((IClientSettings)argumentProvider).Received(1).SaveSetting(SettingsLocation.Local, "Boy", "Howdy");
@@ -120,7 +114,7 @@ namespace XTask.Tests.Tasks
             // Set up to add settings
             ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
             IArgumentProvider argumentProvider = Substitute.For<IArgumentProvider, IClientSettings>();
-            argumentProvider.GetOption<SettingsLocation?>(StandardOptions.Remove).Returns(new Nullable<SettingsLocation>(SettingsLocation.Roaming));
+            argumentProvider.GetOption<SettingsLocation?>(StandardOptions.Remove).Returns(new SettingsLocation?(SettingsLocation.Roaming));
             interaction.Arguments.Returns(argumentProvider);
 
             argumentProvider.Options.Returns(new Dictionary<string, string>
@@ -128,7 +122,7 @@ namespace XTask.Tests.Tasks
                     { "Boy", "Howdy" }
                 });
 
-            DefaultsTask task = new DefaultsTask("Foo");
+            DefaultsTask task = new("Foo");
             task.Execute(interaction).Should().Be(ExitCode.Success);
 
             ((IClientSettings)argumentProvider).Received(1).RemoveSetting(SettingsLocation.Roaming, "Boy");

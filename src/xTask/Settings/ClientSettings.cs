@@ -1,23 +1,18 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Collections.Generic;
+using XTask.Systems.File;
+using XTask.Systems.Configuration;
 
 namespace XTask.Settings
 {
-    using System.Collections.Generic;
-    using Services;
-    using Systems.File;
-    using Systems.Configuration;
-
     public class ClientSettings : IClientSettings
     {
-        private Dictionary<SettingsLocation, IClientSettingsView> _settingsViews = new Dictionary<SettingsLocation, IClientSettingsView>();
-        private List<SettingsLocation> _locationPriority = new List<SettingsLocation>();
-        private IConfigurationManager _configurationManager;
-        private IFileService _fileService;
+        private readonly Dictionary<SettingsLocation, IClientSettingsView> _settingsViews = new();
+        private readonly List<SettingsLocation> _locationPriority = new();
+        private readonly IConfigurationManager _configurationManager;
+        private readonly IFileService _fileService;
 
         private ClientSettings(string settingsSection, IConfigurationManager configurationManager, IFileService fileService)
         {
@@ -30,7 +25,7 @@ namespace XTask.Settings
 
         public static ClientSettings Create(string settingsSection, IConfigurationManager configurationManager, IFileService fileService)
         {
-            ClientSettings settings = new ClientSettings(settingsSection, configurationManager, fileService);
+            ClientSettings settings = new(settingsSection, configurationManager, fileService);
             settings.Initialize();
             return settings;
         }
@@ -45,7 +40,7 @@ namespace XTask.Settings
             foreach (SettingsLocation location in locations)
             {
                 IClientSettingsView view = ClientSettingsView.Create(SettingsSection, location, _configurationManager, _fileService);
-                if (view != null)
+                if (view is not null)
                 {
                     _settingsViews.Add(location, ClientSettingsView.Create(SettingsSection, location, _configurationManager, _fileService));
                     _locationPriority.Add(location);
@@ -85,7 +80,7 @@ namespace XTask.Settings
 
         public IEnumerable<ClientSetting> GetAllSettings()
         {
-            List<ClientSetting> settings = new List<ClientSetting>();
+            List<ClientSetting> settings = new();
             foreach (IClientSettingsView view in _settingsViews.Values)
             {
                 settings.AddRange(view.GetAllSettings());
@@ -94,9 +89,6 @@ namespace XTask.Settings
             return settings;
         }
 
-        public string GetConfigurationPath(SettingsLocation location)
-        {
-            return GetConfigurationPath(location);
-        }
+        public string GetConfigurationPath(SettingsLocation location) => GetConfigurationPath(location);
     }
 }

@@ -1,30 +1,26 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace XTask.Utility
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Text.RegularExpressions;
-
     public static class Strings
     {
         // Full format specifiers look like this: { index[,alignment][ :formatString] }
         //  Alignment, when specified, will pad spaces on the left (right aligned, positive) or right (left aligned, negative)
 
-        private static Regex s_NewLineRegex = new Regex(
+        private static readonly Regex s_NewLineRegex = new(
             @"(\r\n|[\r\n]){1,}",
             RegexOptions.CultureInvariant
             | RegexOptions.Compiled
             );
 
-        private static Regex s_WhiteSpaceRegex = new Regex(
+        private static readonly Regex s_WhiteSpaceRegex = new(
             @"\s{1,}|\p{C}{1,}",
             RegexOptions.CultureInvariant
             | RegexOptions.Compiled
@@ -71,14 +67,14 @@ namespace XTask.Utility
         /// </summary>
         public static string FindLeftmostCommonString(params string[] values)
         {
-            if (values == null || values.Length == 0) { return string.Empty; }
+            if (values is null || values.Length == 0) { return string.Empty; }
 
             string leftmost = null;
             foreach (string value in values)
             {
                 if (string.IsNullOrEmpty(value)) { return string.Empty; }
 
-                if (leftmost == null)
+                if (leftmost is null)
                 {
                     leftmost = value;
                     continue;
@@ -108,14 +104,14 @@ namespace XTask.Utility
         /// </summary>
         public static string FindRightmostCommonString(params string[] values)
         {
-            if (values == null || values.Length == 0) { return string.Empty; }
+            if (values is null || values.Length == 0) { return string.Empty; }
 
             string rightmost = null;
             foreach (string value in values)
             {
                 if (string.IsNullOrEmpty(value)) { return string.Empty; }
 
-                if (rightmost == null)
+                if (rightmost is null)
                 {
                     rightmost = value;
                     continue;
@@ -169,7 +165,7 @@ namespace XTask.Utility
             }
 
             int length = value.Length;
-            StringBuilder message = new StringBuilder(length * 2 + 2);   // 2 for crlf
+            StringBuilder message = new(length * 2 + 2);   // 2 for crlf
             message.AppendLine(value);
             message.Append(underlineCharacter, length);
 
@@ -196,7 +192,7 @@ namespace XTask.Utility
         {
             if (string.IsNullOrWhiteSpace(commandLine)) return Enumerable.Empty<string>();
             var args = new List<string>();
-            StringBuilder sb = new StringBuilder(commandLine);
+            StringBuilder sb = new(commandLine);
             sb.Trim();
 
             int argStart = 0;
@@ -270,7 +266,7 @@ namespace XTask.Utility
         {
             if (pointer == IntPtr.Zero) throw new ArgumentNullException(nameof(pointer));
             if (length < 0) throw new ArgumentOutOfRangeException(nameof(length));
-            if (splitCharacters == null || splitCharacters.Length == 0) return Enumerable.Empty<string>();
+            if (splitCharacters is null || splitCharacters.Length == 0) return Enumerable.Empty<string>();
 
             var strings = new List<string>();
             char* start = (char*)pointer;
@@ -310,8 +306,8 @@ namespace XTask.Utility
         /// </summary>
         public static int FindRightmostCommonCount(string first, int firstIndex, string second, int secondIndex, StringComparison comparisonType = StringComparison.Ordinal)
         {
-            if (first == null) throw new ArgumentNullException(nameof(first));
-            if (second == null) throw new ArgumentNullException(nameof(second));
+            if (first is null) throw new ArgumentNullException(nameof(first));
+            if (second is null) throw new ArgumentNullException(nameof(second));
             if (firstIndex < 0 || first.Length - firstIndex < 0) throw new ArgumentOutOfRangeException(nameof(firstIndex));
             if (secondIndex < 0 || second.Length - secondIndex < 0) throw new ArgumentOutOfRangeException(nameof(secondIndex));
 

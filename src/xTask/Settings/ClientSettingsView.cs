@@ -1,24 +1,20 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
+using System.Linq;
+using System.Xml;
+using XTask.Systems.Configuration;
+using XTask.Systems.File;
+using XTask.Utility;
 
 namespace XTask.Settings
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Configuration;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Xml;
-    using XTask.Systems.Configuration;
-    using XTask.Systems.File;
-    using XTask.Utility;
-
     /// <summary>
-    /// Standard IClientSettingsView for accessing .exe.config and user configs
+    ///  Standard IClientSettingsView for accessing .exe.config and user configs
     /// </summary>
     public class ClientSettingsView : IClientSettingsView
     {
@@ -45,7 +41,7 @@ namespace XTask.Settings
         {
             try
             {
-                ClientSettingsView view = new ClientSettingsView(settingsSection, settingsLocation, configurationManager, fileService);
+                ClientSettingsView view = new(settingsSection, settingsLocation, configurationManager, fileService);
                 if (!view.Initialize())
                 {
                     return null;
@@ -71,14 +67,9 @@ namespace XTask.Settings
             // loaded so this isn't a terrible perf issue.)
             IConfiguration configuration = ConfigurationManager.OpenConfiguration(userLevel);
 
-            if (userLevel == ConfigurationUserLevel.None)
-            {
-                return configuration;
-            }
-            else
-            {
-                return ConfigurationManager.OpenConfiguration(configuration.FilePath);
-            }
+            return userLevel == ConfigurationUserLevel.None
+                ? configuration
+                : ConfigurationManager.OpenConfiguration(configuration.FilePath);
         }
 
         protected IConfiguration GetContainingConfigurationIfDifferent()
@@ -87,11 +78,10 @@ namespace XTask.Settings
 
             // Only create this type if we don't match
             string codeBase = typeof(ClientSettingsView).Assembly.CodeBase;
-            Uri codeBaseUri;
-            if (!Uri.TryCreate(codeBase, UriKind.Absolute, out codeBaseUri) || !codeBaseUri.IsFile) { return null; }
+            if (!Uri.TryCreate(codeBase, UriKind.Absolute, out Uri codeBaseUri) || !codeBaseUri.IsFile) { return null; }
 
-            string assemblyConfig = codeBaseUri.LocalPath + ".config";
-            if (!String.Equals(configuration.FilePath, assemblyConfig, StringComparison.OrdinalIgnoreCase)
+            string assemblyConfig = $"{codeBaseUri.LocalPath}.config";
+            if (!string.Equals(configuration.FilePath, assemblyConfig, StringComparison.OrdinalIgnoreCase)
                 && FileService.FileExists(assemblyConfig))
             {
                 // We don't match and exist, go ahead and try to create
@@ -101,54 +91,31 @@ namespace XTask.Settings
             return null;
         }
 
-        protected IConfiguration GetConfiguration(SettingsLocation location)
+        protected IConfiguration GetConfiguration(SettingsLocation location) => location switch
         {
-            switch (location)
-            {
-                case SettingsLocation.Local:
-                    return GetConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal);
-                case SettingsLocation.Roaming:
-                    return GetConfiguration(ConfigurationUserLevel.PerUserRoaming);
-                case SettingsLocation.RunningExecutable:
-                    return GetConfiguration(ConfigurationUserLevel.None);
-                case SettingsLocation.ContainingExecutable:
-                    return GetContainingConfigurationIfDifferent();
-            }
-            return null;
-        }
+            SettingsLocation.Local => GetConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal),
+            SettingsLocation.Roaming => GetConfiguration(ConfigurationUserLevel.PerUserRoaming),
+            SettingsLocation.RunningExecutable => GetConfiguration(ConfigurationUserLevel.None),
+            SettingsLocation.ContainingExecutable => GetContainingConfigurationIfDifferent(),
+            _ => null,
+        };
 
         /// <summary>
-        /// Gets the file path for the given location's configuration file
+        ///  Gets the file path for the given location's configuration file
         /// </summary>
-        public string GetConfigurationPath(SettingsLocation location)
-        {
-            IConfiguration configuration = GetConfiguration(location);
-            if (configuration != null)
-            {
-                return configuration.FilePath;
-            }
-            else
-            {
-                return null;
-            }
-        }
+        public string GetConfigurationPath(SettingsLocation location) => GetConfiguration(location)?.FilePath;
 
         private bool Initialize()
         {
             IConfiguration configuration = GetConfiguration(SettingsLocation);
 
-            if (configuration == null) { return false; }
+            if (configuration is null) { return false; }
 
             _configuration = configuration;
-            IConfigurationSectionGroup userGroup = this._configuration.GetSectionGroup(UserSettingsGroupName);
-            if (userGroup == null)
-            {
-                userGroup = configuration.AddSectionGroup(UserSettingsGroupName);
-            }
+            IConfigurationSectionGroup userGroup = _configuration.GetSectionGroup(UserSettingsGroupName);
+            userGroup ??= configuration.AddSectionGroup(UserSettingsGroupName);
 
-            ClientSettingsSection clientSettings = userGroup.Get(SettingsSection) as ClientSettingsSection;
- 
-            if (clientSettings == null)
+            if (userGroup.Get(SettingsSection) is not ClientSettingsSection clientSettings)
             {
                 clientSettings = new ClientSettingsSection();
                 clientSettings.SectionInformation.AllowExeDefinition = ConfigurationAllowExeDefinition.MachineToLocalUser;
@@ -160,11 +127,7 @@ namespace XTask.Settings
             return true;
         }
 
-        public string GetSetting(string name)
-        {
-            IStringProperty property = SettingToProperty(GetSettingInternal(name));
-            return property == null ? null : property.Value;
-        }
+        public string GetSetting(string name) => SettingToProperty(GetSettingInternal(name))?.Value;
 
         public IEnumerable<ClientSetting> GetAllSettings()
         {
@@ -177,7 +140,7 @@ namespace XTask.Settings
             {
                 SettingElement element = GetSettingInternal(name);
                 XmlNode valueXml = SerializeToXmlElement(value);
-                if (element == null)
+                if (element is null)
                 {
                     element = new SettingElement(name, SettingsSerializeAs.String);
                     _clientSettings.Settings.Add(element);
@@ -200,7 +163,7 @@ namespace XTask.Settings
             try
             {
                 SettingElement element = GetSettingInternal(name);
-                if (element == null) { return true; }
+                if (element is null) { return true; }
 
                 _clientSettings.Settings.Remove(element);
                 _configuration.Save();
@@ -218,7 +181,7 @@ namespace XTask.Settings
         {
             IStringProperty property = SettingToProperty(setting);
 
-            if (property == null)
+            if (property is null)
             {
                 Debug.Fail("Shouldn't be converting a null element to a ClientSetting.");
                 return null;
@@ -231,7 +194,7 @@ namespace XTask.Settings
 
         private static IStringProperty SettingToProperty(SettingElement setting)
         {
-            if (setting == null) { return null; }
+            if (setting is null) { return null; }
             return new StringProperty(setting.Name, XmlEscaper.Unescape(setting.Value.ValueXml.InnerXml));
         }
 
@@ -250,13 +213,10 @@ namespace XTask.Settings
 
         protected static XmlNode SerializeToXmlElement(string serializedValue)
         {
-            XmlDocument doc = new XmlDocument();
+            XmlDocument doc = new();
             XmlElement valueXml = doc.CreateElement("value");
 
-            if (serializedValue == null)
-            {
-                serializedValue = string.Empty;
-            }
+            serializedValue ??= string.Empty;
 
             // We need to escape string serialized values
             serializedValue = XmlEscaper.Escape(serializedValue);
@@ -273,7 +233,7 @@ namespace XTask.Settings
                 }
             }
 
-            if (unwanted != null)
+            if (unwanted is not null)
             {
                 valueXml.RemoveChild(unwanted);
             }

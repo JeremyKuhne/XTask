@@ -1,23 +1,18 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Services;
+using XTask.Tasks;
 
 namespace XTask.Metrics
 {
-    using XTask.Services;
-    using XTask.Tasks;
-    using XTask.Utility;
-
     /// <summary>
-    /// Simple wrapper for tasks to track usage
+    ///  Simple wrapper for tasks to track usage.
     /// </summary>
     public class TrackedTask : ImplementedServiceProvider, IUsageTrackedTask, ITask
     {
-        private IFeatureUsageTracker _usageTracker;
-        private ITask _task;
+        private readonly IFeatureUsageTracker _usageTracker;
+        private readonly ITask _task;
 
         public TrackedTask(ITask task, int featureIdentifier, IFeatureUsageTracker usageTracker)
         {
@@ -32,7 +27,7 @@ namespace XTask.Metrics
         {
             _usageTracker.RecordUsage(TaskFeatureIdentifier);
             ITaskExecutor executor = _task.GetService<ITaskExecutor>();
-            if (executor != null)
+            if (executor is not null)
             {
                 return executor.Execute(interaction);
             }

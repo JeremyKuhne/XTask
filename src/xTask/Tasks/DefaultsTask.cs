@@ -1,27 +1,21 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using XTask.Logging;
+using XTask.Settings;
 
 namespace XTask.Tasks
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Configuration;
-    using System.Globalization;
-    using System.Linq;
-    using XTask.Logging;
-    using XTask.Settings;
-    using XTask.Utility;
-
     /// <summary>
     /// Task for managing defaults
     /// </summary>
     public class DefaultsTask : Task
     {
-        private string _applicationName;
+        private readonly string _applicationName;
         protected override string GeneralHelp { get { return string.Format(CultureInfo.InvariantCulture, XTaskStrings.HelpDefaults, _applicationName); } }
         protected override string OptionDetails { get { return XTaskStrings.HelpDefaultsOptions; } }
 
@@ -32,7 +26,7 @@ namespace XTask.Tasks
 
         protected override ExitCode ExecuteInternal()
         {
-            IClientSettings clientSettings = this.Arguments as IClientSettings;
+            IClientSettings clientSettings = Arguments as IClientSettings;
             SettingsLocation? location;
 
             if ((location = Arguments.GetOption<SettingsLocation?>(StandardOptions.Add)).HasValue)
@@ -93,12 +87,12 @@ namespace XTask.Tasks
         protected virtual ExitCode ChangeSetting(IClientSettings clientSettings, SettingsLocation location, ChangeType changeType)
         {
             // Don't want to save defaults for options that apply directly to this command
-            List<string> settingsToSkip = new List<string>();
+            List<string> settingsToSkip = new();
             settingsToSkip.AddRange(StandardOptions.List);
             settingsToSkip.AddRange(StandardOptions.Add);
             settingsToSkip.AddRange(StandardOptions.Remove);
 
-            foreach (var setting in this.Arguments.Options)
+            foreach (var setting in Arguments.Options)
             {
                 if (settingsToSkip.Contains(setting.Key, StringComparer.OrdinalIgnoreCase)) { continue; }
                 bool success = false;

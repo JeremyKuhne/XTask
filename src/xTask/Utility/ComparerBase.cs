@@ -1,21 +1,17 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Collections.Generic;
 
 namespace XTask.Utility
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// Base class that eases setting up a class of related comparers (like StringComparer)
     /// </summary>
     public abstract class ComparerBase<T> : IComparer<T>, IEqualityComparer<T>
     {
-        private IComparer<T> _comparer;
-        private IEqualityComparer<T> _equalityComparer;
+        private readonly IComparer<T> _comparer;
+        private readonly IEqualityComparer<T> _equalityComparer;
 
         protected ComparerBase(IComparerImplementation implementation)
         {

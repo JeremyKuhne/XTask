@@ -1,26 +1,22 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Systems.Configuration;
+using XTask.Systems.Configuration.Concrete;
+using XTask.Systems.Console;
+using XTask.Systems.Console.Concrete;
+using XTask.Systems.File;
+using XTask.Systems.File.Concrete;
+using XTask.Systems.File.Concrete.Flex;
 
 namespace XTask.Services
 {
-    using Systems.Configuration;
-    using Systems.Configuration.Concrete;
-    using Systems.Console;
-    using Systems.Console.Concrete;
-    using Systems.File;
-    using Systems.File.Concrete;
-    using Systems.File.Concrete.Flex;
-
     /// <summary>
-    /// Flexible services provider
+    ///  Flexible services provider.
     /// </summary>
     public static class FlexServiceProvider
     {
-        private static SimpleServiceProvider _concreteServices;
+        private static readonly SimpleServiceProvider _concreteServices;
 
         static FlexServiceProvider()
         {

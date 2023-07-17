@@ -1,17 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Logging;
+using XTask.Systems.File;
+using XTask.Tasks;
+using System.Linq;
+using XTask.Settings;
 
 namespace XFile.Tasks
 {
-    using XTask.Logging;
-    using XTask.Systems.File;
-    using XTask.Tasks;
-    using System.Linq;
-    using XTask.Settings;
     public class CopyTask : FileTask
     {
         protected override ExitCode ExecuteFileTask()
@@ -63,10 +60,10 @@ namespace XFile.Tasks
             return ExitCode.Success;
         }
 
-        public override string Summary { get { return XFileStrings.CopyTaskSummary; } }
+        public override string Summary => XFileStrings.CopyTaskSummary;
 
-        protected override string OptionDetails { get { return XFileStrings.CopyTaskOptions; } }
+        protected override string OptionDetails => XFileStrings.CopyTaskOptions;
 
-        protected override string GeneralHelp { get { return XFileStrings.CopyTaskHelp; } }
+        protected override string GeneralHelp => XFileStrings.CopyTaskHelp;
     }
 }

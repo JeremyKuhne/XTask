@@ -1,22 +1,18 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace XTask.Tasks
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
     public abstract class TaskRegistry : ITaskRegistry
     {
         private class TaskEntry : ITaskEntry
         {
-            private HashSet<string> _aliases;
-            private Lazy<ITask> _task;
+            private readonly HashSet<string> _aliases;
+            private readonly Lazy<ITask> _task;
 
             public IEnumerable<string> Aliases { get { return _aliases; } }
 
@@ -29,7 +25,7 @@ namespace XTask.Tasks
             }
         }
 
-        private List<TaskEntry> _tasks = new List<TaskEntry>();
+        private readonly List<TaskEntry> _tasks = new();
         private Func<ITask> _defaultTask;
 
         public IEnumerable<ITaskEntry> Tasks { get { return _tasks; } }
@@ -59,7 +55,7 @@ namespace XTask.Tasks
                     }
                 }
 
-                if (_defaultTask != null)
+                if (_defaultTask is not null)
                 {
                     return _defaultTask();
                 }

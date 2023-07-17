@@ -1,27 +1,18 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Collections.Generic;
+
 
 namespace XTask.Settings
 {
-    using System.Collections.Generic;
-
     public class DefaultTypeView : PropertyView
     {
-        private DefaultTypeView(object value)
-        {
-            this.Value = value;
-        }
+        private DefaultTypeView(object value) => Value = value;
 
         public object Value { get; private set; }
 
-        public static IPropertyView Create(object value)
-        {
-            return new DefaultTypeView(value);
-        }
+        public static IPropertyView Create(object value) => new DefaultTypeView(value);
 
         public override IEnumerator<IProperty<object>> GetEnumerator()
         {
@@ -29,9 +20,6 @@ namespace XTask.Settings
             yield break;
         }
 
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
+        public override string ToString() => Value.ToString();
     }
 }

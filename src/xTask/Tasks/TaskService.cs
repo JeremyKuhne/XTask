@@ -1,22 +1,17 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.IO;
 
 namespace XTask.Tasks
 {
-    using System;
-    using System.Diagnostics;
-    using System.IO;
-
     public class TaskService : ITaskService
     {
-        private string _applicationName;
-        private string _generalHelpString;
+        private readonly string _applicationName;
+        private readonly string _generalHelpString;
 
-        private Lazy<SimpleTaskRegistry> _taskRegistry;
+        private readonly Lazy<SimpleTaskRegistry> _taskRegistry;
 
         protected TaskService(
             string generalHelpString = null,

@@ -1,15 +1,10 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Logging;
 
 namespace XTask.Tasks
 {
-    using XTask.Logging;
-    using XTask.Utility;
-
     internal static class TaskExtensions
     {
         /// <summary>
@@ -18,13 +13,13 @@ namespace XTask.Tasks
         internal static T GetOptionDefault<T>(this ITask task, string option)
         {
             ITaskOptionDefaults optionDefaults = task.GetService<ITaskOptionDefaults>();
-            if (optionDefaults != null)
+            if (optionDefaults is not null)
             {
                 return optionDefaults.GetOptionDefault<T>(option);
             }
             else
             {
-                return default(T);
+                return default;
             }
         }
 
@@ -34,7 +29,7 @@ namespace XTask.Tasks
         public static void OutputUsage(this ITask task, ITaskInteraction interaction)
         {
             ITaskDocumentation documentation = task.GetService<ITaskDocumentation>();
-            if (documentation == null)
+            if (documentation is null)
             {
                 interaction.Loggers[LoggerType.Result].WriteLine(WriteStyle.Fixed, XTaskStrings.HelpNone);
             }
@@ -50,7 +45,7 @@ namespace XTask.Tasks
         public static ExitCode Execute(this ITask task, ITaskInteraction interaction)
         {
             ITaskExecutor executor = task.GetService<ITaskExecutor>();
-            if (executor != null)
+            if (executor is not null)
             {
                 return executor.Execute(interaction);
             }

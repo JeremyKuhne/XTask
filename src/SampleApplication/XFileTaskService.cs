@@ -1,17 +1,13 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XFile.Tasks;
+using XTask.Tasks;
 
 namespace XFile
 {
-    using XFile.Tasks;
-    using XTask.Tasks;
-
     /// <summary>
-    /// Example task service
+    ///  Example task service.
     /// </summary>
     public class XFileTaskService : TaskService
     {
@@ -22,7 +18,7 @@ namespace XFile
 
         public static ITaskService Create()
         {
-            XFileTaskService taskService = new XFileTaskService();
+            XFileTaskService taskService = new();
             taskService.Initialize();
             return taskService;
         }

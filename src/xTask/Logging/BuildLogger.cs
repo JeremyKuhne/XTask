@@ -1,17 +1,13 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Build.Framework;
+using System;
 
 namespace XTask.Logging
 {
-    using Microsoft.Build.Framework;
-    using System;
-
     /// <summary>
-    /// Microsoft Build implementation of ILogger.
+    ///  Microsoft Build implementation of ILogger.
     /// </summary>
     public class BuildLogger : TextTableLogger
     {
@@ -19,9 +15,9 @@ namespace XTask.Logging
         // from assemblies with versions in their names (such as Microsoft.Build.Utilities.v4.0.dll)
         // as you cannot retarget from one assembly name to another (v4.0.dll -> v12.0.dll).
 
-        private string _taskName;
+        private readonly string _taskName;
         private bool _hasLoggedErrors;
-        private IBuildEngine _buildEngine;
+        private readonly IBuildEngine _buildEngine;
 
         public BuildLogger(IBuildEngine buildEngine, string taskName)
         {
@@ -56,7 +52,7 @@ namespace XTask.Logging
                     importance = MessageImportance.High;
                 }
 
-                BuildMessageEventArgs message = new BuildMessageEventArgs(
+                BuildMessageEventArgs message = new(
                     message: value,
                     helpKeyword: null,
                     senderName: _taskName,
@@ -68,7 +64,7 @@ namespace XTask.Logging
 
         private void LogWarning(string value)
         {
-            BuildWarningEventArgs warning = new BuildWarningEventArgs(
+            BuildWarningEventArgs warning = new(
                 subcategory: null,
                 code: null,
                 file: _buildEngine.ProjectFileOfTaskNode,
@@ -86,7 +82,7 @@ namespace XTask.Logging
 
         private void LogError(string value)
         {
-            BuildErrorEventArgs error = new BuildErrorEventArgs(
+            BuildErrorEventArgs error = new(
                 subcategory: null,
                 code: null,
                 file: _buildEngine.ProjectFileOfTaskNode,
@@ -103,9 +99,6 @@ namespace XTask.Logging
             _hasLoggedErrors = true;
         }
 
-        protected override int TableWidth
-        {
-            get { return 160; }
-        }
+        protected override int TableWidth => 160;
     }
 }

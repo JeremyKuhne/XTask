@@ -1,23 +1,16 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Tasks;
 
 namespace XFile.Tasks
 {
-    using XTask.Tasks;
-
     public class ChangeDirectoryTask : FileTask
     {
         protected override ExitCode ExecuteFileTask()
         {
             string target = Arguments.Target;
-            if (target == null)
-            {
-                target = ".";
-            }
+            target ??= ".";
 
             string fullPath = ExtendedFileService.GetFinalPath(GetFullPath(target));
 
@@ -27,6 +20,6 @@ namespace XFile.Tasks
             return ExitCode.Success;
         }
 
-        public override string Summary { get { return XFileStrings.ChangeDirectorySummary; } }
+        public override string Summary => XFileStrings.ChangeDirectorySummary;
     }
 }

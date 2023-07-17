@@ -1,8 +1,4 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -26,7 +22,7 @@ namespace XTask.Utility
         /// </exception>
         public static void AppendSubstring(this StringBuilder builder, string value, int startIndex, int length = -1)
         {
-            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (value is null) throw new ArgumentNullException(nameof(value));
             if (startIndex >= value.Length) throw new ArgumentOutOfRangeException(nameof(startIndex));
 
             if (length < 0)
@@ -50,7 +46,7 @@ namespace XTask.Utility
         /// </summary>
         public static bool StartsWithOrdinal(this StringBuilder builder, string value)
         {
-            if (value == null || builder.Length < value.Length) return false;
+            if (value is null || builder.Length < value.Length) return false;
 
             for (int i = 0; i < value.Length; i++)
             {
@@ -101,7 +97,7 @@ namespace XTask.Utility
         public static IEnumerable<string> Split(this StringBuilder builder, params char[] splitCharacters)
         {
             var strings = new List<string>();
-            if (builder.Length == 0 || splitCharacters == null || splitCharacters.Length == 0)
+            if (builder.Length == 0 || splitCharacters is null || splitCharacters.Length == 0)
             {
                 strings.Add(builder.ToString());
                 return strings;

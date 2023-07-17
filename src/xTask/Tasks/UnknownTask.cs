@@ -1,16 +1,10 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Logging;
 
 namespace XTask.Tasks
 {
-    using System;
-    using XTask.Logging;
-    using XTask.Utility;
-
     /// <summary>
     /// Help for unknown commands
     /// </summary>

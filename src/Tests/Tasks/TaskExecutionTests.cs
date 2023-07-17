@@ -1,21 +1,17 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using NSubstitute;
+using System;
+using XTask.Tasks;
+using Xunit;
+using FluentAssertions;
+using System.Collections.Generic;
+using XTask.Settings;
+using XTask.Logging;
 
 namespace XTask.Tests.Tasks
 {
-    using NSubstitute;
-    using System;
-    using XTask.Tasks;
-    using Xunit;
-    using FluentAssertions;
-    using System.Collections.Generic;
-    using XTask.Settings;
-    using XTask.Logging;
-
     public class TaskExecutionTests
     {
         [Fact]
@@ -86,7 +82,7 @@ namespace XTask.Tests.Tasks
 
             public T GetOption<T>(params string[] optionNames)
             {
-                return default(T);
+                return default;
             }
         }
 
@@ -95,11 +91,11 @@ namespace XTask.Tests.Tasks
         [Fact]
         public void TaskIsDisposed()
         {
-            TestArgumentProvider arguments = new TestArgumentProvider();
+            TestArgumentProvider arguments = new();
             arguments.Command = "TaskIsDisposed";
 
-            SimpleTaskRegistry taskRegistry = new SimpleTaskRegistry();
-            TestTask task = new TestTask();
+            SimpleTaskRegistry taskRegistry = new();
+            TestTask task = new();
             taskRegistry.RegisterTask(() => task, "TaskIsDisposed");
 
             TaskExecution execution = Substitute.ForPartsOf<TaskExecution>(arguments, taskRegistry, null);
@@ -109,7 +105,7 @@ namespace XTask.Tests.Tasks
 
         public class TestTaskExecution : TaskExecution
         {
-            private ITaskInteraction interaction;
+            private readonly ITaskInteraction interaction;
 
             public TestTaskExecution(IArgumentProvider argumentProvider, ITaskRegistry taskRegistry, ITaskInteraction interaction)
                 : base(argumentProvider, taskRegistry, null)
@@ -128,9 +124,9 @@ namespace XTask.Tests.Tasks
         {
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
             ITaskRegistry taskRegistry = Substitute.For<ITaskRegistry>();
-            TestTaskInteraction interaction = new TestTaskInteraction { Arguments = arguments };
+            TestTaskInteraction interaction = new() { Arguments = arguments };
 
-            TestTaskExecution execution = new TestTaskExecution(arguments, taskRegistry, interaction);
+            TestTaskExecution execution = new(arguments, taskRegistry, interaction);
             execution.ExecuteTask();
             interaction.DisposeCount.Should().Be(1);
         }

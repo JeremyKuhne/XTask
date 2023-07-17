@@ -1,14 +1,19 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
-using WInterop.Storage;
+using Windows.Win32.Storage.FileSystem;
+using static Windows.Win32.Storage.FileSystem.FILE_FLAGS_AND_ATTRIBUTES;
+
+#if NETFRAMEWORK
+using IO = Microsoft.IO;
+using Microsoft.IO.Enumeration;
+#else
+using IO = System.IO;
+using System.IO.Enumeration;
+#endif
 
 namespace XTask.Systems.File.Concrete.Flex
 {
@@ -19,11 +24,14 @@ namespace XTask.Systems.File.Concrete.Flex
         {
         }
 
-        new static internal IFileSystemInformation Create(ref RawFindData findData, IFileService fileService)
+        new static internal IFileSystemInformation Create(ref FileSystemEntry findData, IFileService fileService)
         {
-            if ((findData.FileAttributes & FileAttributes.Directory) == 0) throw new ArgumentOutOfRangeException(nameof(findData));
+            if (!findData.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+            {
+                throw new ArgumentOutOfRangeException(nameof(findData));
+            }
 
-            var directoryInfo = new DirectoryInformation(fileService);
+            DirectoryInformation directoryInfo = new(fileService);
             directoryInfo.PopulateData(ref findData);
             return directoryInfo;
         }
@@ -37,18 +45,20 @@ namespace XTask.Systems.File.Concrete.Flex
             return directoryInfo;
         }
 
-        new internal static IFileSystemInformation Create(string originalPath, SafeFileHandle fileHandle, FileBasicInformation info, IFileService fileService)
+        new internal static IFileSystemInformation Create(
+            string originalPath,
+            SafeFileHandle fileHandle,
+            FILE_BASIC_INFO info,
+            IFileService fileService)
         {
-            if ((info.FileAttributes & FileAttributes.Directory) == 0) throw new ArgumentOutOfRangeException(nameof(info));
+            if (!((FILE_FLAGS_AND_ATTRIBUTES)info.FileAttributes).HasFlag(FILE_ATTRIBUTE_DIRECTORY))
+            {
+                throw new ArgumentOutOfRangeException(nameof(info));
+            }
 
-            var directoryInfo = new DirectoryInformation(fileService);
+            DirectoryInformation directoryInfo = new(fileService);
             directoryInfo.PopulateData(originalPath, fileHandle, info);
             return directoryInfo;
-        }
-
-        protected override void PopulateData(FindResult findResult, string directory)
-        {
-            base.PopulateData(findResult, directory);
         }
 
         public IEnumerable<IFileSystemInformation> EnumerateChildren(
@@ -58,7 +68,7 @@ namespace XTask.Systems.File.Concrete.Flex
             System.IO.FileAttributes excludeAttributes = System.IO.FileAttributes.Hidden | System.IO.FileAttributes.System | System.IO.FileAttributes.ReparsePoint)
         {
             return EnumerateChildrenInternal(Path,
-                childType, searchPattern, searchOption, unchecked((FileAttributes)excludeAttributes), FileService);
+                childType, searchPattern, searchOption, excludeAttributes, FileService);
         }
 
         internal static IEnumerable<IFileSystemInformation> EnumerateChildrenInternal(
@@ -66,22 +76,27 @@ namespace XTask.Systems.File.Concrete.Flex
             ChildType childType,
             string searchPattern,
             System.IO.SearchOption searchOption,
-            FileAttributes excludeAttributes,
+            System.IO.FileAttributes excludeAttributes,
             IFileService fileService)
         {
-            // We want to be able to see all files as we recurse and open new find handles (that might be over MAX_PATH).
-            // We've already normalized our base directory.
-            string extendedDirectory = Paths.AddExtendedPrefix(directory);
+            if (childType == ChildType.File)
+            {
+                excludeAttributes |= System.IO.FileAttributes.Directory;
+            }
 
-            var transformFilter = new FindTransformFilter(excludeAttributes, fileService);
-            FindOperation<IFileSystemInformation> findOperation = new FindOperation<IFileSystemInformation>(
-                extendedDirectory,
-                searchPattern,
-                recursive: searchOption == System.IO.SearchOption.AllDirectories ? true : false,
-                transformFilter,
-                transformFilter);
-
-            return findOperation;
+            return new FileSystemEnumerable<IFileSystemInformation>(
+                directory,
+                (ref FileSystemEntry entry) => FileSystemInformation.Create(ref entry, fileService),
+                new IO.EnumerationOptions()
+                {
+                    RecurseSubdirectories = searchOption == System.IO.SearchOption.AllDirectories,
+                    AttributesToSkip = excludeAttributes
+                })
+            {
+                ShouldIncludePredicate = (ref FileSystemEntry entry)
+                    => (childType == ChildType.Directory || !entry.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+                        && FileSystemName.MatchesSimpleExpression(searchPattern.AsSpan(), entry.FileName)
+            };
         }
     }
 }

@@ -1,20 +1,16 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Security;
+using Win32 = Microsoft.Win32;
 
 namespace XTask.Utility
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-    using System.Security;
-    using Win32 = Microsoft.Win32;
-
     /// <summary>
     /// Safe registry access routines.
     /// </summary>
@@ -50,20 +46,13 @@ namespace XTask.Utility
             return null;
         }
 
-        protected static Win32.RegistryKey GetHive(RegistryHive hive)
+        protected static Win32.RegistryKey GetHive(RegistryHive hive) => hive switch
         {
-            switch (hive)
-            {
-                case RegistryHive.CurrentUser:
-                    return Win32.Registry.CurrentUser;
-                case RegistryHive.LocalMachine:
-                    return Win32.Registry.LocalMachine;
-                case RegistryHive.DefaultUser:
-                    return Win32.Registry.Users.OpenSubKey(@".DEFAULT");
-                default:
-                    throw new ArgumentOutOfRangeException("hive");
-            }
-        }
+            RegistryHive.CurrentUser => Win32.Registry.CurrentUser,
+            RegistryHive.LocalMachine => Win32.Registry.LocalMachine,
+            RegistryHive.DefaultUser => Win32.Registry.Users.OpenSubKey(@".DEFAULT"),
+            _ => throw new ArgumentOutOfRangeException("hive"),
+        };
 
         /// <summary>
         /// Returns the requested registry value. Will return default if unsuccessful.
@@ -76,7 +65,7 @@ namespace XTask.Utility
         {
             var registrySubkey = OpenSubkey(GetHive(hive), subkeyName);
 
-            if (registrySubkey != null)
+            if (registrySubkey is not null)
             {
                 using (registrySubkey)
                 {
@@ -84,7 +73,7 @@ namespace XTask.Utility
                 }
             }
 
-            return default(T);
+            return default;
         }
 
         private static T RetrieveRegistryValue<T>(Win32.RegistryKey key, string valueName)
@@ -92,17 +81,17 @@ namespace XTask.Utility
             object registryValue = null;
 
             Exception exception = RegistryExceptionWrapper(() => registryValue = key.GetValue(valueName));
-            if (exception != null)
+            if (exception is not null)
             {
                 Debug.WriteLine("Unable to get value '{0}'.  Exception follows: \n{1}", valueName, exception);
             }
 
-            if (registryValue != null)
+            if (registryValue is not null)
             {
                 return Types.ConvertType<T>(registryValue);
             }
 
-            return default(T);
+            return default;
         }
 
         private static Win32.RegistryKey OpenSubkey(Win32.RegistryKey registryKey, string subkeyName, bool writable = false)
@@ -110,7 +99,7 @@ namespace XTask.Utility
             Win32.RegistryKey registrySubkey = null;
 
             Exception exception = RegistryExceptionWrapper(() => registrySubkey = registryKey.OpenSubKey(subkeyName, writable));
-            if (exception != null)
+            if (exception is not null)
             {
                 Debug.WriteLine("Unable to open subkey '{0}'.  Exception follows: \n{1}", subkeyName, exception);
             }
@@ -123,7 +112,7 @@ namespace XTask.Utility
             foreach (string subkeyName in registryKey.GetSubKeyNames())
             {
                 var subkey = OpenSubkey(registryKey, subkeyName);
-                if (subkey != null)
+                if (subkey is not null)
                 {
                     yield return subkey;
                 }
@@ -143,13 +132,13 @@ namespace XTask.Utility
             using (Win32.RegistryKey registryKey = OpenSubkey(GetHive(hive), subkeyName))
             {
                 Exception exception = RegistryExceptionWrapper(() => subkeyNames = registryKey.GetSubKeyNames());
-                if (exception != null)
+                if (exception is not null)
                 {
                     Debug.WriteLine("Unable to get subkey names for key '{0}'.  Exception follows: \n{1}", registryKey.Name, exception);
                 }
             }
 
-            if (subkeyNames != null)
+            if (subkeyNames is not null)
             {
                 return subkeyNames;
             }
@@ -170,10 +159,10 @@ namespace XTask.Utility
         /// <returns>Array of values. Returns null on failure.</returns>
         public static IEnumerable<T> RetrieveAllRegistrySubkeyValues<T>(RegistryHive hive, string subkeyName)
         {
-            List<T> values = new List<T>();
+            List<T> values = new();
             var registrySubkey = OpenSubkey(GetHive(hive), subkeyName);
 
-            if (registrySubkey != null)
+            if (registrySubkey is not null)
             {
                 using (registrySubkey)
                 {
@@ -183,7 +172,7 @@ namespace XTask.Utility
                         {
                             string[] registryValueNames = null;
                             Exception exception = RegistryExceptionWrapper(() => registryValueNames = subSubkey.GetValueNames());
-                            if (exception != null)
+                            if (exception is not null)
                             {
                                 Debug.WriteLine("Unable to get value names for key '{0}'.  Exception follows: \n{1}", subkeyName, exception);
                                 continue;
@@ -193,7 +182,7 @@ namespace XTask.Utility
                             {
                                 object rawValue = RetrieveRegistryValue<object>(subSubkey, registryValueName);
 
-                                if (rawValue != null)
+                                if (rawValue is not null)
                                 {
                                     T value = Types.ConvertType<T>(rawValue);
                                     values.Add(value);
@@ -233,30 +222,30 @@ namespace XTask.Utility
 
             var registrySubkey = OpenSubkey(registryKey, subkeyName, writable: true);
 
-            if (registrySubkey == null)
+            if (registrySubkey is null)
             {
                 // Key not found, now create it
-                if (value == null)
+                if (value is null)
                 {
                     // No point in creating a subkey for a value we're going to delete
                     return true;
                 }
 
                 Exception exception = RegistryExceptionWrapper(() => registrySubkey = registryKey.CreateSubKey(subkeyName));
-                if (exception != null)
+                if (exception is not null)
                 {
                     Debug.WriteLine("Unable to create sub key '{0}'.  Exception follows: \n{1}", subkeyName, exception);
                     return false;
                 }
             }
 
-            if (registrySubkey != null)
+            if (registrySubkey is not null)
             {
                 try
                 {
                     Exception exception = null;
 
-                    if (value == null)
+                    if (value is null)
                     {
                         // Value specified is null- delete
                         exception = RegistryExceptionWrapper(() => registrySubkey.DeleteValue(valueName, false));
@@ -267,7 +256,7 @@ namespace XTask.Utility
                         exception = RegistryExceptionWrapper(() => registrySubkey.SetValue(valueName, value, valueKind));
                     }
 
-                    if (exception != null)
+                    if (exception is not null)
                     {
                         Debug.WriteLine("Unable to set value '{0}'.  Exception follows: \n{1}", valueName, exception);
                         return false;

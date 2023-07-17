@@ -1,20 +1,16 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using FluentAssertions;
+using XTask.Build;
+using XTask.Settings;
+using XTask.Tasks;
+using Xunit;
 
 namespace XTask.Tests.Build
 {
-    using System;
-    using System.Collections.Generic;
-    using FluentAssertions;
-    using XTask.Build;
-    using XTask.Settings;
-    using XTask.Tasks;
-    using Xunit;
-
     public class BuildTaskBridgeTests
     {
         private class TestBuildTaskBridge : BuildTaskBridge
@@ -32,11 +28,11 @@ namespace XTask.Tests.Build
 
         private class TestObjectWithView : PropertyView
         {
-            public Dictionary<string, string> Properties = new Dictionary<string, string>();
+            public Dictionary<string, string> Properties = new();
 
             public override IEnumerator<IProperty<object>> GetEnumerator()
             {
-                foreach (var pair in this.Properties)
+                foreach (var pair in Properties)
                 {
                     yield return new Property(pair.Key, pair.Value);
                 }
@@ -46,8 +42,8 @@ namespace XTask.Tests.Build
         [Fact]
         public void TestOutput()
         {
-            TestBuildTaskBridge bridge = new TestBuildTaskBridge();
-            TestObjectWithView testObject = new TestObjectWithView();
+            TestBuildTaskBridge bridge = new();
+            TestObjectWithView testObject = new();
             testObject.Properties.Add("foo", "bar");
             testObject.Properties.Add("whiz", "bang");
             bridge.HandleOutput(testObject);

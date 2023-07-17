@@ -1,19 +1,15 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
+using XTask.Collections;
+using Xunit;
 
 namespace XTask.Tests.Collections
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using FluentAssertions;
-    using XTask.Collections;
-    using Xunit;
-
     public class EnumerableExtensionsTests
     {
         private bool IsGreaterThanZero(int value)
@@ -25,7 +21,7 @@ namespace XTask.Tests.Collections
         public void WhereNotThrowsOnNullTest()
         {
             IEnumerable<int> source = null;
-            Action action = () => source.WhereNot(this.IsGreaterThanZero);
+            Action action = () => source.WhereNot(IsGreaterThanZero);
             action.Should().Throw<ArgumentNullException>().And.ParamName.Should().Be("source");
 
             source = Enumerable.Empty<int>();
@@ -37,7 +33,7 @@ namespace XTask.Tests.Collections
         public void WhereNotTest()
         {
             int[] source = { -1, 3, 0, 2 };
-            source.WhereNot(this.IsGreaterThanZero).Should().ContainInOrder(-1, 0);
+            source.WhereNot(IsGreaterThanZero).Should().ContainInOrder(-1, 0);
         }
 
         [Fact]

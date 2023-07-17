@@ -1,21 +1,17 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Linq;
+using XTask.Logging;
+using XTask.Systems.File;
+using XTask.Tasks;
 
 namespace XFile.Tasks
 {
-    using System.Linq;
-    using XTask.Logging;
-    using XTask.Systems.File;
-    using XTask.Tasks;
-
     public class DirectoryTask : FileTask
     {
-        const string DefaultTimeFormat = @"MM/dd/yyyy  hh:mm tt";
-        const string DefaultNumberFormat = @"N0";
+        private const string DefaultTimeFormat = @"MM/dd/yyyy  hh:mm tt";
+        private const string DefaultNumberFormat = @"N0";
 
         protected override ExitCode ExecuteFileTask()
         {
@@ -54,17 +50,17 @@ namespace XFile.Tasks
             return ExitCode.Success;
         }
 
-        private void AddToTable(Table table, IFileSystemInformation info)
+        private static void AddToTable(Table table, IFileSystemInformation info)
         {
             table.AddRow
                 (
                     info.LastWriteTime.ToString(DefaultTimeFormat),
                     (info is IDirectoryInformation) ? "<DIR>" : "",
-                    (info is IFileInformation) ? ((IFileInformation)info).Length.ToString(DefaultNumberFormat) : "",
+                    (info is IFileInformation information) ? information.Length.ToString(DefaultNumberFormat) : "",
                     info.Name
                 );
         }
 
-        public override string Summary { get { return XFileStrings.DirectoryTaskSummary; } }
+        public override string Summary => XFileStrings.DirectoryTaskSummary;
     }
 }

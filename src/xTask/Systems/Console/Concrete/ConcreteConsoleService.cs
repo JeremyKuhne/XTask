@@ -1,25 +1,18 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 
 namespace XTask.Systems.Console.Concrete
 {
-    using System;
+    using Console = System.Console;
 
     /// <summary>
-    /// Simple thunk to the System.Console
+    ///  Simple thunk to the System.Console
     /// </summary>
     public class ConcreteConsoleService : IConsoleService
     {
-        private static object s_SyncLock;
-
-        static ConcreteConsoleService()
-        {
-            s_SyncLock = new object();
-        }
+        private static readonly object s_SyncLock = new();
 
         public void Write(string value)
         {
@@ -30,26 +23,20 @@ namespace XTask.Systems.Console.Concrete
             }
         }
 
-        public string ReadLine()
-        {
-            return Console.ReadLine();
-        }
+        public string ReadLine() => Console.ReadLine();
 
         public string Title
         {
-            get { return Console.Title; }
-            set { Console.Title = value; }
+            get => Console.Title;
+            set => Console.Title = value;
         }
 
         public ConsoleColor ForegroundColor
         {
-            get { return Console.ForegroundColor; }
-            set { Console.ForegroundColor = value; }
+            get => Console.ForegroundColor;
+            set => Console.ForegroundColor = value;
         }
 
-        public void ResetColor()
-        {
-            Console.ResetColor();
-        }
+        public void ResetColor() => Console.ResetColor();
     }
 }

@@ -1,20 +1,15 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using XTask.Services;
+using XTask.Settings;
 
 namespace XTask.Tasks
 {
-    using System;
-    using Services;
-    using XTask.Settings;
-    using XTask.Utility;
-
     public abstract class TaskExecution
     {
-        private ITaskRegistry _taskRegistry;
+        private readonly ITaskRegistry _taskRegistry;
 
         protected TaskExecution(IArgumentProvider argumentProvider, ITaskRegistry taskRegistry, ITypedServiceProvider services)
         {

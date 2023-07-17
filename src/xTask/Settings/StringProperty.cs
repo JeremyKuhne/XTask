@@ -1,16 +1,12 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 
 namespace XTask.Settings
 {
-    using System;
-
     /// <summary>
-    /// Simple Tuple compatible IProperty implementation for strings
+    ///  Simple <see cref="Tuple"/> compatible <see cref="IProperty{String}"/> implementation for strings.
     /// </summary>
     public class StringProperty : Tuple<string, string>, IStringProperty
     {
@@ -19,14 +15,8 @@ namespace XTask.Settings
         {
         }
 
-        public string Name
-        {
-            get { return Item1; }
-        }
+        public string Name => Item1;
 
-        public string Value
-        {
-            get { return Item2; }
-        }
+        public string Value => Item2;
     }
 }

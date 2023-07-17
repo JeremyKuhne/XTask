@@ -1,19 +1,15 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using NSubstitute;
+using System;
+using System.IO;
+using XTask.Systems.File;
+using Xunit;
 
 namespace XTask.Tests.Interop
 {
-    using FluentAssertions;
-    using NSubstitute;
-    using System;
-    using System.IO;
-    using XTask.Systems.File;
-    using Xunit;
-
     public class FileServiceExtensionTests
     {
         [Fact]

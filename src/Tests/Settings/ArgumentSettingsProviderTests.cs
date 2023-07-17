@@ -1,18 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Collections.Generic;
+using FluentAssertions;
+using NSubstitute;
+using XTask.Settings;
+using Xunit;
 
 namespace XTask.Tests.Settings
 {
-    using System.Collections.Generic;
-    using FluentAssertions;
-    using NSubstitute;
-    using XTask.Settings;
-    using Xunit;
-
     public class ArgumentSettingsProviderTests
     {
         public class TestArgumentSettingsProvider : ArgumentSettingsProvider
@@ -30,7 +26,7 @@ namespace XTask.Tests.Settings
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
             settings.GetSetting("Foo").Returns("Bar");
 
-            TestArgumentSettingsProvider provider = new TestArgumentSettingsProvider("Section", arguments, settings);
+            TestArgumentSettingsProvider provider = new("Section", arguments, settings);
             IArgumentProvider castArguments = (IArgumentProvider)provider;
             castArguments.GetOption<string>("Foo").Should().Be("Bar");
         }
@@ -43,7 +39,7 @@ namespace XTask.Tests.Settings
             arguments.GetOption<object>("Foo").Returns("NotBar");
             settings.GetSetting("Foo").Returns("Bar");
 
-            TestArgumentSettingsProvider provider = new TestArgumentSettingsProvider("Section", arguments, settings);
+            TestArgumentSettingsProvider provider = new("Section", arguments, settings);
             IArgumentProvider castArguments = (IArgumentProvider)provider;
             castArguments.GetOption<string>("Foo").Should().Be("NotBar");
         }
@@ -54,13 +50,13 @@ namespace XTask.Tests.Settings
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
             arguments.Command.Returns("Command");
             arguments.HelpRequested.Returns(true);
-            Dictionary<string, string> options = new Dictionary<string,string>();
+            Dictionary<string, string> options = new();
             arguments.Options.Returns(options);
             string[] targets = { "Targets" };
             arguments.Targets.Returns(targets);
             arguments.Target.Returns("Target");
 
-            TestArgumentSettingsProvider provider = new TestArgumentSettingsProvider("Section", arguments, Substitute.For<IClientSettings>());
+            TestArgumentSettingsProvider provider = new("Section", arguments, Substitute.For<IClientSettings>());
             IArgumentProvider castArguments = (IArgumentProvider)provider;
             castArguments.Target.Should().Be("Target");
             castArguments.Targets.Should().BeSameAs(targets);
@@ -73,7 +69,7 @@ namespace XTask.Tests.Settings
         public void SaveSettingHitsClientSettings()
         {
             IClientSettings settings = Substitute.For<IClientSettings>();
-            TestArgumentSettingsProvider provider = new TestArgumentSettingsProvider("Section", null, settings);
+            TestArgumentSettingsProvider provider = new("Section", null, settings);
             provider.SaveSetting(SettingsLocation.Local, "Foo", "Bar");
             settings.Received(1).SaveSetting(SettingsLocation.Local, "Foo", "Bar");
         }
@@ -82,7 +78,7 @@ namespace XTask.Tests.Settings
         public void RemoveSettingHitsClientSettings()
         {
             IClientSettings settings = Substitute.For<IClientSettings>();
-            TestArgumentSettingsProvider provider = new TestArgumentSettingsProvider("Section", null, settings);
+            TestArgumentSettingsProvider provider = new("Section", null, settings);
             provider.RemoveSetting(SettingsLocation.Local, "Foo");
             settings.Received(1).RemoveSetting(SettingsLocation.Local, "Foo");
         }
@@ -91,7 +87,7 @@ namespace XTask.Tests.Settings
         public void GetSettingHitsClientSettings()
         {
             IClientSettings settings = Substitute.For<IClientSettings>();
-            TestArgumentSettingsProvider provider = new TestArgumentSettingsProvider("Section", null, settings);
+            TestArgumentSettingsProvider provider = new("Section", null, settings);
             provider.GetSetting("Foo");
             settings.Received(1).GetSetting("Foo");
         }
@@ -100,7 +96,7 @@ namespace XTask.Tests.Settings
         public void GetAllSettingsHitsClientSettings()
         {
             IClientSettings settings = Substitute.For<IClientSettings>();
-            TestArgumentSettingsProvider provider = new TestArgumentSettingsProvider("Section", null, settings);
+            TestArgumentSettingsProvider provider = new("Section", null, settings);
             provider.GetAllSettings();
             settings.Received(1).GetAllSettings();
         }
@@ -109,7 +105,7 @@ namespace XTask.Tests.Settings
         public void GetConfigurationPathHitsClientSettings()
         {
             IClientSettings settings = Substitute.For<IClientSettings>();
-            TestArgumentSettingsProvider provider = new TestArgumentSettingsProvider("Section", null, settings);
+            TestArgumentSettingsProvider provider = new("Section", null, settings);
             provider.GetConfigurationPath(SettingsLocation.Local);
             settings.Received(1).GetConfigurationPath(SettingsLocation.Local);
         }

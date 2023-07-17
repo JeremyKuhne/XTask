@@ -1,22 +1,18 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.IO;
+using XTask.Systems.File;
+using XTask.Systems.File.Concrete;
+using Concrete = XTask.Systems.File.Concrete;
 
 namespace XTask.Tests.Support
 {
-    using System.IO;
-    using Systems.File;
-    using Systems.File.Concrete;
-    using Concrete = Systems.File.Concrete;
-
     public class TestFileCleaner : FileCleaner
     {
-        bool _useDotNet;
+        private readonly bool _useDotNet;
 
-        private static IExtendedFileService _extendedFileService = new ExtendedFileService();
+        private static readonly IExtendedFileService _extendedFileService = new ExtendedFileService();
 
         public TestFileCleaner(bool useDotNet = false)
             : base ("XTaskTests", useDotNet ? (IFileService) new Concrete.DotNet.FileService() : new Concrete.Flex.FileService(_extendedFileService))

@@ -1,20 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using NSubstitute;
+using XTask.Logging;
+using Xunit;
 
 namespace XTask.Tests.Logging
 {
-    using System;
-    using System.Collections.Generic;
-    using FluentAssertions;
-    using NSubstitute;
-    using XTask;
-    using XTask.Logging;
-    using Xunit;
-
     public class ConsoleLoggerTests
     {
         public abstract class TestConsoleLogger : ConsoleLogger
@@ -26,14 +20,14 @@ namespace XTask.Tests.Logging
 
             protected override void WriteColor(ConsoleColor color, string value)
             {
-                this.TestWriteColor(color, value);
+                TestWriteColor(color, value);
             }
 
             public abstract void TestWriteColor(ConsoleColor color, string value);
         }
 
         [Theory,
-            MemberData("ColorData")]
+            MemberData(nameof(ColorData))]
         public void ColorsAreAsExpected(WriteStyle style, ConsoleColor expected)
         {
             TestConsoleLogger logger = Substitute.ForPartsOf<TestConsoleLogger>();

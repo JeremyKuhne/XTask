@@ -1,21 +1,17 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using XTask.Systems.File;
+using XTask.Utility;
 
 namespace XTask.Settings
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using XTask.Systems.File;
-    using XTask.Utility;
-
     /// <summary>
-    /// Base implementation of IArgumentProvider functionality.
+    ///  Base implementation of IArgumentProvider functionality.
     /// </summary>
     public abstract class ArgumentProvider : IArgumentProvider
     {
@@ -26,16 +22,13 @@ namespace XTask.Settings
         public const char MulitpleValueDelimiter = ';';
         private const char FileOptionDelimiter = '@';
 
-        private Dictionary<string, string> _options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        private List<string> _targets = new List<string>();
+        private readonly Dictionary<string, string> _options = new(StringComparer.OrdinalIgnoreCase);
+        private readonly List<string> _targets = new();
         private string _command;
 
         protected IFileService FileService { get; private set; }
 
-        public ArgumentProvider(IFileService fileService)
-        {
-            FileService = fileService;
-        }
+        public ArgumentProvider(IFileService fileService) => FileService = fileService;
 
         protected void AddTarget(string target)
         {
@@ -50,7 +43,7 @@ namespace XTask.Settings
                     return;
             }
 
-            if (_command == null) _command = target.Trim();
+            if (_command is null) _command = target.Trim();
             else _targets.Add(target.Trim());
         }
 
@@ -88,7 +81,7 @@ namespace XTask.Settings
             if (!FileService.FileExists(path))
                 throw new TaskArgumentException(XTaskStrings.ErrorFileNotFound, path);
 
-            // (Somewhat akward, but cannot yield within a try with catch block)
+            // (Somewhat awkward, but cannot yield within a try with catch block)
 
             IEnumerator<string> lineEnumerator = FileService.ReadLines(path).GetEnumerator();
 
@@ -129,7 +122,7 @@ namespace XTask.Settings
             if (string.IsNullOrWhiteSpace(value) || value[0] != FileOptionDelimiter) return value;
 
             // Input file argument
-            StringBuilder output = new StringBuilder();
+            StringBuilder output = new();
 
             // File name, load lines
             foreach (string line in ReadFileLines(value))
@@ -144,7 +137,7 @@ namespace XTask.Settings
             }
 
             // Trim off the last ';'
-            output.Length = output.Length - 1;
+            output.Length--;
             return output.ToString();
         }
 
@@ -174,7 +167,7 @@ namespace XTask.Settings
             get
             {
                 // Call the getter to initialize if necessary
-                string target = Target;
+                _ = Target;
                 return _targets.ToArray();
             }
         }
@@ -228,12 +221,6 @@ namespace XTask.Settings
             return Types.ConvertType<T>(optionValue);
         }
 
-        public IReadOnlyDictionary<string, string> Options
-        {
-            get
-            {
-                return new Dictionary<string, string>(_options);
-            }
-        }
+        public IReadOnlyDictionary<string, string> Options => new Dictionary<string, string>(_options);
     }
 }

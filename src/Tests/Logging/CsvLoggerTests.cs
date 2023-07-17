@@ -1,25 +1,23 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.IO;
+using System.Text;
+using FluentAssertions;
+using XTask.Logging;
+using Xunit;
 
 namespace XTask.Tests.Logging
 {
-    using System.IO;
-    using FluentAssertions;
-    using XTask.Logging;
-    using Xunit;
-
     public class CsvLoggerTests
     {
         [Fact]
         public void StandardWriteDoesNotLog()
         {
-            CsvLogger logger = new CsvLogger();
+            CsvLogger logger = new();
             logger.Write("Foo");
-            logger.GetClipboardData().Data.Should().BeNull();
+            logger.GetClipboardData().HasData.Should().BeFalse();
         }
 
         [Fact]
@@ -29,12 +27,11 @@ namespace XTask.Tests.Logging
             table.AddRow("One", "Two");
             table.AddRow("Three", "Four");
 
-            CsvLogger logger = new CsvLogger();
+            CsvLogger logger = new();
             logger.Write(table);
-            Stream stream = logger.GetClipboardData().Data as Stream;
-            stream.Position = 0;
-            StreamReader reader = new StreamReader(stream);
-            reader.ReadToEnd().Should().Be("\"One\",\"Two\"\r\n\"Three\",\"Four\"\r\n");
+            ClipboardData data = logger.GetClipboardData();
+            data.Format.Should().Be(ClipboardFormat.CommaSeparatedValues);
+            Encoding.ASCII.GetString(data.ByteData.ToArray()).Should().Be("\"One\",\"Two\"\r\n\"Three\",\"Four\"\r\n");
         }
     }
 }

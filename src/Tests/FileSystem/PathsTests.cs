@@ -1,45 +1,16 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using System;
+using System.Text;
+using XTask.Systems.File;
+using Xunit;
 
 namespace XTask.Tests.FileSystem
 {
-    using FluentAssertions;
-    using System;
-    using System.Text;
-    using XTask.Systems.File;
-    using Xunit;
-
     public class PathsTests
     {
-        static string[] TestPaths =
-        {
-            @"C:", @"C:Foo", @"C:\", @"C:\Foo", @"C", @"@:", @"[:", @"Foo", @"\", @"\Foo", @"/", @"/\", @"\\Foo\Bar", @"\\Foo\Bar\", @"\\?\\Foo\Bar",
-            @"\\?\Foo\Bar", @"\\?\Foo\Bar\", @"\\?\UNC\\Foo\Bar", @"\\?\UNC\\", @"\\?\UNC\a\", @"\\?\UNC\a\\", @"\\?\UNC\a\b", @"\\?\UNC\Foo\Bar",
-            @"\\?\UNC\Foo\Bar\", @"", @":", @"\\?\C:", @"\\?\@:\", @"\\?\[:\", @"\\?\C:\", @"\\?\C:\Foo", @"\\.psf\Home\", @"\\.", @"\\a\b", @"\\\",
-            @"\\a\", @"\\a\\", @"\\.\"
-        };
-
-        public void PathFormatPerf()
-        {
-            string[] testPaths = PathsTests.TestPaths;
-            const int times = 10000000;
-            int root;
-            DateTime start = DateTime.Now;
-            for (int i = 0; i < times; i++)
-            {
-                for (int j = 0; j < testPaths.Length; j++)
-                {
-                    Paths.GetPathFormat(testPaths[j], out root);
-                }
-            }
-            DateTime end = DateTime.Now;
-            var elapsed = end - start;
-        }
-
         [Theory,
             InlineData("", true),
             InlineData("C:", true),
@@ -259,7 +230,7 @@ namespace XTask.Tests.FileSystem
         {
             Paths.Combine(first, second).Should().Be(expected);
 
-            StringBuilder sb = new StringBuilder(first);
+            StringBuilder sb = new(first);
             Paths.Combine(sb, second);
             sb.ToString().Should().Be(expected);
         }

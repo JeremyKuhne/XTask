@@ -1,15 +1,11 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Linq;
 
 namespace XTask.Logging
 {
-    using System;
-    using System.Linq;
-
     public struct ColumnFormat
     {
         public int Width { get; set; }
@@ -24,7 +20,7 @@ namespace XTask.Logging
         }
 
         /// <summary>
-        /// Construct a simple format array of relative column widths, forcing the first to be visible if possible
+        ///  Construct a simple format array of relative column widths, forcing the first to be visible if possible.
         /// </summary>
         public static ColumnFormat[] FromWidths(params int[] widths)
         {
@@ -32,7 +28,7 @@ namespace XTask.Logging
         }
 
         /// <summary>
-        /// Construct a simple format array of x columns of equivalent width, forcing the first to be visible if possible
+        ///  Construct a simple format array of x columns of equivalent width, forcing the first to be visible if possible.
         /// </summary>
         public static ColumnFormat[] FromCount(int columns)
         {
@@ -53,9 +49,9 @@ namespace XTask.Logging
         }
 
         /// <summary>
-        /// Scale the widths given in the column specification to split up the specified full width as evenly as possible
+        ///  Scale the widths given in the column specification to split up the specified full width as evenly as possible.
         /// </summary>
-        /// <exception cref="System.ArgumentOutOfRangeException">Thrown if the width is smaller than the number of columns</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the width is smaller than the number of columns</exception>
         public static int[] ScaleColumnWidths(int fullWidth, ColumnFormat[] columnFormats)
         {
             fullWidth = Math.Abs(fullWidth);

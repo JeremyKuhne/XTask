@@ -1,34 +1,30 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using XTask.Services;
+using XTask.Settings;
+using XTask.Systems.Configuration;
+using XTask.Systems.File;
+using XTask.Tasks;
 
 namespace XFile
 {
-    using System;
-    using XTask.Services;
-    using XTask.Settings;
-    using XTask.Systems.Configuration;
-    using XTask.Systems.File;
-    using XTask.Tasks;
-
-    class Program
+    internal class Program
     {
         [STAThread] // Need to be STA to use OLE (clipboard) and WPF
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
             ExitCode result = ExitCode.GeneralFailure;
 
-            CommandLineParser parser = new CommandLineParser(FlexServiceProvider.Services.GetService<IFileService>());
+            CommandLineParser parser = new(FlexServiceProvider.Services.GetService<IFileService>());
             parser.Parse(args);
 
             IArgumentProvider argumentProvider = ArgumentSettingsProvider.Create(parser, FlexServiceProvider.Services.GetService<IConfigurationManager>(), FlexServiceProvider.Services.GetService<IFileService>());
 
             using (ITaskService taskService = XFileTaskService.Create())
             {
-                ConsoleTaskExecution execution = new ConsoleTaskExecution(argumentProvider, taskService.TaskRegistry);
+                ConsoleTaskExecution execution = new(argumentProvider, taskService.TaskRegistry);
                 result = execution.ExecuteTask();
             }
 

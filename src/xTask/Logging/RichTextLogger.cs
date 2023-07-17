@@ -1,17 +1,13 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text;
 
 namespace XTask.Logging
 {
-    using System;
-    using System.Globalization;
-    using System.IO;
-    using System.Text;
-
     public class RichTextLogger : Logger, IClipboardSource
     {
         // Standard typography measurements:
@@ -24,8 +20,8 @@ namespace XTask.Logging
         private const string DoubleFontSize = "22";
         private const int TwipsPerPoint = 20;
 
-        protected StringBuilder _richText = new StringBuilder(4096);
-        private StringBuilder _escaper = new StringBuilder();
+        protected StringBuilder _richText = new(4096);
+        private readonly StringBuilder _escaper = new();
         private bool _priorControlCharacter = true;
 
         protected override void WriteInternal(WriteStyle style, string value)
@@ -155,7 +151,7 @@ namespace XTask.Logging
             //   \trpaddr120   // Cell right padding
             //   \trpaddfl3    // Left padding unit is twips
             //   \trpaddfr3    // Right padding unit is twips
-            StringBuilder rowHeader = new StringBuilder(128);
+            StringBuilder rowHeader = new(128);
 
             rowHeader.AppendFormat(@"{{\trowd\trgaph{0}\trrh-{1}\trpaddl{0}\trpaddr{0}\trpaddfl3\trpaddfr3",
                 FontSize / 2 * TwipsPerPoint,      // Padding of half the font size
@@ -217,9 +213,7 @@ namespace XTask.Logging
         }
 
         public ClipboardData GetClipboardData()
-        {
-            return new ClipboardData { Data = _richText.Length > 0 ? ToString() : null, Format = ClipboardFormat.RichText };
-        }
+            => _richText.Length == 0 ? default : new(ToString().AsMemory(), ClipboardFormat.RichText);
 
         private string GetHeader()
         {

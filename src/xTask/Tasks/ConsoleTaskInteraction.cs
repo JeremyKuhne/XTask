@@ -1,18 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using XTask.Services;
+using System;
+using System.Collections.Generic;
+using XTask.Logging;
+using XTask.Settings;
 
 namespace XTask.Tasks
 {
-    using Services;
-    using System;
-    using System.Collections.Generic;
-    using XTask.Logging;
-    using XTask.Settings;
-
     public sealed class ConsoleTaskInteraction : TaskInteraction, IDisposable
     {
         private Lazy<ConsoleTaskLoggers> _loggers;
@@ -36,10 +32,10 @@ namespace XTask.Tasks
         private sealed class ConsoleTaskLoggers : Loggers, IDisposable
         {
             private RichTextLogger _richTextLogger;
-            private TextLogger _textLogger;
-            private CsvLogger _csvLogger;
-            private XmlSpreadsheetLogger _spreadsheetLogger;
-            private AggregatedLogger _aggregatedLogger;
+            private readonly TextLogger _textLogger;
+            private readonly CsvLogger _csvLogger;
+            private readonly XmlSpreadsheetLogger _spreadsheetLogger;
+            private readonly AggregatedLogger _aggregatedLogger;
 
             public ConsoleTaskLoggers(ITask task, IArgumentProvider arguments)
             {
@@ -68,9 +64,9 @@ namespace XTask.Tasks
 
             public void Dispose()
             {
-                if (_aggregatedLogger != null)
+                if (_aggregatedLogger is not null)
                 {
-                    List<ClipboardData> allData = new List<ClipboardData>
+                    List<ClipboardData> allData = new()
                     {
                         _richTextLogger.GetClipboardData(),
                         _textLogger.GetClipboardData(),

@@ -1,8 +1,4 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace XTask.Tasks
@@ -16,17 +12,17 @@ namespace XTask.Tasks
     // metadata associated with the task in/on the task class itself for ease of maintenance.
 
     /// <summary>
-    /// Standard task help interface
+    ///  Standard task help interface
     /// </summary>
     public interface ITaskDocumentation
     {
         /// <summary>
-        /// Get the brief description for use in task lists
+        ///  Get the brief description for use in task lists
         /// </summary>
         string Summary { get; }
 
         /// <summary>
-        /// Get the full usage documentation
+        ///  Get the full usage documentation
         /// </summary>
         void GetUsage(ITaskInteraction interaction);
     }

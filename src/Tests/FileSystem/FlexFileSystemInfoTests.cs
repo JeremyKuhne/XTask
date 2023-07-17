@@ -1,20 +1,14 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using System.IO;
+using XTask.Systems.File;
+using Xunit;
+using XTask.Services;
 
 namespace XTask.Tests.FileSystem
 {
-    using FluentAssertions;
-    using System.IO;
-    using Systems.File;
-    using Systems.File.Concrete.Flex;
-    using Systems.File.Concrete;
-    using Xunit;
-    using XTask.Services;
-
     public class FlexFileSystemInfoTests
     {
         [Theory,

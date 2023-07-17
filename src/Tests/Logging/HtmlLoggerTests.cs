@@ -1,33 +1,29 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using FluentAssertions;
+using XTask.Logging;
+using Xunit;
 
 namespace XTask.Tests.Logging
 {
-    using FluentAssertions;
-    using XTask.Logging;
-    using Xunit;
-
     public class HtmlLoggerTests
     {
         private class TestHtmlLogger : HtmlLogger
         {
             public string HtmlTextBuffer
             {
-                get { return this._htmlText.ToString(); }
+                get { return _htmlText.ToString(); }
             }
 
             public void TestAppendFormatedString(WriteStyle style, string value)
             {
-                this.AppendFormatedString(style, value);
+                AppendFormatedString(style, value);
             }
 
             public string ToClipboardString()
             {
-                return HtmlLogger.FormatForClipboard(this.ToString());
+                return HtmlLogger.FormatForClipboard(ToString());
             }
         }
 
@@ -42,7 +38,7 @@ namespace XTask.Tests.Logging
             InlineData(WriteStyle.Fixed, @"Foo", @"<pre>Foo</pre>")]
         public void TestFormatting(WriteStyle style, string value, string expected)
         {
-            TestHtmlLogger logger = new TestHtmlLogger();
+            TestHtmlLogger logger = new();
             logger.TestAppendFormatedString(style, value);
             logger.HtmlTextBuffer.Should().EndWith(expected);
         }
@@ -59,7 +55,7 @@ namespace XTask.Tests.Logging
                 "EndFragment:0000000422\r\n" +
                 "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\"><HTML><HEAD><TITLE>From Clipboard</TITLE></HEAD><BODY><!--StartFragment-->" +
                 "<div style='font-size:11.0pt;font-family:Calibri,sans-serif><span style='font-size:11.0pt;font-family:Calibri,sans-serif;white-space:pre'>TestString</span></div><!--EndFragment--></BODY></HTML>";
-            TestHtmlLogger logger = new TestHtmlLogger();
+            TestHtmlLogger logger = new();
             logger.Write("TestString");
             logger.ToClipboardString().Should().Be(expected);
         }
@@ -74,7 +70,7 @@ namespace XTask.Tests.Logging
                 new ColumnFormat(1, ContentVisibility.Default, Justification.Centered));
 
             testTable.AddRow("one", "two", "three");
-            TestHtmlLogger logger = new TestHtmlLogger();
+            TestHtmlLogger logger = new();
             logger.Write(testTable);
         }
     }

@@ -1,20 +1,15 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.IO;
+using System.Xml;
+using XTask.Systems.File;
+using XTask.Settings;
 
 namespace XTask.Build
 {
-    using System;
-    using System.IO;
-    using System.Xml;
-    using Systems.File;
-    using XTask.Settings;
-
     /// <summary>
-    /// Argument parser for Microsoft Build formatted arguments
+    ///  Argument parser for Microsoft Build formatted arguments.
     /// </summary>
     public class BuildArgumentParser : ArgumentProvider
     {
@@ -22,7 +17,7 @@ namespace XTask.Build
             : base (fileService)
         {
             AddTarget(taskName);
-            if (targets != null)
+            if (targets is not null)
             {
                 foreach (string target in targets)
                     AddTarget(target);
@@ -31,21 +26,19 @@ namespace XTask.Build
             if (string.IsNullOrWhiteSpace(options)) { return; }
 
             // Options are in xml format <Option>value</Option> or <Option/> for default
-            XmlReaderSettings settings = new XmlReaderSettings
+            XmlReaderSettings settings = new()
             {
                 ConformanceLevel = ConformanceLevel.Fragment
             };
 
-            using (XmlReader reader = XmlReader.Create(new StringReader(options), settings))
+            using XmlReader reader = XmlReader.Create(new StringReader(options), settings);
+            while (reader.Read())
             {
-                while (reader.Read())
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if (reader.NodeType == XmlNodeType.Element)
-                    {
-                        AddOrUpdateOption(
-                            optionName: reader.Name,
-                            optionValue: reader.ReadString());
-                    }
+                    AddOrUpdateOption(
+                        optionName: reader.Name,
+                        optionValue: reader.ReadString());
                 }
             }
         }

@@ -1,8 +1,4 @@
-﻿// ----------------------
-//    xTask Framework
-// ----------------------
-
-// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using FluentAssertions;
@@ -19,7 +15,7 @@ namespace XTask.Tests.FileSystem
         public void CreateInfoForRootDrive()
         {
             string driveRoot = Paths.GetRoot(Path.GetTempPath());
-            FileService fileService = new FileService();
+            FileService fileService = new();
 
             var info = fileService.GetPathInfo(driveRoot);
             info.Should().BeAssignableTo<IDirectoryInformation>();
