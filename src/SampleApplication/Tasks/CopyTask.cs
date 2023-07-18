@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using XTask.Logging;
-using XTask.Systems.File;
-using XTask.Tasks;
-using System.Linq;
 using XTask.Settings;
 
 namespace XFile.Tasks;

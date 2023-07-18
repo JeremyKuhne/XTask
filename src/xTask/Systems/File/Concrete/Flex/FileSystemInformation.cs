@@ -4,7 +4,6 @@
 using Microsoft.Win32.SafeHandles;
 using Windows.Win32.Storage.FileSystem;
 using static Windows.Win32.Storage.FileSystem.FILE_FLAGS_AND_ATTRIBUTES;
-using System;
 
 #if NETFRAMEWORK
 using IO = Microsoft.IO;

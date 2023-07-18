@@ -4,7 +4,6 @@
 #nullable enable
 
 using Microsoft.Win32.SafeHandles;
-using System;
 using Windows.Support;
 using Windows.Win32;
 using Windows.Win32.Foundation;

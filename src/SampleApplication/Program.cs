@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using XTask.Services;
 using XTask.Settings;
 using XTask.Systems.Configuration;
-using XTask.Systems.File;
-using XTask.Tasks;
 
 namespace XFile;
 

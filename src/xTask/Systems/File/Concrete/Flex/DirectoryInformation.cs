@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Win32.SafeHandles;
-using System;
-using System.Collections.Generic;
 using Windows.Win32.Storage.FileSystem;
 using static Windows.Win32.Storage.FileSystem.FILE_FLAGS_AND_ATTRIBUTES;
 

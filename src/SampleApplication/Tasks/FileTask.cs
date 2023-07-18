@@ -1,13 +1,6 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using XTask.Logging;
-using XTask.Systems.Console;
-using XTask.Systems.File;
-using XTask.Tasks;
-using XTask.Utility;
-
 namespace XFile.Tasks;
 
 public abstract class FileTask : Task

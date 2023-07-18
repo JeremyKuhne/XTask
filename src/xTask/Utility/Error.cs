@@ -3,13 +3,11 @@
 
 #nullable enable
 
-using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Diagnostics.Debug;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using XTask.Systems.File;
 using System.ComponentModel;

@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FluentAssertions;
 using XTask.Systems.File;
 using XTask.Settings;
-using Xunit;
 using XTask.Tests.Support;
 
 namespace XTask.Tests.Utility;

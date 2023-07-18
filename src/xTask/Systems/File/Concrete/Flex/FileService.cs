@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 using static Windows.Win32.Storage.FileSystem.FILE_FLAGS_AND_ATTRIBUTES;

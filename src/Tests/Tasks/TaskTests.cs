@@ -3,7 +3,6 @@
 
 using NSubstitute;
 using XTask.Tasks;
-using Xunit;
 
 namespace XTask.Tests.Tasks;
 

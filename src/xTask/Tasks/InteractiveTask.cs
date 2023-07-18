@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using XTask.Settings;
-using System;
-using System.Linq;
 using XTask.Systems.Console;
 using XTask.Systems.File;
 using XTask.Systems.Configuration;

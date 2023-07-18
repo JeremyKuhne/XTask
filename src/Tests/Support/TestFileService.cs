@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using NSubstitute;
-using System;
 using System.IO;
-using System.Text;
 using XTask.Systems.File;
 
 namespace XTask.Tests.Support;

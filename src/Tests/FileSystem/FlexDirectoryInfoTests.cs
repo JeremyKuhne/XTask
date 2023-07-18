@@ -2,10 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.IO;
-using System.Linq;
-using FluentAssertions;
 using XTask.Systems.File;
-using Xunit;
 using XTask.Tests.Support;
 
 namespace XTask.Tests.FileSystem;

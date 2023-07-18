@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 
 namespace Windows.Support;
 
