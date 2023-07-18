@@ -9,25 +9,24 @@ using XTask.Systems.File;
 using XTask.Systems.File.Concrete;
 using XTask.Systems.File.Concrete.Flex;
 
-namespace XTask.Services
+namespace XTask.Services;
+
+/// <summary>
+///  Flexible services provider.
+/// </summary>
+public static class FlexServiceProvider
 {
-    /// <summary>
-    ///  Flexible services provider.
-    /// </summary>
-    public static class FlexServiceProvider
+    private static readonly SimpleServiceProvider _concreteServices;
+
+    static FlexServiceProvider()
     {
-        private static readonly SimpleServiceProvider _concreteServices;
-
-        static FlexServiceProvider()
-        {
-            _concreteServices = new SimpleServiceProvider();
-            var extendedFileService = new ExtendedFileService();
-            _concreteServices.AddService<IExtendedFileService>(extendedFileService);
-            _concreteServices.AddService<IFileService>(new FileService(extendedFileService));
-            _concreteServices.AddService<IConsoleService>(new ConcreteConsoleService());
-            _concreteServices.AddService<IConfigurationManager>(new ConfigurationManager());
-        }
-
-        public static ITypedServiceProvider Services => _concreteServices;
+        _concreteServices = new SimpleServiceProvider();
+        var extendedFileService = new ExtendedFileService();
+        _concreteServices.AddService<IExtendedFileService>(extendedFileService);
+        _concreteServices.AddService<IFileService>(new FileService(extendedFileService));
+        _concreteServices.AddService<IConsoleService>(new ConcreteConsoleService());
+        _concreteServices.AddService<IConfigurationManager>(new ConfigurationManager());
     }
+
+    public static ITypedServiceProvider Services => _concreteServices;
 }

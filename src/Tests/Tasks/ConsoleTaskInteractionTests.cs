@@ -8,57 +8,56 @@ using XTask.Settings;
 using XTask.Tasks;
 using Xunit;
 
-namespace XTask.Tests.Tasks
+namespace XTask.Tests.Tasks;
+
+public class ConsoleTaskInteractionTests
 {
-    public class ConsoleTaskInteractionTests
+    [Fact]
+    public void StandardLoggerIsConsole()
     {
-        [Fact]
-        public void StandardLoggerIsConsole()
-        {
-            ITask task = Substitute.For<ITask>();
-            IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
+        ITask task = Substitute.For<ITask>();
+        IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
 
-            using ConsoleTaskInteraction interaction = (ConsoleTaskInteraction)ConsoleTaskInteraction.Create(task, arguments, null);
-            interaction.Loggers[LoggerType.Status].Should().BeSameAs(ConsoleLogger.Instance);
-            interaction.Loggers[LoggerType.Result].Should().BeSameAs(ConsoleLogger.Instance);
-        }
+        using ConsoleTaskInteraction interaction = (ConsoleTaskInteraction)ConsoleTaskInteraction.Create(task, arguments, null);
+        interaction.Loggers[LoggerType.Status].Should().BeSameAs(ConsoleLogger.Instance);
+        interaction.Loggers[LoggerType.Result].Should().BeSameAs(ConsoleLogger.Instance);
+    }
 
-        [Fact]
-        public void ClipOptionShouldHaveClipLoggers()
-        {
-            ITask task = Substitute.For<ITask>();
-            IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
-            arguments.GetOption<bool?>(StandardOptions.Clipboard).Returns(true);
+    [Fact]
+    public void ClipOptionShouldHaveClipLoggers()
+    {
+        ITask task = Substitute.For<ITask>();
+        IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
+        arguments.GetOption<bool?>(StandardOptions.Clipboard).Returns(true);
 
 
-            using ConsoleTaskInteraction interaction = (ConsoleTaskInteraction)ConsoleTaskInteraction.Create(task, arguments, null);
-            interaction.Loggers[LoggerType.Status].Should().BeSameAs(ConsoleLogger.Instance);
-            interaction.Loggers[LoggerType.Result].Should().BeOfType<AggregatedLogger>();
-        }
+        using ConsoleTaskInteraction interaction = (ConsoleTaskInteraction)ConsoleTaskInteraction.Create(task, arguments, null);
+        interaction.Loggers[LoggerType.Status].Should().BeSameAs(ConsoleLogger.Instance);
+        interaction.Loggers[LoggerType.Result].Should().BeOfType<AggregatedLogger>();
+    }
 
-        [Fact]
-        public void ClipTaskShouldHaveClipLoggers()
-        {
-            ITask task = Substitute.For<ITask>();
-            task.GetOptionDefault<bool>(StandardOptions.Clipboard[0]).Returns(true);
-            IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
+    [Fact]
+    public void ClipTaskShouldHaveClipLoggers()
+    {
+        ITask task = Substitute.For<ITask>();
+        task.GetOptionDefault<bool>(StandardOptions.Clipboard[0]).Returns(true);
+        IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
 
-            using ConsoleTaskInteraction interaction = (ConsoleTaskInteraction)ConsoleTaskInteraction.Create(task, arguments, null);
-            interaction.Loggers[LoggerType.Status].Should().BeSameAs(ConsoleLogger.Instance);
-            interaction.Loggers[LoggerType.Result].Should().BeOfType<AggregatedLogger>();
-        }
+        using ConsoleTaskInteraction interaction = (ConsoleTaskInteraction)ConsoleTaskInteraction.Create(task, arguments, null);
+        interaction.Loggers[LoggerType.Status].Should().BeSameAs(ConsoleLogger.Instance);
+        interaction.Loggers[LoggerType.Result].Should().BeOfType<AggregatedLogger>();
+    }
 
-        [Fact]
-        public void ClipTaskWithClipOffShouldNotHaveClipLoggers()
-        {
-            ITask task = Substitute.For<ITask>();
-            task.GetOptionDefault<bool>(StandardOptions.Clipboard[0]).Returns(true);
-            IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
-            arguments.GetOption<bool?>(StandardOptions.Clipboard).Returns(false);
+    [Fact]
+    public void ClipTaskWithClipOffShouldNotHaveClipLoggers()
+    {
+        ITask task = Substitute.For<ITask>();
+        task.GetOptionDefault<bool>(StandardOptions.Clipboard[0]).Returns(true);
+        IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
+        arguments.GetOption<bool?>(StandardOptions.Clipboard).Returns(false);
 
-            using ConsoleTaskInteraction interaction = (ConsoleTaskInteraction)ConsoleTaskInteraction.Create(task, arguments, null);
-            interaction.Loggers[LoggerType.Status].Should().BeSameAs(ConsoleLogger.Instance);
-            interaction.Loggers[LoggerType.Result].Should().BeSameAs(ConsoleLogger.Instance);
-        }
+        using ConsoleTaskInteraction interaction = (ConsoleTaskInteraction)ConsoleTaskInteraction.Create(task, arguments, null);
+        interaction.Loggers[LoggerType.Status].Should().BeSameAs(ConsoleLogger.Instance);
+        interaction.Loggers[LoggerType.Result].Should().BeSameAs(ConsoleLogger.Instance);
     }
 }

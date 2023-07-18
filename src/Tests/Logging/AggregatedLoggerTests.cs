@@ -7,51 +7,50 @@ using NSubstitute;
 using XTask.Logging;
 using Xunit;
 
-namespace XTask.Tests.Logging
+namespace XTask.Tests.Logging;
+
+public class AggregatedLoggerTests
 {
-    public class AggregatedLoggerTests
+    public abstract class TestLogger : Logger
     {
-        public abstract class TestLogger : Logger
+        protected override void WriteInternal(WriteStyle style, string value)
         {
-            protected override void WriteInternal(WriteStyle style, string value)
-            {
-                TestWriteInternal(style, value);
-            }
-
-            public void TestWriteInternal(WriteStyle style, string value)
-            {
-            }
+            TestWriteInternal(style, value);
         }
 
-        [Fact]
-        public void NullConstructorShouldThrow()
+        public void TestWriteInternal(WriteStyle style, string value)
         {
-            Action action = () => new AggregatedLogger(null);
-            action.Should().Throw<ArgumentNullException>();
         }
+    }
 
-        [Fact]
-        public void EmptyArrayShouldNotThow()
-        {
-            AggregatedLogger logger = new(new ILogger[0]);
-            logger.Write("Foo");
-        }
+    [Fact]
+    public void NullConstructorShouldThrow()
+    {
+        Action action = () => new AggregatedLogger(null);
+        action.Should().Throw<ArgumentNullException>();
+    }
 
-        [Fact]
-        public void AllLoggersShouldLog()
-        {
-            TestLogger loggerOne = Substitute.ForPartsOf<TestLogger>();
-            TestLogger loggerTwo = Substitute.ForPartsOf<TestLogger>();
-            AggregatedLogger logger = new(loggerOne, loggerTwo);
+    [Fact]
+    public void EmptyArrayShouldNotThow()
+    {
+        AggregatedLogger logger = new(new ILogger[0]);
+        logger.Write("Foo");
+    }
 
-            logger.Write("Foo");
-            ITable table = Table.Create(1);
-            logger.Write(table);
+    [Fact]
+    public void AllLoggersShouldLog()
+    {
+        TestLogger loggerOne = Substitute.ForPartsOf<TestLogger>();
+        TestLogger loggerTwo = Substitute.ForPartsOf<TestLogger>();
+        AggregatedLogger logger = new(loggerOne, loggerTwo);
 
-            loggerOne.Received(1).TestWriteInternal(WriteStyle.Current, "Foo");
-            loggerTwo.Received(1).TestWriteInternal(WriteStyle.Current, "Foo");
-            loggerOne.Received(1).Write(table);
-            loggerTwo.Received(1).Write(table);
-        }
+        logger.Write("Foo");
+        ITable table = Table.Create(1);
+        logger.Write(table);
+
+        loggerOne.Received(1).TestWriteInternal(WriteStyle.Current, "Foo");
+        loggerTwo.Received(1).TestWriteInternal(WriteStyle.Current, "Foo");
+        loggerOne.Received(1).Write(table);
+        loggerTwo.Received(1).Write(table);
     }
 }

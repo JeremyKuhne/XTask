@@ -3,10 +3,9 @@
 
 using System;
 
-namespace XTask.Tasks
+namespace XTask.Tasks;
+
+[AttributeUsage(AttributeTargets.All, Inherited = true)]
+public class HiddenAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.All, Inherited = true)]
-    public class HiddenAttribute : Attribute
-    {
-    }
 }

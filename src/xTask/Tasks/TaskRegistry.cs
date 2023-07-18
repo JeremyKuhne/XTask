@@ -5,59 +5,58 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace XTask.Tasks
+namespace XTask.Tasks;
+
+public abstract class TaskRegistry : ITaskRegistry
 {
-    public abstract class TaskRegistry : ITaskRegistry
+    private class TaskEntry : ITaskEntry
     {
-        private class TaskEntry : ITaskEntry
+        private readonly HashSet<string> _aliases;
+        private readonly Lazy<ITask> _task;
+
+        public IEnumerable<string> Aliases => _aliases;
+
+        public ITask Task => _task.Value;
+
+        public TaskEntry(Func<ITask> task, params string[] taskNames)
         {
-            private readonly HashSet<string> _aliases;
-            private readonly Lazy<ITask> _task;
-
-            public IEnumerable<string> Aliases => _aliases;
-
-            public ITask Task => _task.Value;
-
-            public TaskEntry(Func<ITask> task, params string[] taskNames)
-            {
-                _aliases = new HashSet<string>(taskNames, StringComparer.OrdinalIgnoreCase);
-                _task = new Lazy<ITask>(task);
-            }
+            _aliases = new HashSet<string>(taskNames, StringComparer.OrdinalIgnoreCase);
+            _task = new Lazy<ITask>(task);
         }
+    }
 
-        private readonly List<TaskEntry> _tasks = new();
-        private Func<ITask> _defaultTask;
+    private readonly List<TaskEntry> _tasks = new();
+    private Func<ITask> _defaultTask;
 
-        public IEnumerable<ITaskEntry> Tasks => _tasks;
+    public IEnumerable<ITaskEntry> Tasks => _tasks;
 
-        protected void RegisterTaskInternal(Func<ITask> task, params string[] taskNames)
-            => _tasks.Add(new TaskEntry(task, taskNames));
+    protected void RegisterTaskInternal(Func<ITask> task, params string[] taskNames)
+        => _tasks.Add(new TaskEntry(task, taskNames));
 
-        protected void RegisterDefaultTaskInternal(Func<ITask> task) => _defaultTask = task;
+    protected void RegisterDefaultTaskInternal(Func<ITask> task) => _defaultTask = task;
 
-        public ITask this[string taskName]
+    public ITask this[string taskName]
+    {
+        get
         {
-            get
+            if (!string.IsNullOrEmpty(taskName))
             {
-                if (!string.IsNullOrEmpty(taskName))
+                foreach (var entry in _tasks)
                 {
-                    foreach (var entry in _tasks)
+                    if (entry.Aliases.Contains(taskName))
                     {
-                        if (entry.Aliases.Contains(taskName))
-                        {
-                            return entry.Task;
-                        }
+                        return entry.Task;
                     }
                 }
+            }
 
-                if (_defaultTask is not null)
-                {
-                    return _defaultTask();
-                }
-                else
-                {
-                    return new UnknownTask(this, XTaskStrings.HelpGeneral);
-                }
+            if (_defaultTask is not null)
+            {
+                return _defaultTask();
+            }
+            else
+            {
+                return new UnknownTask(this, XTaskStrings.HelpGeneral);
             }
         }
     }

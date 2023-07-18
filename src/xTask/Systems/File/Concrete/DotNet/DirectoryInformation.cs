@@ -6,60 +6,59 @@ using System.Linq;
 using System.IO;
 using XTask.Collections;
 
-namespace XTask.Systems.File.Concrete.DotNet
+namespace XTask.Systems.File.Concrete.DotNet;
+
+public class DirectoryInformation : FileSystemInformation, IDirectoryInformation
 {
-    public class DirectoryInformation : FileSystemInformation, IDirectoryInformation
+    private readonly DirectoryInfo _directoryInfo;
+
+    public DirectoryInformation(DirectoryInfo directoryInfo, IFileService fileService) : base(directoryInfo, fileService)
     {
-        private readonly DirectoryInfo _directoryInfo;
+        _directoryInfo = directoryInfo;
+    }
 
-        public DirectoryInformation(DirectoryInfo directoryInfo, IFileService fileService) : base(directoryInfo, fileService)
+    public IEnumerable<IFileSystemInformation> EnumerateChildren(
+        ChildType childType = ChildType.File,
+        string searchPattern = "*",
+        SearchOption searchOption = SearchOption.TopDirectoryOnly,
+        FileAttributes excludeAttributes = FileAttributes.Hidden | FileAttributes.System | FileAttributes.ReparsePoint)
+     {
+        if (childType == ChildType.Directory)
         {
-            _directoryInfo = directoryInfo;
+            return EnumerateDirectories(searchPattern, searchOption, excludeAttributes);
         }
-
-        public IEnumerable<IFileSystemInformation> EnumerateChildren(
-            ChildType childType = ChildType.File,
-            string searchPattern = "*",
-            SearchOption searchOption = SearchOption.TopDirectoryOnly,
-            FileAttributes excludeAttributes = FileAttributes.Hidden | FileAttributes.System | FileAttributes.ReparsePoint)
-         {
-            if (childType == ChildType.Directory)
-            {
-                return EnumerateDirectories(searchPattern, searchOption, excludeAttributes);
-            }
-            else
-            {
-                return EnumerateFiles(_directoryInfo, searchPattern, searchOption, excludeAttributes);
-            }
-         }
-
-        private IEnumerable<IDirectoryInformation> EnumerateDirectories(string searchPattern, SearchOption searchOption, FileAttributes excludeAttributes)
+        else
         {
-            foreach (DirectoryInfo info in _directoryInfo.EnumerateDirectories(searchPattern: searchPattern, searchOption: searchOption))
+            return EnumerateFiles(_directoryInfo, searchPattern, searchOption, excludeAttributes);
+        }
+     }
+
+    private IEnumerable<IDirectoryInformation> EnumerateDirectories(string searchPattern, SearchOption searchOption, FileAttributes excludeAttributes)
+    {
+        foreach (DirectoryInfo info in _directoryInfo.EnumerateDirectories(searchPattern: searchPattern, searchOption: searchOption))
+        {
+            if ((info.Attributes & excludeAttributes) == 0)
             {
-                if ((info.Attributes & excludeAttributes) == 0)
-                {
-                    yield return new DirectoryInformation(info, FileService);
-                }
+                yield return new DirectoryInformation(info, FileService);
             }
         }
+    }
 
-        private IEnumerable<IFileInformation> EnumerateFiles(DirectoryInfo directory, string searchPattern, SearchOption searchOption, FileAttributes excludeAttributes)
+    private IEnumerable<IFileInformation> EnumerateFiles(DirectoryInfo directory, string searchPattern, SearchOption searchOption, FileAttributes excludeAttributes)
+    {
+        IEnumerable<IFileInformation> allFiles =
+            from file in directory.EnumerateFiles(searchPattern)
+            where (file.Attributes & excludeAttributes) == 0
+            select new FileInformation(file, FileService);
+
+        if (searchOption == SearchOption.AllDirectories)
         {
-            IEnumerable<IFileInformation> allFiles =
-                from file in directory.EnumerateFiles(searchPattern)
-                where (file.Attributes & excludeAttributes) == 0
-                select new FileInformation(file, FileService);
-
-            if (searchOption == SearchOption.AllDirectories)
-            {
-                allFiles = allFiles.Concat(
-                    from subDirectory in directory.EnumerateDirectories()
-                    where (subDirectory.Attributes & excludeAttributes) == 0
-                    select EnumerateFiles(subDirectory, searchPattern, searchOption, excludeAttributes));
-            }
-
-            return allFiles;
+            allFiles = allFiles.Concat(
+                from subDirectory in directory.EnumerateDirectories()
+                where (subDirectory.Attributes & excludeAttributes) == 0
+                select EnumerateFiles(subDirectory, searchPattern, searchOption, excludeAttributes));
         }
+
+        return allFiles;
     }
 }

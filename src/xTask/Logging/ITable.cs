@@ -3,12 +3,11 @@
 
 using System.Collections.Generic;
 
-namespace XTask.Logging
+namespace XTask.Logging;
+
+public interface ITable
 {
-    public interface ITable
-    {
-        bool HasHeader { get; }
-        ColumnFormat[] ColumnFormats { get; }
-        IEnumerable<string[]> Rows { get; }
-    }
+    bool HasHeader { get; }
+    ColumnFormat[] ColumnFormats { get; }
+    IEnumerable<string[]> Rows { get; }
 }

@@ -5,66 +5,65 @@ using NSubstitute;
 using XTask.Tasks;
 using Xunit;
 
-namespace XTask.Tests.Tasks
+namespace XTask.Tests.Tasks;
+
+public class TaskTests
 {
-    public class TaskTests
+    public class TestTask : Task
     {
-        public class TestTask : Task
+        protected override ExitCode ExecuteInternal()
         {
-            protected override ExitCode ExecuteInternal()
-            {
-                Output("TestOutput");
-                return ExitCode.Success;
-            }
-
-            protected override string GeneralHelp
-            {
-                get { return TestGetGeneralHelp(); }
-            }
-
-            protected override string OptionDetails
-            {
-                get { return TestGetOptionDetails(); }
-            }
-
-            public virtual string TestGetGeneralHelp()
-            {
-                return null;
-            }
-
-            public virtual string TestGetOptionDetails()
-            {
-                return null;
-            }
+            Output("TestOutput");
+            return ExitCode.Success;
         }
 
-        [Fact]
-        public void HandlesNullHelp()
+        protected override string GeneralHelp
         {
-            TestTask testTask = Substitute.ForPartsOf<TestTask>();
-            ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
-            testTask.OutputUsage(interaction);
-            testTask.Received(1).TestGetGeneralHelp();
+            get { return TestGetGeneralHelp(); }
         }
 
-        [Fact]
-        public void HandlesNullOptionDetails()
+        protected override string OptionDetails
         {
-            TestTask testTask = Substitute.ForPartsOf<TestTask>();
-            testTask.TestGetGeneralHelp().Returns("GeneralHelp");
-            ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
-            testTask.OutputUsage(interaction);
-            testTask.Received(2).TestGetGeneralHelp();
-            testTask.Received(1).TestGetOptionDetails();
+            get { return TestGetOptionDetails(); }
         }
 
-        [Fact]
-        public void OutputOutputs()
+        public virtual string TestGetGeneralHelp()
         {
-            TestTask testTask = Substitute.ForPartsOf<TestTask>();
-            ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
-            testTask.Execute(interaction);
-            interaction.Received(1).Output("TestOutput");
+            return null;
         }
+
+        public virtual string TestGetOptionDetails()
+        {
+            return null;
+        }
+    }
+
+    [Fact]
+    public void HandlesNullHelp()
+    {
+        TestTask testTask = Substitute.ForPartsOf<TestTask>();
+        ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
+        testTask.OutputUsage(interaction);
+        testTask.Received(1).TestGetGeneralHelp();
+    }
+
+    [Fact]
+    public void HandlesNullOptionDetails()
+    {
+        TestTask testTask = Substitute.ForPartsOf<TestTask>();
+        testTask.TestGetGeneralHelp().Returns("GeneralHelp");
+        ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
+        testTask.OutputUsage(interaction);
+        testTask.Received(2).TestGetGeneralHelp();
+        testTask.Received(1).TestGetOptionDetails();
+    }
+
+    [Fact]
+    public void OutputOutputs()
+    {
+        TestTask testTask = Substitute.ForPartsOf<TestTask>();
+        ITaskInteraction interaction = Substitute.For<ITaskInteraction>();
+        testTask.Execute(interaction);
+        interaction.Received(1).Output("TestOutput");
     }
 }

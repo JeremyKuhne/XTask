@@ -4,27 +4,26 @@
 using System;
 using System.Collections.Generic;
 
-namespace XTask.Collections
+namespace XTask.Collections;
+
+public static class ListExtensions
 {
-    public static class ListExtensions
+    private static readonly Random s_Random = new();
+
+    /// <summary>
+    ///  Shuffles the elements in the given list. (Fisher-Yates)
+    /// </summary>
+    public static void Shuffle<TSource>(this IList<TSource> source)
     {
-        private static readonly Random s_Random = new();
-
-        /// <summary>
-        ///  Shuffles the elements in the given list. (Fisher-Yates)
-        /// </summary>
-        public static void Shuffle<TSource>(this IList<TSource> source)
+        if (source is null || source.Count <= 1)
         {
-            if (source is null || source.Count <= 1)
-            {
-                return;
-            }
+            return;
+        }
 
-            for (int i = 0; i < source.Count; i++)
-            {
-                int j = s_Random.Next(i, source.Count);
-                (source[j], source[i]) = (source[i], source[j]);
-            }
+        for (int i = 0; i < source.Count; i++)
+        {
+            int j = s_Random.Next(i, source.Count);
+            (source[j], source[i]) = (source[i], source[j]);
         }
     }
 }

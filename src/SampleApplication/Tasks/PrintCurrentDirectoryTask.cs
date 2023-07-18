@@ -3,16 +3,15 @@
 
 using XTask.Tasks;
 
-namespace XFile.Tasks
-{
-    public class PrintCurrentDirectoryTask : FileTask
-    {
-        protected override ExitCode ExecuteFileTask()
-        {
-            ResultLog.WriteLine(FileService.CurrentDirectory);
-            return ExitCode.Success;
-        }
+namespace XFile.Tasks;
 
-        public override string Summary => XFileStrings.PrintCurrentDirectoryTaskSummary;
+public class PrintCurrentDirectoryTask : FileTask
+{
+    protected override ExitCode ExecuteFileTask()
+    {
+        ResultLog.WriteLine(FileService.CurrentDirectory);
+        return ExitCode.Success;
     }
+
+    public override string Summary => XFileStrings.PrintCurrentDirectoryTaskSummary;
 }

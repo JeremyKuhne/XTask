@@ -4,36 +4,35 @@
 using System;
 using System.Collections.Generic;
 
-namespace XTask.Logging
+namespace XTask.Logging;
+
+/// <summary>
+///  Simple logger that aggregates multiple ILoggers.
+/// </summary>
+public class AggregatedLogger : Logger
 {
-    /// <summary>
-    ///  Simple logger that aggregates multiple ILoggers.
-    /// </summary>
-    public class AggregatedLogger : Logger
+    private readonly IEnumerable<ILogger> _loggers;
+
+    public AggregatedLogger(params ILogger[] loggers)
     {
-        private readonly IEnumerable<ILogger> _loggers;
+        if (loggers is null) throw new ArgumentNullException(nameof(loggers));
 
-        public AggregatedLogger(params ILogger[] loggers)
+        _loggers = loggers;
+    }
+
+    protected override void WriteInternal(WriteStyle style, string value)
+    {
+        foreach (ILogger logger in _loggers)
         {
-            if (loggers is null) throw new ArgumentNullException(nameof(loggers));
-
-            _loggers = loggers;
+            logger.Write(style, value);
         }
+    }
 
-        protected override void WriteInternal(WriteStyle style, string value)
+    public override void Write(ITable table)
+    {
+        foreach (ILogger logger in _loggers)
         {
-            foreach (ILogger logger in _loggers)
-            {
-                logger.Write(style, value);
-            }
-        }
-
-        public override void Write(ITable table)
-        {
-            foreach (ILogger logger in _loggers)
-            {
-                logger.Write(table: table);
-            }
+            logger.Write(table: table);
         }
     }
 }

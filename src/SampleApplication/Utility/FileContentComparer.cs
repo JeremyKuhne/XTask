@@ -5,22 +5,21 @@ using System.Collections.Generic;
 using XTask.Systems.File;
 using XTask.Utility;
 
-namespace XFile.Utility
+namespace XFile.Utility;
+
+public class FileContentComparer : IEqualityComparer<IFileInformation>
 {
-    public class FileContentComparer : IEqualityComparer<IFileInformation>
+    public bool Equals(IFileInformation x, IFileInformation y)
     {
-        public bool Equals(IFileInformation x, IFileInformation y)
+        if (x is null || y is null) { return x == y; }
+
+        if (x.Length == y.Length && Arrays.AreEquivalent(x.MD5Hash, y.MD5Hash))
         {
-            if (x is null || y is null) { return x == y; }
-
-            if (x.Length == y.Length && Arrays.AreEquivalent(x.MD5Hash, y.MD5Hash))
-            {
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
-        public int GetHashCode(IFileInformation obj) => obj.Path.GetHashCode();
+        return false;
     }
+
+    public int GetHashCode(IFileInformation obj) => obj.Path.GetHashCode();
 }

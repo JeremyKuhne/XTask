@@ -3,11 +3,10 @@
 
 using System.Configuration;
 
-namespace XTask.Systems.Configuration
+namespace XTask.Systems.Configuration;
+
+public interface IConfigurationSectionGroup
 {
-    public interface IConfigurationSectionGroup
-    {
-        ClientSettingsSection Get(string name);
-        void Add(string name, ClientSettingsSection value);
-    }
+    ClientSettingsSection Get(string name);
+    void Add(string name, ClientSettingsSection value);
 }

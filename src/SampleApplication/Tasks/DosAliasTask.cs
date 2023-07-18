@@ -4,32 +4,31 @@
 using System.Linq;
 using XTask.Tasks;
 
-namespace XFile.Tasks
+namespace XFile.Tasks;
+
+public class DosAliasTask : FileTask
 {
-    public class DosAliasTask : FileTask
+    protected override ExitCode ExecuteFileTask()
     {
-        protected override ExitCode ExecuteFileTask()
+        string target = Arguments.Target;
+        target = string.IsNullOrWhiteSpace(target) ? null : target;
+
+        var targetPaths =
+            from path in ExtendedFileService.QueryDosDeviceNames(target)
+            orderby path
+            select path;
+
+        int count = 0;
+        foreach (string path in targetPaths)
         {
-            string target = Arguments.Target;
-            target = string.IsNullOrWhiteSpace(target) ? null : target;
-
-            var targetPaths =
-                from path in ExtendedFileService.QueryDosDeviceNames(target)
-                orderby path
-                select path;
-
-            int count = 0;
-            foreach (string path in targetPaths)
-            {
-                count++;
-                ResultLog.WriteLine(path);
-            }
-
-            StatusLog.WriteLine("\nFound {0} paths", count);
-
-            return ExitCode.Success;
+            count++;
+            ResultLog.WriteLine(path);
         }
 
-        public override string Summary => XFileStrings.DosAliasTaskSummary;
+        StatusLog.WriteLine("\nFound {0} paths", count);
+
+        return ExitCode.Success;
     }
+
+    public override string Summary => XFileStrings.DosAliasTaskSummary;
 }

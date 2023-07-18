@@ -5,17 +5,16 @@ using System;
 using System.Globalization;
 using System.IO;
 
-namespace XTask.Systems.File
+namespace XTask.Systems.File;
+
+/// <summary>
+///  Thrown when a file or directory exists and invalidates the current operation.
+/// </summary>
+[Serializable]
+public class FileExistsException : IOException
 {
-    /// <summary>
-    ///  Thrown when a file or directory exists and invalidates the current operation.
-    /// </summary>
-    [Serializable]
-    public class FileExistsException : IOException
+    public FileExistsException(string format, params object[] args)
+        : base (string.Format(CultureInfo.CurrentCulture, format, args))
     {
-        public FileExistsException(string format, params object[] args)
-            : base (string.Format(CultureInfo.CurrentCulture, format, args))
-        {
-        }
     }
 }

@@ -6,19 +6,18 @@ using NSubstitute;
 using XTask.Tasks;
 using Xunit;
 
-namespace XTask.Tests.Tasks
+namespace XTask.Tests.Tasks;
+
+public class TaskServiceTests
 {
-    public class TaskServiceTests
+    [Theory,
+        InlineData("defaults"),
+        InlineData("interactive"),
+        InlineData("help")]
+    public void HasExpectedTasks(string service)
     {
-        [Theory,
-            InlineData("defaults"),
-            InlineData("interactive"),
-            InlineData("help")]
-        public void HasExpectedTasks(string service)
-        {
-            TaskService taskService = Substitute.ForPartsOf<TaskService>("Help", "MyApp");
-            taskService.Initialize();
-            taskService.TaskRegistry[service].Should().NotBeNull();
-        }
+        TaskService taskService = Substitute.ForPartsOf<TaskService>("Help", "MyApp");
+        taskService.Initialize();
+        taskService.TaskRegistry[service].Should().NotBeNull();
     }
 }

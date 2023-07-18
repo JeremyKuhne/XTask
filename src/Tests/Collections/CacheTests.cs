@@ -7,76 +7,75 @@ using FluentAssertions;
 using XTask.Collections;
 using Xunit;
 
-namespace XTask.Tests.Collections
+namespace XTask.Tests.Collections;
+
+public class CacheTests
 {
-    public class CacheTests
+    public class TestItem : IDisposable
     {
-        public class TestItem : IDisposable
+        public void Dispose() { }
+    }
+
+    public class TestCache : Cache<TestItem>
+    {
+        public TestCache(int cacheSpace) : base(cacheSpace)
         {
-            public void Dispose() { }
         }
 
-        public class TestCache : Cache<TestItem>
+        public TestItem[] Cache
         {
-            public TestCache(int cacheSpace) : base(cacheSpace)
-            {
-            }
-
-            public TestItem[] Cache
-            {
-                get { return _itemsCache; }
-            }
-
-            public int CachedCount
-            {
-                get
-                {
-                    int count = 0;
-                    foreach (var item in Cache)
-                        if (item is not null) count++;
-                    return count;
-                }
-            }
+            get { return _itemsCache; }
         }
 
-        [Fact]
-        public void CachedItemCountTest()
+        public int CachedCount
         {
-            using var cache = new TestCache(5);
-            TestItem item = new();
-            for (int i = 0; i < 7; i++)
+            get
             {
-                cache.Release(item);
+                int count = 0;
+                foreach (var item in Cache)
+                    if (item is not null) count++;
+                return count;
             }
-
-            cache.CachedCount.Should().Be(5);
         }
+    }
 
-        [Fact]
-        public void GetCachedItem()
+    [Fact]
+    public void CachedItemCountTest()
+    {
+        using var cache = new TestCache(5);
+        TestItem item = new();
+        for (int i = 0; i < 7; i++)
         {
-            using var cache = new TestCache(5);
-            TestItem item = new();
             cache.Release(item);
-            cache.Acquire().Should().BeSameAs(item);
-            cache.Acquire().Should().NotBeSameAs(item);
         }
 
-        [Fact]
-        public void CachedItemParallelCountTest()
-        {
-            using var cache = new TestCache(5);
-            TestItem item = new();
-            Parallel.For(0, 5, (i) => cache.Release(item));
-            cache.CachedCount.Should().Be(5);
-        }
+        cache.CachedCount.Should().Be(5);
+    }
 
-        [Fact]
-        public void NonDisposableContent()
-        {
-            using var cache = new Cache<object>(1);
-            cache.Release(new object());
-            cache.Release(new object());
-        }
+    [Fact]
+    public void GetCachedItem()
+    {
+        using var cache = new TestCache(5);
+        TestItem item = new();
+        cache.Release(item);
+        cache.Acquire().Should().BeSameAs(item);
+        cache.Acquire().Should().NotBeSameAs(item);
+    }
+
+    [Fact]
+    public void CachedItemParallelCountTest()
+    {
+        using var cache = new TestCache(5);
+        TestItem item = new();
+        Parallel.For(0, 5, (i) => cache.Release(item));
+        cache.CachedCount.Should().Be(5);
+    }
+
+    [Fact]
+    public void NonDisposableContent()
+    {
+        using var cache = new Cache<object>(1);
+        cache.Release(new object());
+        cache.Release(new object());
     }
 }

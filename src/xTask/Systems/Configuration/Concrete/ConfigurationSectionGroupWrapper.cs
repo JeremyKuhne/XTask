@@ -3,16 +3,15 @@
 
 using System.Configuration;
 
-namespace XTask.Systems.Configuration.Concrete
+namespace XTask.Systems.Configuration.Concrete;
+
+public class ConfigurationSectionGroupWrapper : IConfigurationSectionGroup
 {
-    public class ConfigurationSectionGroupWrapper : IConfigurationSectionGroup
-    {
-        private readonly ConfigurationSectionGroup _sectionGroup;
+    private readonly ConfigurationSectionGroup _sectionGroup;
 
-        public ConfigurationSectionGroupWrapper(ConfigurationSectionGroup sectionGroup) => _sectionGroup = sectionGroup;
+    public ConfigurationSectionGroupWrapper(ConfigurationSectionGroup sectionGroup) => _sectionGroup = sectionGroup;
 
-        public ClientSettingsSection Get(string name) => _sectionGroup.Sections.Get(name) as ClientSettingsSection;
+    public ClientSettingsSection Get(string name) => _sectionGroup.Sections.Get(name) as ClientSettingsSection;
 
-        public void Add(string name, ClientSettingsSection section) => _sectionGroup.Sections.Add(name, section);
-    }
+    public void Add(string name, ClientSettingsSection section) => _sectionGroup.Sections.Add(name, section);
 }

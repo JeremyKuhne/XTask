@@ -3,16 +3,15 @@
 
 using XTask.Tasks;
 
-namespace XFile.Tasks
-{
-    public class FinalPathTask : FileTaskWithTarget
-    {
-        protected override ExitCode ExecuteFileTask()
-        {
-            ResultLog.WriteLine(ExtendedFileService.GetFinalPath(GetFullTargetPath()));
-            return ExitCode.Success;
-        }
+namespace XFile.Tasks;
 
-        public override string Summary => XFileStrings.FinalPathTaskSummary;
+public class FinalPathTask : FileTaskWithTarget
+{
+    protected override ExitCode ExecuteFileTask()
+    {
+        ResultLog.WriteLine(ExtendedFileService.GetFinalPath(GetFullTargetPath()));
+        return ExitCode.Success;
     }
+
+    public override string Summary => XFileStrings.FinalPathTaskSummary;
 }

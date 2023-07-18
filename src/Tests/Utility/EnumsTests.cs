@@ -6,17 +6,16 @@ using System.IO;
 using XTask.Utility;
 using Xunit;
 
-namespace XTask.Tests.Utility
+namespace XTask.Tests.Utility;
+
+public class EnumsTests
 {
-    public class EnumsTests
+    [Theory,
+        InlineData(FileAttributes.ReadOnly, new FileAttributes[] { FileAttributes.ReadOnly }),
+        InlineData(FileAttributes.ReadOnly | FileAttributes.Hidden, new FileAttributes[] { FileAttributes.ReadOnly, FileAttributes.Hidden })
+        ]
+    public void TestGetSetValues(FileAttributes value, FileAttributes[] expected)
     {
-        [Theory,
-            InlineData(FileAttributes.ReadOnly, new FileAttributes[] { FileAttributes.ReadOnly }),
-            InlineData(FileAttributes.ReadOnly | FileAttributes.Hidden, new FileAttributes[] { FileAttributes.ReadOnly, FileAttributes.Hidden })
-            ]
-        public void TestGetSetValues(FileAttributes value, FileAttributes[] expected)
-        {
-            Enums.GetSetValues(value).Should().BeEquivalentTo(expected);
-        }
+        Enums.GetSetValues(value).Should().BeEquivalentTo(expected);
     }
 }

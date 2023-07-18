@@ -3,40 +3,39 @@
 
 using System;
 
-namespace XTask.Systems.Console.Concrete
+namespace XTask.Systems.Console.Concrete;
+
+using Console = System.Console;
+
+/// <summary>
+///  Simple thunk to the System.Console
+/// </summary>
+public class ConcreteConsoleService : IConsoleService
 {
-    using Console = System.Console;
+    private static readonly object s_SyncLock = new();
 
-    /// <summary>
-    ///  Simple thunk to the System.Console
-    /// </summary>
-    public class ConcreteConsoleService : IConsoleService
+    public void Write(string value)
     {
-        private static readonly object s_SyncLock = new();
-
-        public void Write(string value)
+        // Need to lock to prevent interleaved output from multiple threads (and messed up colors)
+        lock (s_SyncLock)
         {
-            // Need to lock to prevent interleaved output from multiple threads (and messed up colors)
-            lock (s_SyncLock)
-            {
-                Console.Write(value);
-            }
+            Console.Write(value);
         }
-
-        public string ReadLine() => Console.ReadLine();
-
-        public string Title
-        {
-            get => Console.Title;
-            set => Console.Title = value;
-        }
-
-        public ConsoleColor ForegroundColor
-        {
-            get => Console.ForegroundColor;
-            set => Console.ForegroundColor = value;
-        }
-
-        public void ResetColor() => Console.ResetColor();
     }
+
+    public string ReadLine() => Console.ReadLine();
+
+    public string Title
+    {
+        get => Console.Title;
+        set => Console.Title = value;
+    }
+
+    public ConsoleColor ForegroundColor
+    {
+        get => Console.ForegroundColor;
+        set => Console.ForegroundColor = value;
+    }
+
+    public void ResetColor() => Console.ResetColor();
 }

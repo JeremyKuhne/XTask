@@ -3,19 +3,18 @@
 
 using System;
 
-namespace XTask.Settings
-{
-    /// <summary>
-    ///  Simple Tuple compatible IProperty implementation
-    /// </summary>
-    public class Property : Tuple<string, object>, IProperty<object>
-    {
-        public Property(string name, string value)
-            : base(name, value)
-        {
-        }
+namespace XTask.Settings;
 
-        public string Name => Item1;
-        public object Value => Item2;
+/// <summary>
+///  Simple Tuple compatible IProperty implementation
+/// </summary>
+public class Property : Tuple<string, object>, IProperty<object>
+{
+    public Property(string name, string value)
+        : base(name, value)
+    {
     }
+
+    public string Name => Item1;
+    public object Value => Item2;
 }

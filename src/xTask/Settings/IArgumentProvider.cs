@@ -3,40 +3,39 @@
 
 using System.Collections.Generic;
 
-namespace XTask.Settings
+namespace XTask.Settings;
+
+public interface IArgumentProvider
 {
-    public interface IArgumentProvider
-    {
-        /// <summary>
-        ///  The first non-option parameter, if any.
-        /// </summary>
-        string Target { get; }
+    /// <summary>
+    ///  The first non-option parameter, if any.
+    /// </summary>
+    string Target { get; }
 
-        /// <summary>
-        ///  The specified command.
-        /// </summary>
-        string Command { get; }
+    /// <summary>
+    ///  The specified command.
+    /// </summary>
+    string Command { get; }
 
-        /// <summary>
-        ///  Ordered list of all non-option parameters.
-        /// </summary>
-        string[] Targets { get; }
+    /// <summary>
+    ///  Ordered list of all non-option parameters.
+    /// </summary>
+    string[] Targets { get; }
 
-        /// <summary>
-        ///  Returns the specified option or default for the type if not set
-        ///  (use nullable if you want to know if a primitive type is set).
-        /// </summary>
-        /// <param name="optionNames">Name for the option and aliases, in priority order</param>
-        T GetOption<T>(params string[] optionNames);
+    /// <summary>
+    ///  Returns the specified option or default for the type if not set
+    ///  (use nullable if you want to know if a primitive type is set).
+    /// </summary>
+    /// <param name="optionNames">Name for the option and aliases, in priority order</param>
+    T GetOption<T>(params string[] optionNames);
 
-        /// <summary>
-        ///  <see langword="true"/> if the user asked for help.
-        /// </summary>
-        bool HelpRequested { get; }
+    /// <summary>
+    ///  <see langword="true"/> if the user asked for help.
+    /// </summary>
+    bool HelpRequested { get; }
 
-        /// <summary>
-        ///  Get all set options.
-        /// </summary>
-        IReadOnlyDictionary<string, string> Options { get; }
-    }
+    /// <summary>
+    ///  Get all set options.
+    /// </summary>
+    IReadOnlyDictionary<string, string> Options { get; }
 }

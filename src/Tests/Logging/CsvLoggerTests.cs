@@ -8,30 +8,29 @@ using FluentAssertions;
 using XTask.Logging;
 using Xunit;
 
-namespace XTask.Tests.Logging
+namespace XTask.Tests.Logging;
+
+public class CsvLoggerTests
 {
-    public class CsvLoggerTests
+    [Fact]
+    public void StandardWriteDoesNotLog()
     {
-        [Fact]
-        public void StandardWriteDoesNotLog()
-        {
-            CsvLogger logger = new();
-            logger.Write("Foo");
-            logger.GetClipboardData().HasData.Should().BeFalse();
-        }
+        CsvLogger logger = new();
+        logger.Write("Foo");
+        logger.GetClipboardData().HasData.Should().BeFalse();
+    }
 
-        [Fact]
-        public void TableLogs()
-        {
-            Table table = Table.Create(1, 1);
-            table.AddRow("One", "Two");
-            table.AddRow("Three", "Four");
+    [Fact]
+    public void TableLogs()
+    {
+        Table table = Table.Create(1, 1);
+        table.AddRow("One", "Two");
+        table.AddRow("Three", "Four");
 
-            CsvLogger logger = new();
-            logger.Write(table);
-            ClipboardData data = logger.GetClipboardData();
-            data.Format.Should().Be(ClipboardFormat.CommaSeparatedValues);
-            Encoding.ASCII.GetString(data.ByteData.ToArray()).Should().Be("\"One\",\"Two\"\r\n\"Three\",\"Four\"\r\n");
-        }
+        CsvLogger logger = new();
+        logger.Write(table);
+        ClipboardData data = logger.GetClipboardData();
+        data.Format.Should().Be(ClipboardFormat.CommaSeparatedValues);
+        Encoding.ASCII.GetString(data.ByteData.ToArray()).Should().Be("\"One\",\"Two\"\r\n\"Three\",\"Four\"\r\n");
     }
 }

@@ -3,17 +3,16 @@
 
 using System.Configuration;
 
-namespace XTask.Systems.Configuration
+namespace XTask.Systems.Configuration;
+
+/// <summary>
+///  Configuration management
+/// </summary>
+/// <remarks>
+///  Aligns with the surface area of the .NET Configuration Manager
+/// </remarks>
+public interface IConfigurationManager
 {
-    /// <summary>
-    ///  Configuration management
-    /// </summary>
-    /// <remarks>
-    ///  Aligns with the surface area of the .NET Configuration Manager
-    /// </remarks>
-    public interface IConfigurationManager
-    {
-        IConfiguration OpenConfiguration(string filePath);
-        IConfiguration OpenConfiguration(ConfigurationUserLevel userLevel);
-    }
+    IConfiguration OpenConfiguration(string filePath);
+    IConfiguration OpenConfiguration(ConfigurationUserLevel userLevel);
 }

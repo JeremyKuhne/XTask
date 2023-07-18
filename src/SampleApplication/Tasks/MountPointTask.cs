@@ -3,16 +3,15 @@
 
 using XTask.Tasks;
 
-namespace XFile.Tasks
-{
-    public class MountPointTask : FileTaskWithTarget
-    {
-        protected override ExitCode ExecuteFileTask()
-        {
-            ResultLog.WriteLine(ExtendedFileService.GetMountPoint(GetFullTargetPath()));
-            return ExitCode.Success;
-        }
+namespace XFile.Tasks;
 
-        public override string Summary => XFileStrings.MountPointTaskSummary;
+public class MountPointTask : FileTaskWithTarget
+{
+    protected override ExitCode ExecuteFileTask()
+    {
+        ResultLog.WriteLine(ExtendedFileService.GetMountPoint(GetFullTargetPath()));
+        return ExitCode.Success;
     }
+
+    public override string Summary => XFileStrings.MountPointTaskSummary;
 }

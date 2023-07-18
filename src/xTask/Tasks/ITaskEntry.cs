@@ -3,11 +3,10 @@
 
 using System.Collections.Generic;
 
-namespace XTask.Tasks
+namespace XTask.Tasks;
+
+public interface ITaskEntry
 {
-    public interface ITaskEntry
-    {
-        IEnumerable<string> Aliases { get; }
-        ITask Task { get; }
-    }
+    IEnumerable<string> Aliases { get; }
+    ITask Task { get; }
 }

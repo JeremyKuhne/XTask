@@ -5,15 +5,14 @@ using XTask.Services;
 using XTask.Logging;
 using XTask.Settings;
 
-namespace XTask.Tasks
+namespace XTask.Tasks;
+
+/// <summary>
+///  Input and output interfaces and services for a task.
+/// </summary>
+public interface ITaskInteraction : ITypedServiceProvider
 {
-    /// <summary>
-    ///  Input and output interfaces and services for a task.
-    /// </summary>
-    public interface ITaskInteraction : ITypedServiceProvider
-    {
-        IArgumentProvider Arguments { get; }
-        ILoggers Loggers { get; }
-        void Output(object value);
-    }
+    IArgumentProvider Arguments { get; }
+    ILoggers Loggers { get; }
+    void Output(object value);
 }

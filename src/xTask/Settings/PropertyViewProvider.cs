@@ -4,37 +4,36 @@
 using System;
 using System.Collections.Generic;
 
-namespace XTask.Settings
+namespace XTask.Settings;
+
+/// <summary>
+///  Basic implementation of a property view provider. Allows registering property view wrappers
+///  for types that don't implement IPropertyView. Also has a basic ToString default view.
+/// </summary>
+public class PropertyViewProvider : IPropertyViewProvider
 {
-    /// <summary>
-    ///  Basic implementation of a property view provider. Allows registering property view wrappers
-    ///  for types that don't implement IPropertyView. Also has a basic ToString default view.
-    /// </summary>
-    public class PropertyViewProvider : IPropertyViewProvider
+    private readonly Dictionary<Type, object> _propertyViewers = new();
+
+    public void RegisterPropertyViewer<T>(PropertyViewConstructor<T> propertyViewer)
     {
-        private readonly Dictionary<Type, object> _propertyViewers = new();
+        _propertyViewers.Add(typeof(T), propertyViewer);
+    }
 
-        public void RegisterPropertyViewer<T>(PropertyViewConstructor<T> propertyViewer)
+    public IPropertyView GetTypeView<T>(T value)
+    {
+        // Look for built-in type view support, registered type view, then fall back on default.
+        if (value is IPropertyView typeView)
         {
-            _propertyViewers.Add(typeof(T), propertyViewer);
+            return typeView;
         }
 
-        public IPropertyView GetTypeView<T>(T value)
+        Type valueType = value.GetType();
+        if (_propertyViewers.TryGetValue(valueType, out object propertyViewer))
         {
-            // Look for built-in type view support, registered type view, then fall back on default.
-            if (value is IPropertyView typeView)
-            {
-                return typeView;
-            }
-
-            Type valueType = value.GetType();
-            if (_propertyViewers.TryGetValue(valueType, out object propertyViewer))
-            {
-                Delegate constructor = (Delegate)propertyViewer;
-                return (IPropertyView)constructor.DynamicInvoke(value);
-            }
-
-            return DefaultTypeView.Create(value);
+            Delegate constructor = (Delegate)propertyViewer;
+            return (IPropertyView)constructor.DynamicInvoke(value);
         }
+
+        return DefaultTypeView.Create(value);
     }
 }

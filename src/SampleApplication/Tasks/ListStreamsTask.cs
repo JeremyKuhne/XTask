@@ -3,20 +3,19 @@
 
 using XTask.Tasks;
 
-namespace XFile.Tasks
-{
-    public class ListStreamsTask : FileTaskWithTarget
-    {
-        protected override ExitCode ExecuteFileTask()
-        {
-            foreach (var stream in ExtendedFileService.GetAlternateStreamInformation(GetFullTargetPath()))
-            {
-                ResultLog.WriteLine($"Stream '{stream.Name}', Size {stream.Size}");
-            }
+namespace XFile.Tasks;
 
-            return ExitCode.Success;
+public class ListStreamsTask : FileTaskWithTarget
+{
+    protected override ExitCode ExecuteFileTask()
+    {
+        foreach (var stream in ExtendedFileService.GetAlternateStreamInformation(GetFullTargetPath()))
+        {
+            ResultLog.WriteLine($"Stream '{stream.Name}', Size {stream.Size}");
         }
 
-        public override string Summary => XFileStrings.ListStreamsTaskSummary;
+        return ExitCode.Success;
     }
+
+    public override string Summary => XFileStrings.ListStreamsTaskSummary;
 }

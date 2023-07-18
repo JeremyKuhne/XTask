@@ -8,90 +8,89 @@ using NSubstitute;
 using XTask.Systems.Console;
 using Xunit;
 
-namespace XTask.Tests.Utility
+namespace XTask.Tests.Utility;
+
+public class ConsoleHelperTests
 {
-    public class ConsoleHelperTests
+    [Theory,
+        MemberData(nameof(AnswerData))]
+    public void AnswersReturnExpected(string answer, bool expected)
     {
-        [Theory,
-            MemberData(nameof(AnswerData))]
-        public void AnswersReturnExpected(string answer, bool expected)
-        {
-            IConsoleService console = Substitute.For<IConsoleService>();
-            console.ReadLine().Returns(answer);
-            console.QueryYesNo(string.Empty).Should().Be(expected);
-        }
+        IConsoleService console = Substitute.For<IConsoleService>();
+        console.ReadLine().Returns(answer);
+        console.QueryYesNo(string.Empty).Should().Be(expected);
+    }
 
-        public static IEnumerable<object[]> AnswerData
+    public static IEnumerable<object[]> AnswerData
+    {
+        get
         {
-            get
+            return new[]
             {
-                return new[]
-                {
-                    new object[] { XTaskStrings.YesResponse, true },
-                    new object[] { XTaskStrings.YesResponse.ToUpperInvariant(), true },
-                    new object[] { XTaskStrings.YesShortResponse, true },
-                    new object[] { "Yep", false },
-                    new object[] { "No", false }
-                };
-            }
+                new object[] { XTaskStrings.YesResponse, true },
+                new object[] { XTaskStrings.YesResponse.ToUpperInvariant(), true },
+                new object[] { XTaskStrings.YesShortResponse, true },
+                new object[] { "Yep", false },
+                new object[] { "No", false }
+            };
         }
+    }
 
-        [Fact]
-        public void QueryFormatsAsExpected()
+    [Fact]
+    public void QueryFormatsAsExpected()
+    {
+        IConsoleService console = Substitute.For<IConsoleService>();
+        console.QueryYesNo("Foo{0}", "bar").Should().BeFalse();
+        console.Received(1).Write("Foobar [yes/no] \n");
+    }
+
+    [Fact]
+    public void WriteResetsColorOnException()
+    {
+        IConsoleService console = Substitute.For<IConsoleService>();
+        console
+            .When(x => x.Write(Arg.Any<string>()))
+            .Do(x=> { throw new Exception(); });
+
+        Action action = () => console.WriteLockedColor(ConsoleColor.Black, "Foo");
+        action.Should().Throw<Exception>();
+
+        console.Received(1).ResetColor();
+    }
+
+    [Fact]
+    public void WriteSetsColorAsExpected()
+    {
+        IConsoleService console = Substitute.For<IConsoleService>();
+        console.WriteLockedColor(ConsoleColor.Blue, "Foo");
+        console.Received(1).ForegroundColor = ConsoleColor.Blue;
+        console.Received(1).Write("Foo");
+        console.Received(1).ResetColor();
+    }
+
+    [Fact]
+    public void AppendFormatsAsExpected()
+    {
+        IConsoleService console = Substitute.For<IConsoleService>();
+
+        using (console.AppendConsoleTitle("Rocks {0}", "on"))
         {
-            IConsoleService console = Substitute.For<IConsoleService>();
-            console.QueryYesNo("Foo{0}", "bar").Should().BeFalse();
-            console.Received(1).Write("Foobar [yes/no] \n");
+            console.Received(1).Title = ": Rocks on";
         }
+    }
 
-        [Fact]
-        public void WriteResetsColorOnException()
+    [Fact]
+    public void TitleIsAppendedAsExpected()
+    {
+        IConsoleService console = Substitute.For<IConsoleService>();
+        console.Title.Returns("MyTitle");
+
+        using (console.AppendConsoleTitle("Rocks"))
         {
-            IConsoleService console = Substitute.For<IConsoleService>();
-            console
-                .When(x => x.Write(Arg.Any<string>()))
-                .Do(x=> { throw new Exception(); });
-
-            Action action = () => console.WriteLockedColor(ConsoleColor.Black, "Foo");
-            action.Should().Throw<Exception>();
-
-            console.Received(1).ResetColor();
+            console.Received(1).Title = "MyTitle: Rocks";
+            console.ClearReceivedCalls();
         }
 
-        [Fact]
-        public void WriteSetsColorAsExpected()
-        {
-            IConsoleService console = Substitute.For<IConsoleService>();
-            console.WriteLockedColor(ConsoleColor.Blue, "Foo");
-            console.Received(1).ForegroundColor = ConsoleColor.Blue;
-            console.Received(1).Write("Foo");
-            console.Received(1).ResetColor();
-        }
-
-        [Fact]
-        public void AppendFormatsAsExpected()
-        {
-            IConsoleService console = Substitute.For<IConsoleService>();
-
-            using (console.AppendConsoleTitle("Rocks {0}", "on"))
-            {
-                console.Received(1).Title = ": Rocks on";
-            }
-        }
-
-        [Fact]
-        public void TitleIsAppendedAsExpected()
-        {
-            IConsoleService console = Substitute.For<IConsoleService>();
-            console.Title.Returns("MyTitle");
-
-            using (console.AppendConsoleTitle("Rocks"))
-            {
-                console.Received(1).Title = "MyTitle: Rocks";
-                console.ClearReceivedCalls();
-            }
-
-            console.Received(1).Title = "MyTitle";
-        }
+        console.Received(1).Title = "MyTitle";
     }
 }

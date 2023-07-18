@@ -3,16 +3,15 @@
 
 using XTask.Tasks;
 
-namespace XFile.Tasks
-{
-    public class MakeDirectoryTask : FileTaskWithTarget
-    {
-        protected override ExitCode ExecuteFileTask()
-        {
-            FileService.CreateDirectory(GetFullTargetPath());
-            return ExitCode.Success;
-        }
+namespace XFile.Tasks;
 
-        public override string Summary => XFileStrings.MakeDirectoryTaskSummary;
+public class MakeDirectoryTask : FileTaskWithTarget
+{
+    protected override ExitCode ExecuteFileTask()
+    {
+        FileService.CreateDirectory(GetFullTargetPath());
+        return ExitCode.Success;
     }
+
+    public override string Summary => XFileStrings.MakeDirectoryTaskSummary;
 }

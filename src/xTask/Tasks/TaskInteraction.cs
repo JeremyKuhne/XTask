@@ -5,42 +5,41 @@ using XTask.Logging;
 using XTask.Services;
 using XTask.Settings;
 
-namespace XTask.Tasks
+namespace XTask.Tasks;
+
+/// <summary>
+/// Base class for task interaction support
+/// </summary>
+public abstract class TaskInteraction : ITaskInteraction
 {
-    /// <summary>
-    /// Base class for task interaction support
-    /// </summary>
-    public abstract class TaskInteraction : ITaskInteraction
+    private readonly ITypedServiceProvider _services;
+
+    protected TaskInteraction(IArgumentProvider arguments, ITypedServiceProvider services)
     {
-        private readonly ITypedServiceProvider _services;
+        Arguments = arguments;
+        _services = services;
+    }
 
-        protected TaskInteraction(IArgumentProvider arguments, ITypedServiceProvider services)
+    public IArgumentProvider Arguments { get; private set; }
+    public ILoggers Loggers => GetService<ILoggers>();
+
+    protected abstract ILoggers GetDefaultLoggers();
+
+    public virtual T GetService<T>() where T : class
+    {
+        T service = _services?.GetService<T>() ?? FlexServiceProvider.Services.GetService<T>();
+        if (service is not null) return service;
+
+        if (typeof(T) == typeof(ILoggers))
         {
-            Arguments = arguments;
-            _services = services;
+            return (T)GetDefaultLoggers();
         }
 
-        public IArgumentProvider Arguments { get; private set; }
-        public ILoggers Loggers => GetService<ILoggers>();
+        return null;
+    }
 
-        protected abstract ILoggers GetDefaultLoggers();
-
-        public virtual T GetService<T>() where T : class
-        {
-            T service = _services?.GetService<T>() ?? FlexServiceProvider.Services.GetService<T>();
-            if (service is not null) return service;
-
-            if (typeof(T) == typeof(ILoggers))
-            {
-                return (T)GetDefaultLoggers();
-            }
-
-            return null;
-        }
-
-        public virtual void Output(object value)
-        {
-            // Do nothing by default
-        }
+    public virtual void Output(object value)
+    {
+        // Do nothing by default
     }
 }

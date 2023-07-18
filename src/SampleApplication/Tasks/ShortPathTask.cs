@@ -3,16 +3,15 @@
 
 using XTask.Tasks;
 
-namespace XFile.Tasks
-{
-    public class ShortPathTask : FileTaskWithTarget
-    {
-        protected override ExitCode ExecuteFileTask()
-        {
-            ResultLog.WriteLine(ExtendedFileService.GetShortPath(GetFullTargetPath()));
-            return ExitCode.Success;
-        }
+namespace XFile.Tasks;
 
-        public override string Summary => XFileStrings.ShortPathTaskSummary;
+public class ShortPathTask : FileTaskWithTarget
+{
+    protected override ExitCode ExecuteFileTask()
+    {
+        ResultLog.WriteLine(ExtendedFileService.GetShortPath(GetFullTargetPath()));
+        return ExitCode.Success;
     }
+
+    public override string Summary => XFileStrings.ShortPathTaskSummary;
 }

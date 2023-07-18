@@ -3,20 +3,19 @@
 
 using XTask.Tasks;
 
-namespace XFile.Tasks
-{
-    public class LogicalDriveStringsTask : FileTask
-    {
-        protected override ExitCode ExecuteFileTask()
-        {
-            foreach (string drive in ExtendedFileService.GetLogicalDriveStrings())
-            {
-                ResultLog.WriteLine(drive);
-            }
+namespace XFile.Tasks;
 
-            return ExitCode.Success;
+public class LogicalDriveStringsTask : FileTask
+{
+    protected override ExitCode ExecuteFileTask()
+    {
+        foreach (string drive in ExtendedFileService.GetLogicalDriveStrings())
+        {
+            ResultLog.WriteLine(drive);
         }
 
-        public override string Summary => XFileStrings.LogicalDriveStringsTaskSummary;
+        return ExitCode.Success;
     }
+
+    public override string Summary => XFileStrings.LogicalDriveStringsTaskSummary;
 }

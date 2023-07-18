@@ -5,15 +5,14 @@ using XTask.Systems.File;
 using XTask.Tasks;
 
 
-namespace XFile.Tasks
+namespace XFile.Tasks;
+
+[Hidden]
+public class TestTask : FileTaskWithTarget
 {
-    [Hidden]
-    public class TestTask : FileTaskWithTarget
+    protected override ExitCode ExecuteFileTask()
     {
-        protected override ExitCode ExecuteFileTask()
-        {
-            ResultLog.WriteLine(ExtendedFileService.GetDriveLetter(FileService, GetFullTargetPath()));
-            return ExitCode.Success;
-        }
+        ResultLog.WriteLine(ExtendedFileService.GetDriveLetter(FileService, GetFullTargetPath()));
+        return ExitCode.Success;
     }
 }

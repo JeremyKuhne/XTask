@@ -6,25 +6,24 @@ using FluentAssertions;
 using XTask.Collections;
 using Xunit;
 
-namespace XTask.Tests.Collections
-{
-    public class ListExtensionsTests
-    {
-        [Fact]
-        public void Shuffle_HandlesNull()
-        {
-            IList<int> test = null;
-            test.Shuffle();
-        }
+namespace XTask.Tests.Collections;
 
-        [Fact]
-        public void Shuffle_OrderChanges()
-        {
-            // In theory we could get back the exact same order- really unlikely, particularly with larger collections
-            int[] source = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-            List<int> items = new(source);
-            items.Shuffle();
-            items.Should().NotEqual(source);
-        }
+public class ListExtensionsTests
+{
+    [Fact]
+    public void Shuffle_HandlesNull()
+    {
+        IList<int> test = null;
+        test.Shuffle();
+    }
+
+    [Fact]
+    public void Shuffle_OrderChanges()
+    {
+        // In theory we could get back the exact same order- really unlikely, particularly with larger collections
+        int[] source = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        List<int> items = new(source);
+        items.Shuffle();
+        items.Should().NotEqual(source);
     }
 }

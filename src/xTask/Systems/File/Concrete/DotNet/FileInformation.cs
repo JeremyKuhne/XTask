@@ -3,33 +3,32 @@
 
 using System.IO;
 
-namespace XTask.Systems.File.Concrete.DotNet
+namespace XTask.Systems.File.Concrete.DotNet;
+
+/// <summary>
+///  Simple implementation of a FileInfo wrapper
+/// </summary>
+public class FileInformation : FileSystemInformation, IFileInformation
 {
-    /// <summary>
-    ///  Simple implementation of a FileInfo wrapper
-    /// </summary>
-    public class FileInformation : FileSystemInformation, IFileInformation
+    private readonly FileInfo _fileInfo;
+    private byte[] _md5Hash;
+    private IDirectoryInformation _directoryInformation;
+
+    public FileInformation(FileInfo fileInfo, IFileService fileService) : base(fileInfo, fileService)
     {
-        private readonly FileInfo _fileInfo;
-        private byte[] _md5Hash;
-        private IDirectoryInformation _directoryInformation;
+        _fileInfo = fileInfo;
+    }
 
-        public FileInformation(FileInfo fileInfo, IFileService fileService) : base(fileInfo, fileService)
-        {
-            _fileInfo = fileInfo;
-        }
+    public virtual ulong Length => (ulong)_fileInfo.Length;
 
-        public virtual ulong Length => (ulong)_fileInfo.Length;
+    public virtual IDirectoryInformation Directory
+        => _directoryInformation ??= new DirectoryInformation(_fileInfo.Directory, FileService);
 
-        public virtual IDirectoryInformation Directory
-            => _directoryInformation ??= new DirectoryInformation(_fileInfo.Directory, FileService);
+    public byte[] MD5Hash => _md5Hash ??= FileService.GetHash(Path);
 
-        public byte[] MD5Hash => _md5Hash ??= FileService.GetHash(Path);
-
-        public override void Refresh()
-        {
-            _md5Hash = null;
-            base.Refresh();
-        }
+    public override void Refresh()
+    {
+        _md5Hash = null;
+        base.Refresh();
     }
 }

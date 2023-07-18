@@ -4,22 +4,21 @@
 using System;
 using XTask.Tasks;
 
-namespace XTask.Metrics
+namespace XTask.Metrics;
+
+public class TrackedTaskRegistry : TaskRegistry
 {
-    public class TrackedTaskRegistry : TaskRegistry
+    private readonly IFeatureUsageTracker _usageTracker;
+
+    public TrackedTaskRegistry(IFeatureUsageTracker usageTracker) => _usageTracker = usageTracker;
+
+    public void RegisterTask(Func<ITask> task, int featureIdentifier, params string[] taskNames)
     {
-        private readonly IFeatureUsageTracker _usageTracker;
+        RegisterTaskInternal(() => new TrackedTask(task(), featureIdentifier, _usageTracker), taskNames);
+    }
 
-        public TrackedTaskRegistry(IFeatureUsageTracker usageTracker) => _usageTracker = usageTracker;
-
-        public void RegisterTask(Func<ITask> task, int featureIdentifier, params string[] taskNames)
-        {
-            RegisterTaskInternal(() => new TrackedTask(task(), featureIdentifier, _usageTracker), taskNames);
-        }
-
-        public void RegisterDefaultTask(Func<ITask> task, int featureIdentifier)
-        {
-            RegisterDefaultTaskInternal(() => new TrackedTask(task(), featureIdentifier, _usageTracker));
-        }
+    public void RegisterDefaultTask(Func<ITask> task, int featureIdentifier)
+    {
+        RegisterDefaultTaskInternal(() => new TrackedTask(task(), featureIdentifier, _usageTracker));
     }
 }

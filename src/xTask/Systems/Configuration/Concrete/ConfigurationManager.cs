@@ -3,26 +3,25 @@
 
 using DotNetConfiguration = System.Configuration;
 
-namespace XTask.Systems.Configuration.Concrete
+namespace XTask.Systems.Configuration.Concrete;
+
+/// <summary>
+///  Simple wrapper to abstract the .NET ConfigurationManager.
+/// </summary>
+public class ConfigurationManager : IConfigurationManager
 {
-    /// <summary>
-    ///  Simple wrapper to abstract the .NET ConfigurationManager.
-    /// </summary>
-    public class ConfigurationManager : IConfigurationManager
+    public IConfiguration OpenConfiguration(string filePath)
     {
-        public IConfiguration OpenConfiguration(string filePath)
-        {
-            DotNetConfiguration.Configuration configuration = DotNetConfiguration.ConfigurationManager.OpenMappedExeConfiguration(
-                new DotNetConfiguration.ExeConfigurationFileMap() { ExeConfigFilename = filePath },
-                DotNetConfiguration.ConfigurationUserLevel.None);
+        DotNetConfiguration.Configuration configuration = DotNetConfiguration.ConfigurationManager.OpenMappedExeConfiguration(
+            new DotNetConfiguration.ExeConfigurationFileMap() { ExeConfigFilename = filePath },
+            DotNetConfiguration.ConfigurationUserLevel.None);
 
-            return configuration is null ? null : new ConfigurationWrapper(configuration);
-        }
+        return configuration is null ? null : new ConfigurationWrapper(configuration);
+    }
 
-        public IConfiguration OpenConfiguration(DotNetConfiguration.ConfigurationUserLevel userLevel)
-        {
-            DotNetConfiguration.Configuration configuration = DotNetConfiguration.ConfigurationManager.OpenExeConfiguration(userLevel);
-            return configuration is null ? null : new ConfigurationWrapper(configuration);
-        }
+    public IConfiguration OpenConfiguration(DotNetConfiguration.ConfigurationUserLevel userLevel)
+    {
+        DotNetConfiguration.Configuration configuration = DotNetConfiguration.ConfigurationManager.OpenExeConfiguration(userLevel);
+        return configuration is null ? null : new ConfigurationWrapper(configuration);
     }
 }

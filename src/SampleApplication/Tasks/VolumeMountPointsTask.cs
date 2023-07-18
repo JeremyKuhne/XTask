@@ -3,20 +3,19 @@
 
 using XTask.Tasks;
 
-namespace XFile.Tasks
-{
-    public class VolumeMountPointsTask : FileTaskWithTarget
-    {
-        protected override ExitCode ExecuteFileTask()
-        {
-            foreach (string pathName in ExtendedFileService.GetVolumeMountPoints(Arguments.Target))
-            {
-                ResultLog.WriteLine(pathName);
-            }
+namespace XFile.Tasks;
 
-            return ExitCode.Success;
+public class VolumeMountPointsTask : FileTaskWithTarget
+{
+    protected override ExitCode ExecuteFileTask()
+    {
+        foreach (string pathName in ExtendedFileService.GetVolumeMountPoints(Arguments.Target))
+        {
+            ResultLog.WriteLine(pathName);
         }
 
-        public override string Summary => XFileStrings.VolumeMountPointsTaskSummary;
+        return ExitCode.Success;
     }
+
+    public override string Summary => XFileStrings.VolumeMountPointsTaskSummary;
 }

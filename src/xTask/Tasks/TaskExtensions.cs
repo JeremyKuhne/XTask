@@ -3,56 +3,55 @@
 
 using XTask.Logging;
 
-namespace XTask.Tasks
+namespace XTask.Tasks;
+
+internal static class TaskExtensions
 {
-    internal static class TaskExtensions
+    /// <summary>
+    ///  Gets the option default for the given option.
+    /// </summary>
+    internal static T GetOptionDefault<T>(this ITask task, string option)
     {
-        /// <summary>
-        ///  Gets the option default for the given option.
-        /// </summary>
-        internal static T GetOptionDefault<T>(this ITask task, string option)
+        ITaskOptionDefaults optionDefaults = task.GetService<ITaskOptionDefaults>();
+        if (optionDefaults is not null)
         {
-            ITaskOptionDefaults optionDefaults = task.GetService<ITaskOptionDefaults>();
-            if (optionDefaults is not null)
-            {
-                return optionDefaults.GetOptionDefault<T>(option);
-            }
-            else
-            {
-                return default;
-            }
+            return optionDefaults.GetOptionDefault<T>(option);
         }
-
-        /// <summary>
-        ///  Outputs usage if any help is provided.
-        /// </summary>
-        public static void OutputUsage(this ITask task, ITaskInteraction interaction)
+        else
         {
-            ITaskDocumentation documentation = task.GetService<ITaskDocumentation>();
-            if (documentation is null)
-            {
-                interaction.Loggers[LoggerType.Result].WriteLine(WriteStyle.Fixed, XTaskStrings.HelpNone);
-            }
-            else
-            {
-                documentation.GetUsage(interaction);
-            }
+            return default;
         }
+    }
 
-        /// <summary>
-        ///  Executes the given task.
-        /// </summary>
-        public static ExitCode Execute(this ITask task, ITaskInteraction interaction)
+    /// <summary>
+    ///  Outputs usage if any help is provided.
+    /// </summary>
+    public static void OutputUsage(this ITask task, ITaskInteraction interaction)
+    {
+        ITaskDocumentation documentation = task.GetService<ITaskDocumentation>();
+        if (documentation is null)
         {
-            ITaskExecutor executor = task.GetService<ITaskExecutor>();
-            if (executor is not null)
-            {
-                return executor.Execute(interaction);
-            }
-            else
-            {
-                return ExitCode.Success;
-            }
+            interaction.Loggers[LoggerType.Result].WriteLine(WriteStyle.Fixed, XTaskStrings.HelpNone);
+        }
+        else
+        {
+            documentation.GetUsage(interaction);
+        }
+    }
+
+    /// <summary>
+    ///  Executes the given task.
+    /// </summary>
+    public static ExitCode Execute(this ITask task, ITaskInteraction interaction)
+    {
+        ITaskExecutor executor = task.GetService<ITaskExecutor>();
+        if (executor is not null)
+        {
+            return executor.Execute(interaction);
+        }
+        else
+        {
+            return ExitCode.Success;
         }
     }
 }

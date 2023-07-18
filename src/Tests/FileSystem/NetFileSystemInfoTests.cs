@@ -7,21 +7,20 @@ using XTask.Systems.File;
 using XTask.Systems.File.Concrete.DotNet;
 using Xunit;
 
-namespace XTask.Tests.FileSystem
-{
-    public class NetFileSystemInfoTests
-    {
-        [Fact]
-        public void CreateInfoForRootDrive()
-        {
-            string driveRoot = Paths.GetRoot(Path.GetTempPath());
-            FileService fileService = new();
+namespace XTask.Tests.FileSystem;
 
-            var info = fileService.GetPathInfo(driveRoot);
-            info.Should().BeAssignableTo<IDirectoryInformation>();
-            info.Exists.Should().BeTrue();
-            info.Name.Should().Be(driveRoot);
-            info.Path.Should().Be(driveRoot);
-        }
+public class NetFileSystemInfoTests
+{
+    [Fact]
+    public void CreateInfoForRootDrive()
+    {
+        string driveRoot = Paths.GetRoot(Path.GetTempPath());
+        FileService fileService = new();
+
+        var info = fileService.GetPathInfo(driveRoot);
+        info.Should().BeAssignableTo<IDirectoryInformation>();
+        info.Exists.Should().BeTrue();
+        info.Name.Should().Be(driveRoot);
+        info.Path.Should().Be(driveRoot);
     }
 }

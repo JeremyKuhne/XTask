@@ -3,10 +3,9 @@
 
 using XTask.Tasks;
 
-namespace XTask.Metrics
+namespace XTask.Metrics;
+
+public interface IUsageTrackedTask : ITask
 {
-    public interface IUsageTrackedTask : ITask
-    {
-        int TaskFeatureIdentifier { get; }
-    }
+    int TaskFeatureIdentifier { get; }
 }

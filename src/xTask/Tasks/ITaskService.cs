@@ -3,10 +3,9 @@
 
 using System;
 
-namespace XTask.Tasks
+namespace XTask.Tasks;
+
+public interface ITaskService : IDisposable
 {
-    public interface ITaskService : IDisposable
-    {
-        ITaskRegistry TaskRegistry { get; }
-    }
+    ITaskRegistry TaskRegistry { get; }
 }

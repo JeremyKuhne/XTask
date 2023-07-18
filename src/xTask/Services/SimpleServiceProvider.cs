@@ -4,18 +4,17 @@
 using System;
 using System.Collections.Generic;
 
-namespace XTask.Services
+namespace XTask.Services;
+
+public class SimpleServiceProvider : ITypedServiceProvider
 {
-    public class SimpleServiceProvider : ITypedServiceProvider
+    private readonly Dictionary<Type, object> _services = new();
+
+    public void AddService<T>(T service) where T : class => _services.Add(typeof(T), service);
+
+    public T GetService<T>() where T : class
     {
-        private readonly Dictionary<Type, object> _services = new();
-
-        public void AddService<T>(T service) where T : class => _services.Add(typeof(T), service);
-
-        public T GetService<T>() where T : class
-        {
-            _services.TryGetValue(typeof(T), out object value);
-            return value as T;
-        }
+        _services.TryGetValue(typeof(T), out object value);
+        return value as T;
     }
 }

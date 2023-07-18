@@ -4,22 +4,21 @@
 using System;
 using XTask.Tasks;
 
-namespace XTask.Utility
-{
-    /// <summary>
-    ///  Used to centrally handle app failure state
-    /// </summary>
-    [Serializable]
-    public abstract class TaskException : Exception
-    {
-        public TaskException(string message, Exception innerException = null)
-            : base(message, innerException)
-        {
-        }
+namespace XTask.Utility;
 
-        /// <summary>
-        ///  Returns the most appropriate exit code for the exception
-        /// </summary>
-        public abstract ExitCode ExitCode { get; }
+/// <summary>
+///  Used to centrally handle app failure state
+/// </summary>
+[Serializable]
+public abstract class TaskException : Exception
+{
+    public TaskException(string message, Exception innerException = null)
+        : base(message, innerException)
+    {
     }
+
+    /// <summary>
+    ///  Returns the most appropriate exit code for the exception
+    /// </summary>
+    public abstract ExitCode ExitCode { get; }
 }

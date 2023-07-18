@@ -3,12 +3,11 @@
 
 using XTask.Services;
 
-namespace XTask.Tasks
+namespace XTask.Tasks;
+
+/// <summary>
+///  Standard task interface.
+/// </summary>
+public interface ITask : ITypedServiceProvider
 {
-    /// <summary>
-    ///  Standard task interface.
-    /// </summary>
-    public interface ITask : ITypedServiceProvider
-    {
-    }
 }

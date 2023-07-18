@@ -5,39 +5,38 @@ using FluentAssertions;
 using XTask.Logging;
 using Xunit;
 
-namespace XTask.Tests.Logging
+namespace XTask.Tests.Logging;
+
+public class TextLoggerTests
 {
-    public class TextLoggerTests
+    [Fact]
+    public void SimpleWrite()
     {
-        [Fact]
-        public void SimpleWrite()
-        {
-            TextLogger logger = new();
-            logger.Write("Foo");
-            logger.ToString().Should().Be("Foo");
-        }
+        TextLogger logger = new();
+        logger.Write("Foo");
+        logger.ToString().Should().Be("Foo");
+    }
 
-        [Fact]
-        public void SimpleWriteClipboardData()
-        {
-            TextLogger logger = new();
-            logger.Write("Foo");
-            logger.GetClipboardData().CharData.ToString().Should().Be("Foo");
-        }
+    [Fact]
+    public void SimpleWriteClipboardData()
+    {
+        TextLogger logger = new();
+        logger.Write("Foo");
+        logger.GetClipboardData().CharData.ToString().Should().Be("Foo");
+    }
 
-        [Fact]
-        public void SimpleUnderline()
-        {
-            TextLogger logger = new();
-            logger.Write(WriteStyle.Underline, "Foo");
-            logger.ToString().Should().Be("Foo\r\n---");
-        }
+    [Fact]
+    public void SimpleUnderline()
+    {
+        TextLogger logger = new();
+        logger.Write(WriteStyle.Underline, "Foo");
+        logger.ToString().Should().Be("Foo\r\n---");
+    }
 
-        [Fact]
-        public void NoLogNullClipboardData()
-        {
-            TextLogger logger = new();
-            logger.GetClipboardData().HasData.Should().BeFalse();
-        }
+    [Fact]
+    public void NoLogNullClipboardData()
+    {
+        TextLogger logger = new();
+        logger.GetClipboardData().HasData.Should().BeFalse();
     }
 }

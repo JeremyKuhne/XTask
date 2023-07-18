@@ -3,20 +3,19 @@
 
 using System;
 
-namespace XTask.Settings
+namespace XTask.Settings;
+
+/// <summary>
+///  Simple <see cref="Tuple"/> compatible <see cref="IProperty{String}"/> implementation for strings.
+/// </summary>
+public class StringProperty : Tuple<string, string>, IStringProperty
 {
-    /// <summary>
-    ///  Simple <see cref="Tuple"/> compatible <see cref="IProperty{String}"/> implementation for strings.
-    /// </summary>
-    public class StringProperty : Tuple<string, string>, IStringProperty
+    public StringProperty(string name, string value)
+        : base(name, value)
     {
-        public StringProperty(string name, string value)
-            : base(name, value)
-        {
-        }
-
-        public string Name => Item1;
-
-        public string Value => Item2;
     }
+
+    public string Name => Item1;
+
+    public string Value => Item2;
 }

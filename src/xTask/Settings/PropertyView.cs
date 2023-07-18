@@ -4,22 +4,21 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace XTask.Settings
-{
-    /// <summary>
-    ///  Stub for building objects that can be translated on output.
-    /// </summary>
-    public abstract class PropertyView : IPropertyView
-    {
-        public abstract IEnumerator<IProperty<object>> GetEnumerator();
+namespace XTask.Settings;
 
-        IEnumerator IEnumerable.GetEnumerator()
+/// <summary>
+///  Stub for building objects that can be translated on output.
+/// </summary>
+public abstract class PropertyView : IPropertyView
+{
+    public abstract IEnumerator<IProperty<object>> GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        var typedEnumerator = GetEnumerator();
+        while (typedEnumerator.MoveNext())
         {
-            var typedEnumerator = GetEnumerator();
-            while (typedEnumerator.MoveNext())
-            {
-                yield return typedEnumerator.Current;
-            }
+            yield return typedEnumerator.Current;
         }
     }
 }

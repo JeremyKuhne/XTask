@@ -6,40 +6,39 @@ using System.Xml;
 using XTask.Systems.File;
 using XTask.Settings;
 
-namespace XTask.Build
+namespace XTask.Build;
+
+/// <summary>
+///  Argument parser for Microsoft Build formatted arguments.
+/// </summary>
+public class BuildArgumentParser : ArgumentProvider
 {
-    /// <summary>
-    ///  Argument parser for Microsoft Build formatted arguments.
-    /// </summary>
-    public class BuildArgumentParser : ArgumentProvider
+    public BuildArgumentParser(string taskName, string[] targets, string options, IFileService fileService)
+        : base (fileService)
     {
-        public BuildArgumentParser(string taskName, string[] targets, string options, IFileService fileService)
-            : base (fileService)
+        AddTarget(taskName);
+        if (targets is not null)
         {
-            AddTarget(taskName);
-            if (targets is not null)
-            {
-                foreach (string target in targets)
-                    AddTarget(target);
-            }
+            foreach (string target in targets)
+                AddTarget(target);
+        }
 
-            if (string.IsNullOrWhiteSpace(options)) { return; }
+        if (string.IsNullOrWhiteSpace(options)) { return; }
 
-            // Options are in xml format <Option>value</Option> or <Option/> for default
-            XmlReaderSettings settings = new()
-            {
-                ConformanceLevel = ConformanceLevel.Fragment
-            };
+        // Options are in xml format <Option>value</Option> or <Option/> for default
+        XmlReaderSettings settings = new()
+        {
+            ConformanceLevel = ConformanceLevel.Fragment
+        };
 
-            using XmlReader reader = XmlReader.Create(new StringReader(options), settings);
-            while (reader.Read())
+        using XmlReader reader = XmlReader.Create(new StringReader(options), settings);
+        while (reader.Read())
+        {
+            if (reader.NodeType == XmlNodeType.Element)
             {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    AddOrUpdateOption(
-                        optionName: reader.Name,
-                        optionValue: reader.ReadString());
-                }
+                AddOrUpdateOption(
+                    optionName: reader.Name,
+                    optionValue: reader.ReadString());
             }
         }
     }

@@ -3,17 +3,16 @@
 
 using System;
 
-namespace XTask.Systems.Console
+namespace XTask.Systems.Console;
+
+/// <summary>
+///  Basic Console access.
+/// </summary>
+public interface IConsoleService
 {
-    /// <summary>
-    ///  Basic Console access.
-    /// </summary>
-    public interface IConsoleService
-    {
-        void Write(string value);
-        string ReadLine();
-        string Title { get; set; }
-        ConsoleColor ForegroundColor { get; set; }
-        void ResetColor();
-    }
+    void Write(string value);
+    string ReadLine();
+    string Title { get; set; }
+    ConsoleColor ForegroundColor { get; set; }
+    void ResetColor();
 }

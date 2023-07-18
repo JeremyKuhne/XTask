@@ -4,22 +4,21 @@
 using XTask.Systems.File;
 using XTask.Tasks;
 
-namespace XFile.Tasks
-{
-    public class TypeTask : FileTaskWithTarget
-    {
-        protected override ExitCode ExecuteFileTask()
-        {
-            using var reader = FileService.CreateReader(GetFullTargetPath());
-            string nextLine = null;
-            while ((nextLine = reader.ReadLine()) is not null)
-            {
-                ResultLog.WriteLine(nextLine);
-            }
+namespace XFile.Tasks;
 
-            return ExitCode.Success;
+public class TypeTask : FileTaskWithTarget
+{
+    protected override ExitCode ExecuteFileTask()
+    {
+        using var reader = FileService.CreateReader(GetFullTargetPath());
+        string nextLine = null;
+        while ((nextLine = reader.ReadLine()) is not null)
+        {
+            ResultLog.WriteLine(nextLine);
         }
 
-        public override string Summary => XFileStrings.MakeDirectoryTaskSummary;
+        return ExitCode.Success;
     }
+
+    public override string Summary => XFileStrings.MakeDirectoryTaskSummary;
 }

@@ -7,15 +7,14 @@ using XTask.Systems.File;
 using XTask.Services;
 using Xunit;
 
-namespace XTask.Tests.Services
+namespace XTask.Tests.Services;
+
+public class DefaultServiceProviderTests
 {
-    public class DefaultServiceProviderTests
+    [Fact]
+    public void ExpectedServicesFound()
     {
-        [Fact]
-        public void ExpectedServicesFound()
-        {
-            FlexServiceProvider.Services.GetService<IFileService>().Should().NotBeNull();
-            FlexServiceProvider.Services.GetService<IConsoleService>().Should().NotBeNull();
-        }
+        FlexServiceProvider.Services.GetService<IFileService>().Should().NotBeNull();
+        FlexServiceProvider.Services.GetService<IConsoleService>().Should().NotBeNull();
     }
 }

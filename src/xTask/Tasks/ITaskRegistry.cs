@@ -3,18 +3,17 @@
 
 using System.Collections.Generic;
 
-namespace XTask.Tasks
+namespace XTask.Tasks;
+
+/// <summary>
+///  Task registry.
+/// </summary>
+public interface ITaskRegistry
 {
     /// <summary>
-    ///  Task registry.
+    ///  Return the task with the given task name or alias, if any.
     /// </summary>
-    public interface ITaskRegistry
-    {
-        /// <summary>
-        ///  Return the task with the given task name or alias, if any.
-        /// </summary>
-        ITask this[string taskName] { get; }
+    ITask this[string taskName] { get; }
 
-        IEnumerable<ITaskEntry> Tasks { get; }
-    }
+    IEnumerable<ITaskEntry> Tasks { get; }
 }
