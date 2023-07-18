@@ -16,18 +16,14 @@ namespace XTask.Utility
 
         private static readonly Regex s_NewLineRegex = new(
             @"(\r\n|[\r\n]){1,}",
-            RegexOptions.CultureInvariant
-            | RegexOptions.Compiled
-            );
+            RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
         private static readonly Regex s_WhiteSpaceRegex = new(
             @"\s{1,}|\p{C}{1,}",
-            RegexOptions.CultureInvariant
-            | RegexOptions.Compiled
-            );
+            RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
         /// <summary>
-        /// Trims whitespace, shrinks space runs and control characters to a single space
+        ///  Trims whitespace, shrinks space runs and control characters to a single space
         /// </summary>
         public static string CompressWhiteSpace(string value)
         {
@@ -40,7 +36,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Replaces line ends with the given string
+        ///  Replaces line ends with the given string.
         /// </summary>
         public static string ReplaceLineEnds(string value, string replacement)
         {
@@ -53,7 +49,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Replaces tabs with spaces
+        ///  Replaces tabs with spaces.
         /// </summary>
         public static string TabsToSpaces(string value)
         {
@@ -63,7 +59,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Finds the largest in-common starting string (ordinal comparison)
+        ///  Finds the largest in-common starting string (ordinal comparison).
         /// </summary>
         public static string FindLeftmostCommonString(params string[] values)
         {
@@ -100,7 +96,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Finds the largest in-common ending string (ordinal comparison)
+        ///  Finds the largest in-common ending string (ordinal comparison).
         /// </summary>
         public static string FindRightmostCommonString(params string[] values)
         {
@@ -137,7 +133,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Returns the value if one exists, or "No Value" text if blank
+        ///  Returns the value if one exists, or "No Value" text if blank.
         /// </summary>
         public static string ValueOrNone(string value)
         {
@@ -145,7 +141,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Returns true if the strings are equal, or both are equally "empty"
+        ///  Returns true if the strings are equal, or both are equally "empty".
         /// </summary>
         public static bool EqualsOrNone(string a, string b, StringComparison comparisionType = StringComparison.Ordinal)
         {
@@ -154,9 +150,11 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// "Underlines" the given string (by creating a line break and underline characters)
+        ///  "Underlines" the given string (by creating a line break and underline characters).
         /// </summary>
-        /// <param name="breakCharacter">Character to treat as a break space, if desired. (To create a "words only" underline style)</param>
+        /// <param name="breakCharacter">
+        ///  Character to treat as a break space, if desired. (To create a "words only" underline style)
+        /// </param>
         public static string Underline(string value, char underlineCharacter = '-', char? breakCharacter = '_')
         {
             if (string.IsNullOrEmpty(value))
@@ -186,7 +184,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Splits a command line by spaces, keeping quoted text together
+        ///  Splits a command line by spaces, keeping quoted text together.
         /// </summary>
         public static IEnumerable<string> SplitCommandLine(string commandLine)
         {
@@ -256,7 +254,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Splits an unmanaged character array
+        ///  Splits an unmanaged character array.
         /// </summary>
         /// <param name="pointer">Pointer to an buffer of Unicode (UTF-16/WCHAR) characters</param>
         /// <param name="length">Length of the buffer in characters</param>
@@ -294,7 +292,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Simple wrapper for String.Compare to compare the beginning of strings.
+        ///  Simple wrapper for String.Compare to compare the beginning of strings.
         /// </summary>
         public static bool StartsWithCount(string first, string second, int count, StringComparison comparisonType)
         {
@@ -302,9 +300,14 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Get the count of characters that match at the given indexes walking backwards.
+        ///  Get the count of characters that match at the given indexes walking backwards.
         /// </summary>
-        public static int FindRightmostCommonCount(string first, int firstIndex, string second, int secondIndex, StringComparison comparisonType = StringComparison.Ordinal)
+        public static int FindRightmostCommonCount(
+            string first,
+            int firstIndex,
+            string second,
+            int secondIndex,
+            StringComparison comparisonType = StringComparison.Ordinal)
         {
             if (first is null) throw new ArgumentNullException(nameof(first));
             if (second is null) throw new ArgumentNullException(nameof(second));

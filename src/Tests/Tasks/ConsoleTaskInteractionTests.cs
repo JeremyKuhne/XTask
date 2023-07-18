@@ -28,7 +28,7 @@ namespace XTask.Tests.Tasks
         {
             ITask task = Substitute.For<ITask>();
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
-            arguments.GetOption<bool?>(StandardOptions.Clipboard).Returns((bool?)true);
+            arguments.GetOption<bool?>(StandardOptions.Clipboard).Returns(true);
 
 
             using ConsoleTaskInteraction interaction = (ConsoleTaskInteraction)ConsoleTaskInteraction.Create(task, arguments, null);
@@ -54,7 +54,7 @@ namespace XTask.Tests.Tasks
             ITask task = Substitute.For<ITask>();
             task.GetOptionDefault<bool>(StandardOptions.Clipboard[0]).Returns(true);
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
-            arguments.GetOption<bool?>(StandardOptions.Clipboard).Returns((bool?)false);
+            arguments.GetOption<bool?>(StandardOptions.Clipboard).Returns(false);
 
             using ConsoleTaskInteraction interaction = (ConsoleTaskInteraction)ConsoleTaskInteraction.Create(task, arguments, null);
             interaction.Loggers[LoggerType.Status].Should().BeSameAs(ConsoleLogger.Instance);

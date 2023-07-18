@@ -57,20 +57,11 @@ namespace XTask.Utility
             }
         }
 
-        public void AddResolutionPath(string resolutionPath)
-        {
-            _resolutionPaths.Add(resolutionPath);
-        }
+        public void AddResolutionPath(string resolutionPath) => _resolutionPaths.Add(resolutionPath);
 
-        public void AddAssemblyToResolve(string assemblyPattern)
-        {
-            _assembliesToResolve.Add(assemblyPattern);
-        }
+        public void AddAssemblyToResolve(string assemblyPattern) => _assembliesToResolve.Add(assemblyPattern);
 
-        protected virtual Assembly LoadAssemblyFrom(string fullAssemblyPath)
-        {
-            return Assembly.LoadFrom(fullAssemblyPath);
-        }
+        protected virtual Assembly LoadAssemblyFrom(string fullAssemblyPath) => Assembly.LoadFrom(fullAssemblyPath);
 
         protected virtual Uri GetToolLocation()
         {

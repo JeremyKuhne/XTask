@@ -6,7 +6,7 @@ using XTask.Services;
 namespace XTask.Tasks
 {
     /// <summary>
-    ///  Standard task interface
+    ///  Standard task interface.
     /// </summary>
     public interface ITask : ITypedServiceProvider
     {

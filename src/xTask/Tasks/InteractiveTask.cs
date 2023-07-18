@@ -30,15 +30,21 @@ namespace XTask.Tasks
 
         protected override ExitCode ExecuteInternal()
         {
-            string input = null;
             do
             {
                 _consoleService.Write(_prompt);
-                input = Environment.ExpandEnvironmentVariables(_consoleService.ReadLine().Trim());
-                if (s_QuitCommands.Contains(input, StringComparer.OrdinalIgnoreCase)) break;
+                string input = Environment.ExpandEnvironmentVariables(_consoleService.ReadLine().Trim());
+                if (s_QuitCommands.Contains(input, StringComparer.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+
                 CommandLineParser parser = new(GetService<IFileService>());
                 parser.Parse(Strings.SplitCommandLine(input).ToArray());
-                IArgumentProvider argumentProvider = ArgumentSettingsProvider.Create(parser, GetService<IConfigurationManager>(), GetService<IFileService>());
+                IArgumentProvider argumentProvider = ArgumentSettingsProvider.Create(
+                    parser, GetService<IConfigurationManager>(),
+                    GetService<IFileService>());
+
                 ConsoleTaskExecution execution = new(argumentProvider, _registry);
                 execution.ExecuteTask();
             } while (true);
@@ -46,6 +52,6 @@ namespace XTask.Tasks
             return ExitCode.Success;
         }
 
-        public override string Summary { get { return XTaskStrings.InteractiveTaskSummary; } }
+        public override string Summary => XTaskStrings.InteractiveTaskSummary;
     }
 }

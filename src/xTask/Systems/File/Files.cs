@@ -25,7 +25,7 @@ namespace XTask.Systems.File
         /// <param name="paths">Paths to search</param>
         public static IEnumerable<string> ContainsString(this IFileService fileService, string value, bool ignoreCase, params string[] paths)
         {
-            return Files.ContainsRegex(fileService, Regex.Escape(value), ignoreCase, paths);
+            return ContainsRegex(fileService, Regex.Escape(value), ignoreCase, paths);
         }
 
         /// <summary>

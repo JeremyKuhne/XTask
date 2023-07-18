@@ -38,15 +38,11 @@ namespace XTask.Tests.Support
                 }
                 else
                 {
-                    switch (mode)
+                    return mode switch
                     {
-                        case FileMode.Create:
-                        case FileMode.CreateNew:
-                        case FileMode.OpenOrCreate:
-                            return null;
-                        default:
-                            throw new FileNotFoundException("Test file does not exist.", path);
-                    }
+                        FileMode.Create or FileMode.CreateNew or FileMode.OpenOrCreate => null,
+                        _ => throw new FileNotFoundException("Test file does not exist.", path),
+                    };
                 }
             }
 

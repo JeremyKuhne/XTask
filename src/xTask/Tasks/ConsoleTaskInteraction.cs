@@ -20,14 +20,9 @@ namespace XTask.Tasks
         }
 
         public static ITaskInteraction Create(ITask task, IArgumentProvider arguments, ITypedServiceProvider services)
-        {
-            return new ConsoleTaskInteraction(task, arguments, services);
-        }
+            => new ConsoleTaskInteraction(task, arguments, services);
 
-        protected override ILoggers GetDefaultLoggers()
-        {
-            return _loggers.Value;
-        }
+        protected override ILoggers GetDefaultLoggers() => _loggers.Value;
 
         private sealed class ConsoleTaskLoggers : Loggers, IDisposable
         {

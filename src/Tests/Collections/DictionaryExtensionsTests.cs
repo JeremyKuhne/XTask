@@ -14,7 +14,7 @@ namespace XTask.Tests.Collections
         [Fact]
         public void UpdateIfPresent()
         {
-            var dictionary = new Dictionary<string, string>();
+            Dictionary<string, string> dictionary = new();
             Action action = () => dictionary.UpdateIfPresent(null, "");
             action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
@@ -22,8 +22,11 @@ namespace XTask.Tests.Collections
             action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
 
-            var dictionaryTwo = new Dictionary<int, int>();
-            dictionaryTwo.Add(1, 1);
+            Dictionary<int, int> dictionaryTwo = new()
+            {
+                { 1, 1 }
+            };
+
             dictionaryTwo.UpdateIfPresent(1, 2).Should().BeTrue("value was in dictionary");
             dictionaryTwo[1].Should().Be(2);
             dictionaryTwo.UpdateIfPresent(2, 3).Should().BeFalse();
@@ -32,7 +35,7 @@ namespace XTask.Tests.Collections
         [Fact]
         public void AddOrUpdate()
         {
-            var dictionary = new Dictionary<string, string>();
+            Dictionary<string, string> dictionary = new();
             Action action = () => dictionary.AddOrUpdate(null, "");
             action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
@@ -40,8 +43,11 @@ namespace XTask.Tests.Collections
             action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("source");
 
-            var dictionaryTwo = new Dictionary<int, int>();
-            dictionaryTwo.Add(1, 1);
+            Dictionary<int, int> dictionaryTwo = new()
+            {
+                { 1, 1 }
+            };
+
             dictionaryTwo.AddOrUpdate(1, 2);
             dictionaryTwo[1].Should().Be(2);
             dictionaryTwo.AddOrUpdate(2, 3);
@@ -51,19 +57,20 @@ namespace XTask.Tests.Collections
         [Fact]
         public void AddOrUpdateOverloadOne()
         {
-            var dictionary = new Dictionary<string, string>();
-            Func<string, string, string> updater = (key, oldValue) =>
+            Dictionary<string, string> dictionary = new();
+
+            static string Updater(string key, string oldValue)
             {
                 key.Should().Be("fookey");
                 oldValue.Should().Be("foo");
                 return "bar";
-            };
+            }
 
             Func<string, string, string> nullUpdater = null;
 
-            dictionary.AddOrUpdate(key: "fookey", addValue: "foo", updateValueFactory: updater).Should().Be("foo");
+            dictionary.AddOrUpdate(key: "fookey", addValue: "foo", updateValueFactory: Updater).Should().Be("foo");
             dictionary["fookey"].Should().Be("foo");
-            dictionary.AddOrUpdate(key: "fookey", addValue: "foo", updateValueFactory: updater).Should().Be("bar");
+            dictionary.AddOrUpdate(key: "fookey", addValue: "foo", updateValueFactory: Updater).Should().Be("bar");
             dictionary["fookey"].Should().Be("bar");
 
             // Null argument checks
@@ -83,18 +90,19 @@ namespace XTask.Tests.Collections
         [Fact]
         public void AddOrUpdateOverloadTwo()
         {
-            var dictionary = new Dictionary<string, string>();
-            Func<string, string> updater = (oldValue) =>
+            Dictionary<string, string> dictionary = new();
+
+            static string Updater(string oldValue)
             {
                 oldValue.Should().Be("foo");
                 return "bar";
-            };
+            }
 
             Func<string, string> nullUpdater = null;
 
-            dictionary.AddOrUpdate(key: "fookey", addValue: "foo", updateValueFactory: updater).Should().Be("foo");
+            dictionary.AddOrUpdate(key: "fookey", addValue: "foo", updateValueFactory: Updater).Should().Be("foo");
             dictionary["fookey"].Should().Be("foo");
-            dictionary.AddOrUpdate(key: "fookey", addValue: "foo", updateValueFactory: updater).Should().Be("bar");
+            dictionary.AddOrUpdate(key: "fookey", addValue: "foo", updateValueFactory: Updater).Should().Be("bar");
             dictionary["fookey"].Should().Be("bar");
 
             // Null argument checks
@@ -114,38 +122,39 @@ namespace XTask.Tests.Collections
         [Fact]
         public void AddOrUpdateOverloadThree()
         {
-            var dictionary = new Dictionary<string, string>();
-            Func<string, string, string> updater = (key, oldValue) =>
+            Dictionary<string, string> dictionary = new();
+
+            static string Updater(string key, string oldValue)
             {
                 key.Should().Be("fookey");
                 oldValue.Should().Be("foo");
                 return "bar";
-            };
+            }
 
-            Func<string, string> adder = (key) =>
+            static string Adder(string key)
             {
                 key.Should().Be("fookey");
                 return "foo";
-            };
+            }
 
             Func<string, string, string> nullUpdater = null;
             Func<string, string> nullAdder = null;
 
-            dictionary.AddOrUpdate(key: "fookey", addValueFactory: adder, updateValueFactory: updater).Should().Be("foo");
+            dictionary.AddOrUpdate(key: "fookey", addValueFactory: Adder, updateValueFactory: Updater).Should().Be("foo");
             dictionary["fookey"].Should().Be("foo");
-            dictionary.AddOrUpdate(key: "fookey", addValueFactory: adder, updateValueFactory: updater).Should().Be("bar");
+            dictionary.AddOrUpdate(key: "fookey", addValueFactory: Adder, updateValueFactory: Updater).Should().Be("bar");
             dictionary["fookey"].Should().Be("bar");
 
             // Null argument checks
-            Action action = action = () => dictionary.AddOrUpdate(key: null, addValueFactory: adder, updateValueFactory: nullUpdater);
+            Action action = action = () => dictionary.AddOrUpdate(key: null, addValueFactory: Adder, updateValueFactory: nullUpdater);
             action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
 
-            action = () => dictionary.AddOrUpdate(key: "foo", addValueFactory: adder, updateValueFactory: nullUpdater);
+            action = () => dictionary.AddOrUpdate(key: "foo", addValueFactory: Adder, updateValueFactory: nullUpdater);
             action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("updateValueFactory");
 
-            action = () => dictionary.AddOrUpdate(key: "foo", addValueFactory: nullAdder, updateValueFactory: updater);
+            action = () => dictionary.AddOrUpdate(key: "foo", addValueFactory: nullAdder, updateValueFactory: Updater);
             action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("addValueFactory");
 
@@ -157,7 +166,7 @@ namespace XTask.Tests.Collections
         [Fact]
         public void GetOrAdd()
         {
-            var dictionary = new Dictionary<string, string>();
+            Dictionary<string, string> dictionary = new();
             dictionary.GetOrAdd("fookey", "bar").Should().Be("bar");
             dictionary.GetOrAdd("fookey", "foo").Should().Be("bar");
 
@@ -173,18 +182,18 @@ namespace XTask.Tests.Collections
         [Fact]
         public void GetOrAddOverload()
         {
-            var dictionary = new Dictionary<string, string>();
+            Dictionary<string, string> dictionary = new();
 
-            Func<string, string> adder = (key) =>
+            static string Adder(string key)
             {
                 key.Should().Be("fookey");
                 return "bar";
-            };
+            }
 
-            dictionary.GetOrAdd("fookey", adder).Should().Be("bar");
-            dictionary.GetOrAdd("fookey", adder).Should().Be("bar");
+            dictionary.GetOrAdd("fookey", Adder).Should().Be("bar");
+            dictionary.GetOrAdd("fookey", Adder).Should().Be("bar");
 
-            Action action = () => dictionary.GetOrAdd(null, addValueFactory: adder);
+            Action action = () => dictionary.GetOrAdd(null, addValueFactory: Adder);
             action.Should().Throw<ArgumentNullException>()
                 .And.ParamName.Should().Be("key");
 
@@ -200,7 +209,7 @@ namespace XTask.Tests.Collections
         [Fact]
         public void TryRemoveValues()
         {
-            var dictionary = new Dictionary<string, string>
+            Dictionary<string, string> dictionary = new()
             {
                 { "one", "foo" },
                 { "two", "foo" },
@@ -220,7 +229,7 @@ namespace XTask.Tests.Collections
         [Fact]
         public void TryRemove()
         {
-            var dictionary = new Dictionary<string, string>
+            Dictionary<string, string> dictionary = new()
             {
                 { "three", "bar" }
             };
@@ -241,7 +250,7 @@ namespace XTask.Tests.Collections
         [Fact]
         public void TryRemoveOverloadOne()
         {
-            var dictionary = new Dictionary<string, string>
+            Dictionary<string, string> dictionary = new()
             {
                 { "one", "foo" },
                 { "two", "foo" },
@@ -264,7 +273,7 @@ namespace XTask.Tests.Collections
         [Fact]
         public void TryRemoveOverloadTwo()
         {
-            var dictionary = new Dictionary<string, string>
+            Dictionary<string, string> dictionary = new()
             {
                 { "three", "bar" }
             };

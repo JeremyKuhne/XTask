@@ -173,20 +173,13 @@ namespace XTask.Logging
                 if (headerRow) _richText.Append(@"\b");
                 for (int i = 0; i < row.Length; i++)
                 {
-                    string alignment;
-                    switch (table.ColumnFormats[i].Justification)
+                    string alignment = table.ColumnFormats[i].Justification switch
                     {
-                        case Justification.Centered:
-                            alignment = @"\qc";
-                            break;
-                        case Justification.Right:
-                            alignment = @"\qr";
-                            break;
-                        case Justification.Left:
-                        default:
-                            alignment = @"\ql";
-                            break;
-                    }
+                        Justification.Centered => @"\qc",
+                        Justification.Right => @"\qr",
+                        _ => @"\ql",
+                    };
+
                     _richText.AppendFormat(@"\pard\intbl\widctlpar{0} {1}\cell", alignment, Escape(row[i]));
                 }
 

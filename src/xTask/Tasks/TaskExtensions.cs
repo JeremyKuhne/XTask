@@ -8,7 +8,7 @@ namespace XTask.Tasks
     internal static class TaskExtensions
     {
         /// <summary>
-        /// Gets the option default for the given option
+        ///  Gets the option default for the given option.
         /// </summary>
         internal static T GetOptionDefault<T>(this ITask task, string option)
         {
@@ -24,7 +24,7 @@ namespace XTask.Tasks
         }
 
         /// <summary>
-        /// Outputs usage if any help is provided
+        ///  Outputs usage if any help is provided.
         /// </summary>
         public static void OutputUsage(this ITask task, ITaskInteraction interaction)
         {
@@ -40,7 +40,7 @@ namespace XTask.Tasks
         }
 
         /// <summary>
-        /// Executes the given task
+        ///  Executes the given task.
         /// </summary>
         public static ExitCode Execute(this ITask task, ITaskInteraction interaction)
         {

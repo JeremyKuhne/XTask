@@ -8,7 +8,7 @@ using XTask.Settings;
 namespace XTask.Tasks
 {
     /// <summary>
-    /// Input and output interfaces and services for a task
+    ///  Input and output interfaces and services for a task.
     /// </summary>
     public interface ITaskInteraction : ITypedServiceProvider
     {

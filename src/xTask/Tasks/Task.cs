@@ -19,16 +19,13 @@ namespace XTask.Tasks
 
         protected abstract ExitCode ExecuteInternal();
 
-        protected IArgumentProvider Arguments { get { return _interaction.Arguments; } }
-        protected ILoggers Loggers { get { return _interaction.Loggers; } }
+        protected IArgumentProvider Arguments => _interaction.Arguments;
+        protected ILoggers Loggers => _interaction.Loggers;
 
-        protected ILogger StatusLog { get { return Loggers[LoggerType.Status]; } }
-        protected ILogger ResultLog { get { return Loggers[LoggerType.Result]; } }
+        protected ILogger StatusLog => Loggers[LoggerType.Status];
+        protected ILogger ResultLog => Loggers[LoggerType.Result];
 
-        protected void Output(object value)
-        {
-            _interaction.Output(value);
-        }
+        protected void Output(object value) => _interaction.Output(value);
 
         public override T GetService<T>()
         {
@@ -63,10 +60,8 @@ namespace XTask.Tasks
             logger.WriteLine(WriteStyle.Fixed, optionDetails);
         }
 
-
-        protected virtual string GeneralHelp { get { return null; } }
-        protected virtual string OptionDetails { get { return null; } }
-
-        public virtual string Summary { get { return null; } }
+        protected virtual string GeneralHelp => null;
+        protected virtual string OptionDetails => null;
+        public virtual string Summary => null;
     }
 }

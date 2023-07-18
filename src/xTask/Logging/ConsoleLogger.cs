@@ -10,54 +10,32 @@ namespace XTask.Logging
 {
     public class ConsoleLogger : TextTableLogger
     {
-        private class ColorLookup : Tuple<WriteStyle, ConsoleColor>
-        {
-            public ColorLookup(WriteStyle writeStyle, ConsoleColor color)
-                : base (writeStyle, color)
-            {
-            }
-
-            public WriteStyle WriteStyle { get { return Item1; } }
-            public ConsoleColor ConsoleColor { get { return Item2; } }
-        }
-
-        private static readonly ConsoleLogger s_Instance;
-
         private readonly ConsoleColor _baseColor;
-        private readonly List<ColorLookup> _colorTable;
+        private readonly List<(WriteStyle Style, ConsoleColor Color)> _colorTable;
 
         protected ConsoleLogger()
         {
             // TODO: Allow setting from config
             _baseColor = Console.ForegroundColor;
-            _colorTable = new List<ColorLookup>();
-
-            // Error state first
-            _colorTable.Add(new ColorLookup(WriteStyle.Critical | WriteStyle.Error, ConsoleColor.Red)); 
-            _colorTable.Add(new ColorLookup(WriteStyle.Italic | WriteStyle.Bold | WriteStyle.Important, ConsoleColor.Yellow));
-        }
-
-        static ConsoleLogger()
-        {
-            s_Instance = new ConsoleLogger();
-        }
-
-        public static ILogger Instance
-        {
-            get
+            _colorTable = new()
             {
-                return s_Instance;
-            }
+                // Error state first
+                new(WriteStyle.Critical | WriteStyle.Error, ConsoleColor.Red),
+                new(WriteStyle.Italic | WriteStyle.Bold | WriteStyle.Important, ConsoleColor.Yellow)
+            };
         }
+
+
+        public static ILogger Instance { get; } = new ConsoleLogger();
 
         protected override void WriteInternal(WriteStyle style, string value)
         {
             ConsoleColor color = _baseColor;
-            foreach (var lookup in _colorTable)
+            foreach (var (Style, Color) in _colorTable)
             {
-                if ((lookup.WriteStyle & style) != 0)
+                if ((Style & style) != 0)
                 {
-                    color = lookup.ConsoleColor;
+                    color = Color;
                     break;
                 }
             }
@@ -73,18 +51,11 @@ namespace XTask.Logging
         }
 
         private void WriteColorUnderlined(ConsoleColor color, string value)
-        {
-            WriteColor(color, Strings.Underline(value));
-        }
+            => WriteColor(color, Strings.Underline(value));
 
         protected virtual void WriteColor(ConsoleColor color, string value)
-        {
-            ConsoleHelper.Console.WriteLockedColor(color, value);
-        }
+            => ConsoleHelper.Console.WriteLockedColor(color, value);
 
-        protected override int TableWidth
-        {
-            get { return Math.Max(80, Console.BufferWidth); }
-        }
+        protected override int TableWidth => Math.Max(80, Console.BufferWidth);
     }
 }

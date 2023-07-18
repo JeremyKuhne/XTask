@@ -21,7 +21,7 @@ namespace XTask.Tasks
         }
 
         public IArgumentProvider Arguments { get; private set; }
-        public ILoggers Loggers { get { return GetService<ILoggers>(); } }
+        public ILoggers Loggers => GetService<ILoggers>();
 
         protected abstract ILoggers GetDefaultLoggers();
 
@@ -34,6 +34,7 @@ namespace XTask.Tasks
             {
                 return (T)GetDefaultLoggers();
             }
+
             return null;
         }
 

@@ -9,11 +9,10 @@ namespace XTask.Utility
     public static class Exceptions
     {
         /// <summary>
-        /// Returns true if the given exception is an expected exception from IO routines.
+        ///  Returns true if the given exception is an expected exception from IO routines.
         /// </summary>
         public static bool IsIoException(Exception exception)
-        {
-            return exception is IOException
+            => exception is IOException
                 // Unfortunately UnauthorizedAccessException and OperationCanceledException come out of
                 // IO APIs and don't derive from IOException.
                 || exception is UnauthorizedAccessException
@@ -22,6 +21,5 @@ namespace XTask.Utility
                 // System.IO.Path.CheckInvalidPathChars() gets called by almost all .NET APIs that
                 // deal with paths.
                 || exception is ArgumentException;
-        }
     }
 }

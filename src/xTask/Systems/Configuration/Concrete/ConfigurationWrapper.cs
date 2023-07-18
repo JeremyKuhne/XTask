@@ -23,10 +23,7 @@ namespace XTask.Systems.Configuration.Concrete
             return sectionGroup is null ? null : new ConfigurationSectionGroupWrapper(sectionGroup);
         }
 
-        public string FilePath
-        {
-            get { return _configuration.FilePath; }
-        }
+        public string FilePath => _configuration.FilePath;
 
         public IConfigurationSectionGroup AddSectionGroup(string sectionGroupName)
         {
@@ -36,9 +33,6 @@ namespace XTask.Systems.Configuration.Concrete
             return new ConfigurationSectionGroupWrapper(userGroup);
         }
 
-        public void Save()
-        {
-            _configuration.Save();
-        }
+        public void Save() => _configuration.Save();
     }
 }

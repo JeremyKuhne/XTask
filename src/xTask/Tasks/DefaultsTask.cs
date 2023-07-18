@@ -11,18 +11,16 @@ using XTask.Settings;
 namespace XTask.Tasks
 {
     /// <summary>
-    /// Task for managing defaults
+    ///  Task for managing defaults.
     /// </summary>
     public class DefaultsTask : Task
     {
         private readonly string _applicationName;
-        protected override string GeneralHelp { get { return string.Format(CultureInfo.InvariantCulture, XTaskStrings.HelpDefaults, _applicationName); } }
-        protected override string OptionDetails { get { return XTaskStrings.HelpDefaultsOptions; } }
+        protected override string GeneralHelp
+            => string.Format(CultureInfo.InvariantCulture, XTaskStrings.HelpDefaults, _applicationName);
+        protected override string OptionDetails => XTaskStrings.HelpDefaultsOptions;
 
-        public DefaultsTask(string applicationName) : base ()
-        {
-            _applicationName = applicationName;
-        }
+        public DefaultsTask(string applicationName) : base() => _applicationName = applicationName;
 
         protected override ExitCode ExecuteInternal()
         {
@@ -114,6 +112,6 @@ namespace XTask.Tasks
             return ExitCode.Success;
         }
 
-        public override string Summary { get { return XTaskStrings.DefaultsTaskSummary; } }
+        public override string Summary => XTaskStrings.DefaultsTaskSummary;
     }
 }

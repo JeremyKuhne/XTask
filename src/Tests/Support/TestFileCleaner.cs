@@ -15,7 +15,7 @@ namespace XTask.Tests.Support
         private static readonly IExtendedFileService _extendedFileService = new ExtendedFileService();
 
         public TestFileCleaner(bool useDotNet = false)
-            : base ("XTaskTests", useDotNet ? (IFileService) new Concrete.DotNet.FileService() : new Concrete.Flex.FileService(_extendedFileService))
+            : base ("XTaskTests", useDotNet ? new Concrete.DotNet.FileService() : new Concrete.Flex.FileService(_extendedFileService))
         {
             _useDotNet = useDotNet;
         }

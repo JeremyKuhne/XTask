@@ -15,29 +15,22 @@ namespace XTask.Systems.File.Concrete.DotNet
     {
         public string CurrentDirectory
         {
-            get { return Environment.CurrentDirectory; }
-            set { Environment.CurrentDirectory = value; }
+            get => Environment.CurrentDirectory;
+            set => Environment.CurrentDirectory = value;
         }
 
-        public void CreateDirectory(string path)
-        {
-            Directory.CreateDirectory(path);
-        }
+        public void CreateDirectory(string path) => Directory.CreateDirectory(path);
 
-        public Stream CreateFileStream(string path, FileMode mode = FileMode.Open, FileAccess access = FileAccess.Read, FileShare share = FileShare.ReadWrite)
-        {
-            return new FileStream(path, mode, access, share);
-        }
+        public Stream CreateFileStream(
+            string path,
+            FileMode mode = FileMode.Open,
+            FileAccess access = FileAccess.Read,
+            FileShare share = FileShare.ReadWrite) => new FileStream(path, mode, access, share);
 
         public void DeleteDirectory(string path, bool deleteChildren = false)
-        {
-            Directory.Delete(path, recursive: deleteChildren);
-        }
+            => Directory.Delete(path, recursive: deleteChildren);
 
-        public void DeleteFile(string path)
-        {
-            File.Delete(path);
-        }
+        public void DeleteFile(string path) => File.Delete(path);
 
         public IFileSystemInformation GetPathInfo(string path)
         {
@@ -65,19 +58,11 @@ namespace XTask.Systems.File.Concrete.DotNet
             }
         }
 
-        public FileAttributes GetAttributes(string path)
-        {
-            return File.GetAttributes(path);
-        }
+        public FileAttributes GetAttributes(string path) => File.GetAttributes(path);
 
-        public void SetAttributes(string path, FileAttributes attributes)
-        {
-            File.SetAttributes(path, attributes);
-        }
+        public void SetAttributes(string path, FileAttributes attributes) => File.SetAttributes(path, attributes);
 
         public void CopyFile(string existingPath, string newPath, bool overwrite = false)
-        {
-            File.Copy(existingPath, newPath, overwrite);
-        }
+            => File.Copy(existingPath, newPath, overwrite);
     }
 }

@@ -12,7 +12,7 @@ namespace XTask.Utility
     public static class StringBuilderExtensions
     {
         /// <summary>
-        /// Append a substring from a string to a StringBuilder.
+        ///  Append a substring from a string to a StringBuilder.
         /// </summary>
         /// <param name="startIndex">The starting index in the given string to start appending from.</param>
         /// <param name="length">Number of character to copy, or -1 to copy to the end.</param>
@@ -20,29 +20,35 @@ namespace XTask.Utility
         /// <exception cref="ArgumentOutOfRangeException">
         /// Thrown if <paramref name="nameof(startIndex)"/> or <paramref name="nameof(length)"/> are out of bounds of <paramref name="nameof(value)"/>.
         /// </exception>
-        public static void AppendSubstring(this StringBuilder builder, string value, int startIndex, int length = -1)
+        public unsafe static void AppendSubstring(this StringBuilder builder, string value, int startIndex, int length = -1)
         {
-            if (value is null) throw new ArgumentNullException(nameof(value));
-            if (startIndex >= value.Length) throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (value is null)
+                throw new ArgumentNullException(nameof(value));
+            if (startIndex >= value.Length)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
 
             if (length < 0)
-                length = value.Length - startIndex;
-            else if (value.Length - startIndex > length)
-                throw new ArgumentOutOfRangeException(nameof(length));
-
-            if (length == 0) return;
-
-            unsafe
             {
-                fixed(char* start = value)
-                {
-                    builder.Append(start + startIndex, valueCount: length);
-                }
+                length = value.Length - startIndex;
+            }
+            else if (value.Length - startIndex > length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            if (length == 0)
+            {
+                return;
+            }
+
+            fixed(char* start = value)
+            {
+                builder.Append(start + startIndex, valueCount: length);
             }
         }
 
         /// <summary>
-        /// Returns true if the StringBuilder starts with the given string.
+        ///  Returns true if the StringBuilder starts with the given string.
         /// </summary>
         public static bool StartsWithOrdinal(this StringBuilder builder, string value)
         {
@@ -50,13 +56,17 @@ namespace XTask.Utility
 
             for (int i = 0; i < value.Length; i++)
             {
-                if (builder[i] != value[i]) return false;
+                if (builder[i] != value[i])
+                {
+                    return false;
+                }
             }
+
             return true;
         }
 
         /// <summary>
-        /// Trims leading and trailing whitespace.
+        ///  Trims leading and trailing whitespace.
         /// </summary>
         public static void Trim(this StringBuilder builder)
         {
@@ -65,34 +75,41 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Trims leading whitespace.
+        ///  Trims leading whitespace.
         /// </summary>
         public static void TrimStart(this StringBuilder builder)
         {
-            int start = 0;
+            int start;
             for (start = 0; start < builder.Length; start++)
             {
-                if (!char.IsWhiteSpace(builder[start])) break;
+                if (!char.IsWhiteSpace(builder[start]))
+                {
+                    break;
+                }
             }
+
             builder.Remove(0, start);
         }
 
         /// <summary>
-        /// Trims trailing whitespace.
+        ///  Trims trailing whitespace.
         /// </summary>
         public static void TrimEnd(this StringBuilder builder)
         {
-            int end = builder.Length - 1;
+            int end;
             for (end = builder.Length - 1; end >= 0; end--)
             {
-                if (!char.IsWhiteSpace(builder[end])) break;
+                if (!char.IsWhiteSpace(builder[end]))
+                {
+                    break;
+                }
             }
 
             builder.Length = end + 1;
         }
 
         /// <summary>
-        /// Splits the given StringBuilder into strings based on the specified split characters.
+        ///  Splits the given StringBuilder into strings based on the specified split characters.
         /// </summary>
         public static IEnumerable<string> Split(this StringBuilder builder, params char[] splitCharacters)
         {
@@ -124,7 +141,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Writes a column of the given width and justification
+        ///  Writes a column of the given width and justification
         /// </summary>
         /// <param name="width">Number of characters to use for this column</param>
         /// <param name="noRightPadding">By default we want to put spaces on the right out to the width</param>
@@ -161,9 +178,16 @@ namespace XTask.Utility
                     break;
             }
 
-            if (leftSpacing > 0) builder.Append(' ', leftSpacing);
+            if (leftSpacing > 0)
+            {
+                builder.Append(' ', leftSpacing);
+            }
+
             builder.Append(value);
-            if (rightSpacing > 0 && !noRightPadding) builder.Append(' ', rightSpacing);
+            if (rightSpacing > 0 && !noRightPadding)
+            {
+                builder.Append(' ', rightSpacing);
+            }
         }
     }
 }

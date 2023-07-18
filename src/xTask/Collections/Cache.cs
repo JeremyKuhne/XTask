@@ -53,7 +53,11 @@ namespace XTask.Collections
             (item as IDisposable)?.Dispose();
         }
 
-        public void Dispose() => Dispose(disposing: true);
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
 
         protected virtual void Dispose(bool disposing)
         {

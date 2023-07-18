@@ -38,7 +38,7 @@ namespace XTask.Tests.Settings
         public void GetDirectories_NullFirstReturnsEmpty()
         {
             IArgumentProvider arguments = Substitute.For<IArgumentProvider>();
-            arguments.Targets.Returns(new string[] { (string)null });
+            arguments.Targets.Returns(new string[] { null });
             IFileService fileService = Substitute.For<IFileService>();
 
             arguments.GetDirectories(fileService).Should().BeEmpty();

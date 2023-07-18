@@ -30,14 +30,8 @@ namespace XTask.Systems.File.Concrete.Flex
 
         public string CurrentDirectory
         {
-            get
-            {
-                return _directory.GetCurrentDirectory();
-            }
-            set
-            {
-                _directory.SetCurrentDirectory(value);
-            }
+            get => _directory.GetCurrentDirectory();
+            set => _directory.SetCurrentDirectory(value);
         }
 
         public System.IO.Stream CreateFileStream(

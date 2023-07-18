@@ -21,8 +21,8 @@ namespace XTask.Collections
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="predicate"/> is null.</exception>
         public static IEnumerable<TSource> WhereNot<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
-            if (source is null) { throw new ArgumentNullException("source"); }
-            if (predicate is null) { throw new ArgumentNullException("predicate"); }
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+            if (predicate is null) { throw new ArgumentNullException(nameof(predicate)); }
 
             return source.Where(item => !predicate(item));
         }
@@ -33,8 +33,8 @@ namespace XTask.Collections
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="first"/> or <paramref name="second"/> is null.</exception>
         public static IEnumerable<TSource> Concat<TSource>(this IEnumerable<TSource> first, IEnumerable<IEnumerable<TSource>> second)
         {
-            if (first is null) { throw new ArgumentNullException("first"); }
-            if (second is null) { throw new ArgumentNullException("second"); }
+            if (first is null) { throw new ArgumentNullException(nameof(first)); }
+            if (second is null) { throw new ArgumentNullException(nameof(second)); }
 
             return ConcatManyIterator(first, second);
         }

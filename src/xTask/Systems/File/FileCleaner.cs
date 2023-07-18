@@ -18,18 +18,13 @@ namespace XTask.Systems.File
         private StreamWriter _flagFile;
         private readonly string _rootTempFolder;
         protected IFileService _fileServiceProvider;
-        private static readonly object s_CleanLock;
-
-        static FileCleaner()
-        {
-            s_CleanLock = new object();
-        }
+        private static readonly object s_CleanLock = new();
 
         /// <param name="tempRootDirectoryName">The subdirectory to use for temp files "MyApp"</param>
         public FileCleaner(string tempRootDirectoryName, IFileService fileServiceProvider)
         {
-            if (string.IsNullOrWhiteSpace(tempRootDirectoryName)) throw new ArgumentNullException("tempRootDirectoryName");
-            if (fileServiceProvider is null) throw new ArgumentNullException("fileServiceProvider");
+            if (string.IsNullOrWhiteSpace(tempRootDirectoryName)) throw new ArgumentNullException(nameof(tempRootDirectoryName));
+            if (fileServiceProvider is null) throw new ArgumentNullException(nameof(fileServiceProvider));
 
             _fileServiceProvider = fileServiceProvider;
             _rootTempFolder = Paths.Combine(Path.GetTempPath(), tempRootDirectoryName);

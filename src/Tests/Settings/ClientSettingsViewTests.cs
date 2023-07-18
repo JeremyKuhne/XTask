@@ -17,7 +17,11 @@ namespace XTask.Tests.Settings
     {
         private class TestClientSettingsView : ClientSettingsView
         {
-            public TestClientSettingsView(IConfigurationManager configurationManager, IFileService fileService, string settingsSection = "testsettings", SettingsLocation settingsLocation = SettingsLocation.Executable) :
+            public TestClientSettingsView(
+                IConfigurationManager configurationManager,
+                IFileService fileService,
+                string settingsSection = "testsettings",
+                SettingsLocation settingsLocation = SettingsLocation.Executable) :
                 base(settingsSection, settingsLocation, configurationManager, fileService) { }
 
             public IConfiguration TestGetConfiguration(ConfigurationUserLevel userLevel)
@@ -101,7 +105,7 @@ namespace XTask.Tests.Settings
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
             configuration.GetSectionGroup("userSettings").Returns((IConfigurationSectionGroup) => null);
 
-            var testView = TestClientSettingsView.Create("Foo", SettingsLocation.Executable, configurationManager, null);
+            var testView = ClientSettingsView.Create("Foo", SettingsLocation.Executable, configurationManager, null);
             configuration.Received().AddSectionGroup("userSettings");
         }
 
@@ -114,8 +118,7 @@ namespace XTask.Tests.Settings
             configuration.GetSectionGroup("userSettings").Returns(sectionGroup);
             IConfigurationManager configurationManager = Substitute.For<IConfigurationManager>();
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
-
-            var testView = TestClientSettingsView.Create("Foo", SettingsLocation.Executable, configurationManager, null);
+            _ = ClientSettingsView.Create("Foo", SettingsLocation.Executable, configurationManager, null);
 
             configuration.DidNotReceiveWithAnyArgs().AddSectionGroup("");
             sectionGroup.Received().Add("Foo", Arg.Any<ClientSettingsSection>());
@@ -155,7 +158,7 @@ namespace XTask.Tests.Settings
             IConfigurationManager configurationManager = Substitute.For<IConfigurationManager>();
             configurationManager.OpenConfiguration(ConfigurationUserLevel.None).ReturnsForAnyArgs(configuration);
 
-            var testView = TestClientSettingsView.Create("Foo", SettingsLocation.Executable, configurationManager, null);
+            var testView = ClientSettingsView.Create("Foo", SettingsLocation.Executable, configurationManager, null);
             testView.SaveSetting("foo", value).Should().BeTrue();
             testView.GetSetting("foo").Should().Be(value);
         }

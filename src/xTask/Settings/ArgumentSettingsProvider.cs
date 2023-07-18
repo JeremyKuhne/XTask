@@ -34,26 +34,28 @@ namespace XTask.Settings
             IFileService fileService,
             string settingsSection = null)
         {
-            settingsSection = settingsSection ?? Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().MainModule.FileName) + ".Defaults";
+            settingsSection ??= Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().MainModule.FileName) + ".Defaults";
             return new ArgumentSettingsProvider(
                 settingsSection,
                 argumentProvider,
                 ClientSettings.Create(settingsSection, configurationManager, fileService));
         }
 
-        public bool SaveSetting(SettingsLocation location, string name, string value) { return _clientSettings.SaveSetting(location, name, value); }
-        public bool RemoveSetting(SettingsLocation location, string name) { return _clientSettings.RemoveSetting(location, name); }
-        public string GetSetting(string name) { return _clientSettings.GetSetting(name); }
-        public IEnumerable<ClientSetting> GetAllSettings() { return _clientSettings.GetAllSettings(); }
-        public string GetConfigurationPath(SettingsLocation location) { return _clientSettings.GetConfigurationPath(location); }
+        public bool SaveSetting(SettingsLocation location, string name, string value)
+            => _clientSettings.SaveSetting(location, name, value);
+        public bool RemoveSetting(SettingsLocation location, string name)
+            => _clientSettings.RemoveSetting(location, name);
+        public string GetSetting(string name) => _clientSettings.GetSetting(name);
+        public IEnumerable<ClientSetting> GetAllSettings() => _clientSettings.GetAllSettings();
+        public string GetConfigurationPath(SettingsLocation location) => _clientSettings.GetConfigurationPath(location);
 
-        public string Target { get { return _argumentProvider.Target; } }
-        public string Command { get { return _argumentProvider.Command; } }
-        public string[] Targets { get { return _argumentProvider.Targets; } }
-        public bool HelpRequested { get { return _argumentProvider.HelpRequested; } }
+        public string Target => _argumentProvider.Target;
+        public string Command => _argumentProvider.Command;
+        public string[] Targets => _argumentProvider.Targets;
+        public bool HelpRequested => _argumentProvider.HelpRequested;
 
         // We don't consider deafult options to be set unless we're explicitly looking for them by name
-        public IReadOnlyDictionary<string, string> Options { get { return _argumentProvider.Options; } }
+        public IReadOnlyDictionary<string, string> Options => _argumentProvider.Options;
 
         public T GetOption<T>(params string[] optionNames)
         {

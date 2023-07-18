@@ -4,7 +4,7 @@
 namespace XTask.Tasks
 {
     /// <summary>
-    ///  Get defaults for the given option, if any
+    ///  Get defaults for the given option, if any.
     /// </summary>
     public interface ITaskOptionDefaults
     {

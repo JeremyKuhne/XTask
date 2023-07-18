@@ -19,7 +19,7 @@ namespace XTask.Tests.Utility
             {
             }
 
-            public static string TestFlagFileName { get { return FileCleaner.XTaskFlagFileName; } }
+            public static string TestFlagFileName { get { return XTaskFlagFileName; } }
         }
 
         [Fact]

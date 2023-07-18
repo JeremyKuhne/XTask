@@ -91,8 +91,10 @@ namespace XTask.Tests.Tasks
         [Fact]
         public void TaskIsDisposed()
         {
-            TestArgumentProvider arguments = new();
-            arguments.Command = "TaskIsDisposed";
+            TestArgumentProvider arguments = new()
+            {
+                Command = "TaskIsDisposed"
+            };
 
             SimpleTaskRegistry taskRegistry = new();
             TestTask task = new();

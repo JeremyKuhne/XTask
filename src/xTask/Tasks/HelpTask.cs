@@ -9,7 +9,7 @@ using XTask.Utility;
 namespace XTask.Tasks
 {
     /// <summary>
-    ///  General help task
+    ///  General help task.
     /// </summary>
     [Hidden]
     public class HelpTask : ImplementedServiceProvider, ITask, ITaskDocumentation, ITaskExecutor
@@ -23,7 +23,7 @@ namespace XTask.Tasks
             _generalHelp = generalHelp;
         }
 
-        public string Summary { get { return null; } }
+        public string Summary => null;
 
         public virtual ExitCode Execute(ITaskInteraction interaction)
         {
@@ -39,12 +39,10 @@ namespace XTask.Tasks
                 string[] aliases = entry.Aliases.ToArray();
                 if (aliases.Length == 0) continue;
 
-                ITaskDocumentation docs = entry.Task as ITaskDocumentation;
-
                 table.AddRow(
                     aliases[0],
                     aliases.Length == 1 ? string.Empty : string.Join(", ", aliases.Skip(1)),
-                    docs is null || docs.Summary is null ? string.Empty : docs.Summary);
+                    entry.Task is not ITaskDocumentation docs || docs.Summary is null ? string.Empty : docs.Summary);
             }
 
             interaction.Loggers[LoggerType.Result].Write(table);
@@ -52,9 +50,6 @@ namespace XTask.Tasks
             return ExitCode.Success;
         }
 
-        public void GetUsage(ITaskInteraction interaction)
-        {
-            Execute(interaction);
-        }
+        public void GetUsage(ITaskInteraction interaction) => Execute(interaction);
     }
 }

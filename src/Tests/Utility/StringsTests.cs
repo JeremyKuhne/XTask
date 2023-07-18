@@ -70,7 +70,7 @@ namespace XTask.Tests.Utility
         public void ValueOrNoneNullArguments(string value)
         {
             // XTask.XTaskStrings.Culture = CultureInfo.CurrentUICulture;
-            Strings.ValueOrNone(value).Should().Be(XTask.XTaskStrings.NoValue);
+            Strings.ValueOrNone(value).Should().Be(XTaskStrings.NoValue);
         }
 
         [Theory,

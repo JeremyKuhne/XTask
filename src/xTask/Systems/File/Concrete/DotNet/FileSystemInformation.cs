@@ -17,51 +17,19 @@ namespace XTask.Systems.File.Concrete.DotNet
             _fileSystemInfo = fileSystemInfo;
         }
 
-        public virtual string Path
-        {
-            get { return _fileSystemInfo.FullName; }
-        }
-
-        public virtual string Name
-        {
-            get { return _fileSystemInfo.Name; }
-        }
-
-        public virtual bool Exists
-        {
-            get { return _fileSystemInfo.Exists; }
-        }
-
-        public virtual DateTimeOffset CreationTime
-        {
-            get { return _fileSystemInfo.CreationTime; }
-        }
-
-        public virtual DateTimeOffset LastAccessTime
-        {
-            get { return _fileSystemInfo.LastAccessTime; }
-        }
-
-        public virtual DateTimeOffset LastWriteTime
-        {
-            get { return _fileSystemInfo.LastWriteTime; }
-        }
+        public virtual string Path => _fileSystemInfo.FullName;
+        public virtual string Name => _fileSystemInfo.Name;
+        public virtual bool Exists => _fileSystemInfo.Exists;
+        public virtual DateTimeOffset CreationTime => _fileSystemInfo.CreationTime;
+        public virtual DateTimeOffset LastAccessTime => _fileSystemInfo.LastAccessTime;
+        public virtual DateTimeOffset LastWriteTime => _fileSystemInfo.LastWriteTime;
 
         public virtual FileAttributes Attributes
         {
-            get
-            {
-                return _fileSystemInfo.Attributes;
-            }
-            set
-            {
-                _fileSystemInfo.Attributes = value;
-            }
+            get => _fileSystemInfo.Attributes;
+            set => _fileSystemInfo.Attributes = value;
         }
 
-        public virtual void Refresh()
-        {
-            _fileSystemInfo.Refresh();
-        }
+        public virtual void Refresh() => _fileSystemInfo.Refresh();
     }
 }

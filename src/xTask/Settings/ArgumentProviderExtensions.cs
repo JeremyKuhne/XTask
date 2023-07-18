@@ -13,33 +13,31 @@ namespace XTask.Settings
         ///  Gets target directory arguments or null if none specified.
         /// </summary>
         public static string[] GetDirectories(this IArgumentProvider arguments, IFileService fileService)
-        {
-            return SplitAndValidateDirectories(fileService, arguments.Targets);
-        }
+            => SplitAndValidateDirectories(fileService, arguments.Targets);
 
         /// <summary>
         ///  Returns directories from the specified argument or empty array if none specified.
         /// </summary>
-        public static string[] GetDirectoriesFromArgument(this IArgumentProvider arguments, IFileService fileService, params string[] optionAliases)
-        {
-            return SplitAndValidateDirectories(fileService, arguments.GetOption<string>(optionAliases));
-        }
+        public static string[] GetDirectoriesFromArgument(
+            this IArgumentProvider arguments,
+            IFileService fileService,
+            params string[] optionAliases)
+            => SplitAndValidateDirectories(fileService, arguments.GetOption<string>(optionAliases));
 
         /// <summary>
         ///  Returns files from the specified argument or empty array if none specified.
         /// </summary>
-        public static string[] GetFilesFromArgument(this IArgumentProvider arguments, IFileService fileService, params string[] optionAliases)
-        {
-            return SplitFiles(fileService, arguments.GetOption<string>(optionAliases));
-        }
+        public static string[] GetFilesFromArgument(
+            this IArgumentProvider arguments,
+            IFileService fileService,
+            params string[] optionAliases)
+            => SplitFiles(fileService, arguments.GetOption<string>(optionAliases));
 
         /// <summary>
         ///  Returns files from the specified argument or empty array if none specified.
         /// </summary>
         public static string[] GetExtensionsFromArgument(this IArgumentProvider arguments, params string[] optionAliases)
-        {
-            return SplitExtensions(arguments.GetOption<string>(optionAliases));
-        }
+            => SplitExtensions(arguments.GetOption<string>(optionAliases));
 
         private static string[] SplitAndValidateDirectories(IFileService fileService, params string[] directoryLists)
         {

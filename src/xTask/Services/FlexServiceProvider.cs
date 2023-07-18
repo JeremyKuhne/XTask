@@ -28,12 +28,6 @@ namespace XTask.Services
             _concreteServices.AddService<IConfigurationManager>(new ConfigurationManager());
         }
 
-        public static ITypedServiceProvider Services
-        {
-            get
-            {
-                return _concreteServices;
-            }
-        }
+        public static ITypedServiceProvider Services => _concreteServices;
     }
 }

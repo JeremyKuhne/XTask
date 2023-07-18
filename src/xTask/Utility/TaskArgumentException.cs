@@ -8,7 +8,7 @@ using XTask.Tasks;
 namespace XTask.Utility
 {
     /// <summary>
-    /// Used to centrally handle invalid user arguments
+    ///  Used to centrally handle invalid user arguments.
     /// </summary>
     [Serializable]
     public class TaskArgumentException : TaskException
@@ -24,13 +24,8 @@ namespace XTask.Utility
         }
 
         public static TaskArgumentException MissingArgument(string argument)
-        {
-            return new TaskArgumentException(XTaskStrings.ErrorArgumentMustHaveValue, argument);
-        }
+            => new(XTaskStrings.ErrorArgumentMustHaveValue, argument);
 
-        public override ExitCode ExitCode
-        {
-            get { return ExitCode.InvalidArgument; }
-        }
+        public override ExitCode ExitCode => ExitCode.InvalidArgument;
     }
 }

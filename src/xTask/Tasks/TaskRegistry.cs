@@ -14,9 +14,9 @@ namespace XTask.Tasks
             private readonly HashSet<string> _aliases;
             private readonly Lazy<ITask> _task;
 
-            public IEnumerable<string> Aliases { get { return _aliases; } }
+            public IEnumerable<string> Aliases => _aliases;
 
-            public ITask Task { get { return _task.Value; } }
+            public ITask Task => _task.Value;
 
             public TaskEntry(Func<ITask> task, params string[] taskNames)
             {
@@ -28,17 +28,12 @@ namespace XTask.Tasks
         private readonly List<TaskEntry> _tasks = new();
         private Func<ITask> _defaultTask;
 
-        public IEnumerable<ITaskEntry> Tasks { get { return _tasks; } }
+        public IEnumerable<ITaskEntry> Tasks => _tasks;
 
         protected void RegisterTaskInternal(Func<ITask> task, params string[] taskNames)
-        {
-            _tasks.Add(new TaskEntry(task, taskNames));
-        }
+            => _tasks.Add(new TaskEntry(task, taskNames));
 
-        protected void RegisterDefaultTaskInternal(Func<ITask> task)
-        {
-            _defaultTask = task;
-        }
+        protected void RegisterDefaultTaskInternal(Func<ITask> task) => _defaultTask = task;
 
         public ITask this[string taskName]
         {

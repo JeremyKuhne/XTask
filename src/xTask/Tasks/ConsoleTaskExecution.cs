@@ -18,8 +18,6 @@ namespace XTask.Tasks
         }
 
         protected override ITaskInteraction GetInteraction(ITask task)
-        {
-            return ConsoleTaskInteraction.Create(task, ArgumentProvider, Services);
-        }
+            => ConsoleTaskInteraction.Create(task, ArgumentProvider, Services);
     }
 }

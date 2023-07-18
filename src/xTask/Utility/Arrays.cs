@@ -6,7 +6,7 @@ namespace XTask.Utility
     public static class Arrays
     {
         /// <summary>
-        /// Compares two arrays for equivalency. All indicies must match.
+        ///  Compares two arrays for equivalency. All indicies must match.
         /// </summary>
         public static bool AreEquivalent<T>(T[] left, T[] right)
         {
@@ -41,7 +41,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Simple helper to return an array's contents as a readable string
+        ///  Simple helper to return an array's contents as a readable string.
         /// </summary>
         public static string CreateString<T>(T[] array)
         {

@@ -7,17 +7,17 @@ using System.Text;
 namespace XTask.Utility
 {
     /// <summary>
-    /// Allows limited reuse of StringBuilders to improve memory pressure
+    ///  Allows limited reuse of StringBuilders to improve memory pressure.
     /// </summary>
     public class StringBuilderCache : Cache<StringBuilder>
     {
-        internal static StringBuilderCache Instance = new();
+        internal static StringBuilderCache Instance { get; } = new();
 
         private readonly int _minCapcity;
         private readonly int _maxCapacity;
 
         /// <summary>
-        /// Create a StringBuilder cache.
+        ///  Create a StringBuilder cache.
         /// </summary>
         /// <param name="minCapacity">The minimum capacity for created StringBuilders.</param>
         /// <param name="maxCapacity">The maximum capacity for cached StringBuilders.</param>
@@ -39,7 +39,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Acquire a StringBuilder with at least the specified capacity.
+        ///  Acquire a StringBuilder with at least the specified capacity.
         /// </summary>
         public StringBuilder Acquire(int minCapacity)
         {
@@ -58,7 +58,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Give a StringBuilder back for potential reuse and return it's contents as a string
+        ///  Give a StringBuilder back for potential reuse and return it's contents as a string
         /// </summary>
         public string ToStringAndRelease(StringBuilder sb)
         {

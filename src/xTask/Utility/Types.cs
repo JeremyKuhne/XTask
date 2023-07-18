@@ -12,13 +12,13 @@ namespace XTask.Utility
     public static class Types
     {
         /// <summary>
-        /// Converts the source object to the desired type if possible.  Returns default of T if it cannot.  Nullable tolerant.
+        ///  Converts the source object to the desired type if possible. Returns default of T if it cannot. Nullable tolerant.
         /// </summary>
         /// <remarks>
-        /// This method tries to be as flexible as possible, allowing conversion to nullable for source primitives (including enums).
-        /// This allows you to ask for nullable of int for an underlying int source object- this way you can know
-        /// the conversion failed if you care to.  It also also allows you to ask for the primitive type for a source
-        /// nullable type if you don't care about conversion success.
+        ///  This method tries to be as flexible as possible, allowing conversion to nullable for source primitives (including enums).
+        ///  This allows you to ask for nullable of int for an underlying int source object- this way you can know
+        ///  the conversion failed if you care to. It also also allows you to ask for the primitive type for a source
+        ///  nullable type if you don't care about conversion success.
         /// </remarks>
         public static T ConvertType<T>(object source)
         {
@@ -97,7 +97,7 @@ namespace XTask.Utility
                                 {
                                     if (default(T) is null)
                                     {
-                                        // We were asked for a nullable enum, allow a null
+                                        // We were asked for a nullable enum, allow a null.
                                         return default;
                                     }
 
@@ -155,7 +155,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Gets the attributes of the specified type, if any
+        ///  Gets the attributes of the specified type, if any
         /// </summary>
         /// <param name="inherit">Walks the inheritance chain to look for attributes</param>
         public static IEnumerable<T> GetAttributes<T>(this object target, bool inherit = false) where T : Attribute

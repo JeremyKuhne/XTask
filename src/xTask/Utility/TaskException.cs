@@ -7,7 +7,7 @@ using XTask.Tasks;
 namespace XTask.Utility
 {
     /// <summary>
-    /// Used to centrally handle app failure state
+    ///  Used to centrally handle app failure state
     /// </summary>
     [Serializable]
     public abstract class TaskException : Exception
@@ -18,7 +18,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Returns the most appropriate exit code for the exception
+        ///  Returns the most appropriate exit code for the exception
         /// </summary>
         public abstract ExitCode ExitCode { get; }
     }

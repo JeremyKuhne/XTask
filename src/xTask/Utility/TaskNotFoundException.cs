@@ -8,7 +8,7 @@ using XTask.Tasks;
 namespace XTask.Utility
 {
     /// <summary>
-    /// Used to centrally handle missing items
+    ///  Used to centrally handle missing items.
     /// </summary>
     [Serializable]
     public class TaskNotFoundException : TaskException
@@ -23,9 +23,6 @@ namespace XTask.Utility
         {
         }
 
-        public override ExitCode ExitCode
-        {
-            get { return ExitCode.PathNotFound; }
-        }
+        public override ExitCode ExitCode => ExitCode.PathNotFound;
     }
 }

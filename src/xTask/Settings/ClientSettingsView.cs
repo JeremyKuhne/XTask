@@ -37,7 +37,11 @@ namespace XTask.Settings
         public string SettingsSection { get; private set; }
         public SettingsLocation SettingsLocation { get; private set; }
 
-        public static IClientSettingsView Create(string settingsSection, SettingsLocation settingsLocation, IConfigurationManager configurationManager, IFileService fileService)
+        public static IClientSettingsView Create(
+            string settingsSection,
+            SettingsLocation settingsLocation,
+            IConfigurationManager configurationManager,
+            IFileService fileService)
         {
             try
             {

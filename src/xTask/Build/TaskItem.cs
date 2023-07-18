@@ -14,10 +14,7 @@ namespace XTask.Build
     {
         private readonly ConcurrentDictionary<string, string> _metadata = new(StringComparer.OrdinalIgnoreCase);
 
-        public IDictionary CloneCustomMetadata()
-        {
-            return new Dictionary<string, string>(_metadata);
-        }
+        public IDictionary CloneCustomMetadata() => new Dictionary<string, string>(_metadata);
 
         public void CopyMetadataTo(MSBuildFramework.ITaskItem destinationItem)
         {
@@ -35,24 +32,13 @@ namespace XTask.Build
 
         public string ItemSpec { get; set; }
 
-        public int MetadataCount
-        {
-            get { return _metadata.Count; }
-        }
+        public int MetadataCount => _metadata.Count;
 
-        public ICollection MetadataNames
-        {
-            get { return _metadata.Keys.ToArray(); }
-        }
+        public ICollection MetadataNames => _metadata.Keys.ToArray();
 
-        public void RemoveMetadata(string metadataName)
-        {
-            _metadata.TryRemove(metadataName, out string value);
-        }
+        public void RemoveMetadata(string metadataName) => _metadata.TryRemove(metadataName, out _);
 
         public void SetMetadata(string metadataName, string metadataValue)
-        {
-            _metadata.AddOrUpdate(metadataName, metadataValue, (key, existing) => metadataValue);
-        }
+            => _metadata.AddOrUpdate(metadataName, metadataValue, (key, existing) => metadataValue);
     }
 }

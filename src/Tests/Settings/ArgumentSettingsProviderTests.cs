@@ -27,7 +27,7 @@ namespace XTask.Tests.Settings
             settings.GetSetting("Foo").Returns("Bar");
 
             TestArgumentSettingsProvider provider = new("Section", arguments, settings);
-            IArgumentProvider castArguments = (IArgumentProvider)provider;
+            IArgumentProvider castArguments = provider;
             castArguments.GetOption<string>("Foo").Should().Be("Bar");
         }
 
@@ -40,7 +40,7 @@ namespace XTask.Tests.Settings
             settings.GetSetting("Foo").Returns("Bar");
 
             TestArgumentSettingsProvider provider = new("Section", arguments, settings);
-            IArgumentProvider castArguments = (IArgumentProvider)provider;
+            IArgumentProvider castArguments = provider;
             castArguments.GetOption<string>("Foo").Should().Be("NotBar");
         }
 
@@ -57,7 +57,7 @@ namespace XTask.Tests.Settings
             arguments.Target.Returns("Target");
 
             TestArgumentSettingsProvider provider = new("Section", arguments, Substitute.For<IClientSettings>());
-            IArgumentProvider castArguments = (IArgumentProvider)provider;
+            IArgumentProvider castArguments = provider;
             castArguments.Target.Should().Be("Target");
             castArguments.Targets.Should().BeSameAs(targets);
             castArguments.Options.Should().BeSameAs(options);

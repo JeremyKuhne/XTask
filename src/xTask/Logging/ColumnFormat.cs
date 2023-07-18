@@ -23,17 +23,13 @@ namespace XTask.Logging
         ///  Construct a simple format array of relative column widths, forcing the first to be visible if possible.
         /// </summary>
         public static ColumnFormat[] FromWidths(params int[] widths)
-        {
-            return Helper(firstColumnMustBeVisible: true, widths: widths);
-        }
+            => Helper(firstColumnMustBeVisible: true, widths: widths);
 
         /// <summary>
         ///  Construct a simple format array of x columns of equivalent width, forcing the first to be visible if possible.
         /// </summary>
         public static ColumnFormat[] FromCount(int columns)
-        {
-            return Helper(firstColumnMustBeVisible: true, widths: new int[columns]);
-        }
+            => Helper(firstColumnMustBeVisible: true, widths: new int[columns]);
 
         private static ColumnFormat[] Helper(bool firstColumnMustBeVisible, params int[] widths)
         {
@@ -100,7 +96,7 @@ namespace XTask.Logging
             if (zeroSpace)
             {
                 // Recursing should continue to drop us down to a truer fit
-                return ColumnFormat.ScaleWidths(fullWidth, columnWidths);
+                return ScaleWidths(fullWidth, columnWidths);
             }
             else
             {

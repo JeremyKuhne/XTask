@@ -6,7 +6,7 @@ using XTask.Logging;
 namespace XTask.Tasks
 {
     /// <summary>
-    /// Help for unknown commands
+    ///  Help for unknown commands
     /// </summary>
     public class UnknownTask : HelpTask
     {

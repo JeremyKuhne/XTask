@@ -6,12 +6,12 @@ using System.Collections.Generic;
 namespace XTask.Tasks
 {
     /// <summary>
-    ///  Task registry
+    ///  Task registry.
     /// </summary>
     public interface ITaskRegistry
     {
         /// <summary>
-        ///  Return the task with the given task name or alias, if any
+        ///  Return the task with the given task name or alias, if any.
         /// </summary>
         ITask this[string taskName] { get; }
 

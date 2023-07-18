@@ -16,7 +16,9 @@ namespace XTask.Build
         /// <summary>
         ///  Execution handler for tasks running under MSBuild.
         /// </summary>
-        /// <param name="services">Override services, can be null. Used to get services before falling back on defaults.</param>
+        /// <param name="services">
+        ///  Override services, can be <see langword="null"/>. Used to get services before falling back on defaults.
+        /// </param>
         public BuildTaskExecution(
             MSBuildFramework.IBuildEngine buildEngine,
             ITaskOutputHandler outputHandler,

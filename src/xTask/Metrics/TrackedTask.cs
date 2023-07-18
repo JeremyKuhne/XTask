@@ -35,9 +35,6 @@ namespace XTask.Metrics
             return ExitCode.Success;
         }
 
-        public override T GetService<T>()
-        {
-            return base.GetService<T>() ?? _task.GetService<T>();
-        }
+        public override T GetService<T>() => base.GetService<T>() ?? _task.GetService<T>();
     }
 }

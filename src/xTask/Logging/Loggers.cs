@@ -23,6 +23,7 @@ namespace XTask.Logging
                 {
                     return logger;
                 }
+
                 return NullLog;
             }
         }

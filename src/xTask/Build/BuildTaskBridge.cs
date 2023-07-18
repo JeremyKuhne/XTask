@@ -57,7 +57,7 @@ namespace XTask.Build
         ///  Output from the task, if any.
         /// </summary>
         [MSBuildFramework.Output]
-        public MSBuildFramework.ITaskItem[] Output { get { return _output.ToArray(); } }
+        public MSBuildFramework.ITaskItem[] Output => _output.ToArray();
 
         public abstract ITaskService GetTaskService(ref IArgumentProvider argumentProvider);
 

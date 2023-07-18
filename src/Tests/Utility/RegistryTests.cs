@@ -17,7 +17,7 @@ namespace XTask.Tests.Utility
         {
             public static Exception TestRegistryExceptionWrapper(Action action)
             {
-                return Registry.RegistryExceptionWrapper(action);
+                return RegistryExceptionWrapper(action);
             }
         }
 
@@ -107,15 +107,15 @@ namespace XTask.Tests.Utility
 
             public RegistryTestContext()
             {
-                InstanceKey = RegistryTestContext.TestSubKey + Guid.NewGuid().ToString();
+                InstanceKey = TestSubKey + Guid.NewGuid().ToString();
                 Microsoft.Win32.RegistryKey testSubKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(InstanceKey);
 
                 testSubKey.SetValue(null, "DefaultValue");
                 testSubKey.SetValue("MeaningDWord", 42, Microsoft.Win32.RegistryValueKind.DWord);
                 testSubKey.SetValue("MeaningQWord", 42, Microsoft.Win32.RegistryValueKind.QWord);
                 testSubKey.SetValue("MeaningString", "The meaning of life", Microsoft.Win32.RegistryValueKind.String);
-                testSubKey.SetValue("MeaningStringArray", RegistryTestContext.StringArray, Microsoft.Win32.RegistryValueKind.MultiString);
-                testSubKey.SetValue("MeaningBinary", RegistryTestContext.ByteArray, Microsoft.Win32.RegistryValueKind.Binary);
+                testSubKey.SetValue("MeaningStringArray", StringArray, Microsoft.Win32.RegistryValueKind.MultiString);
+                testSubKey.SetValue("MeaningBinary", ByteArray, Microsoft.Win32.RegistryValueKind.Binary);
                 testSubKey.CreateSubKey("Foo");
                 testSubKey.CreateSubKey("Bar");
                 testSubKey.Close();

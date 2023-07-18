@@ -12,7 +12,7 @@ using Win32 = Microsoft.Win32;
 namespace XTask.Utility
 {
     /// <summary>
-    /// Safe registry access routines.
+    ///  Safe registry access routines.
     /// </summary>
     public class Registry
     {
@@ -20,7 +20,7 @@ namespace XTask.Utility
         protected Registry() {}
 
         /// <summary>
-        /// Wraps the superset of RegistryKey exceptions.  Returns the exception it caught or null if none.
+        ///  Wraps the superset of RegistryKey exceptions.  Returns the exception it caught or null if none.
         /// </summary>
         protected static Exception RegistryExceptionWrapper(Action action)
         {
@@ -51,12 +51,12 @@ namespace XTask.Utility
             RegistryHive.CurrentUser => Win32.Registry.CurrentUser,
             RegistryHive.LocalMachine => Win32.Registry.LocalMachine,
             RegistryHive.DefaultUser => Win32.Registry.Users.OpenSubKey(@".DEFAULT"),
-            _ => throw new ArgumentOutOfRangeException("hive"),
+            _ => throw new ArgumentOutOfRangeException(nameof(hive)),
         };
 
         /// <summary>
-        /// Returns the requested registry value. Will return default if unsuccessful.
-        /// Supports nullable types- returns null if unable to get requested value.
+        ///  Returns the requested registry value. Will return default if unsuccessful.
+        ///  Supports nullable types- returns null if unable to get requested value.
         /// </summary>
         /// <param name="hive">The root key to use.</param>
         /// <param name="subkeyName">Subkey name or subpath.</param>
@@ -120,7 +120,7 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Gets the subkey names for the given key.
+        ///  Gets the subkey names for the given key.
         /// </summary>
         /// <param name="hive">The root key to use.</param>
         /// <param name="subkeyName">Subkey name or subpath.</param>
@@ -149,44 +149,53 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Returns as T all values of all subkeys of the specified key. If a value is not a T, no value will be 
-        /// returned for that value. For example, if you have a key HKCU\Bla\Foo1 with values Name1="bar" and Name2="baz",
-        /// and HKCU\Bla\Foo2 with values "Name1"=1 (DWORD) and "" (default)="c:\users", a call to RetrieveAllREgistrySubkeyValues&lt;string&gt;
-        /// (Registry.CurrentUser, "Bla") would return a three-element enumerable containing the strings "bar", "baz", and "c:\users".
+        ///  Returns as <typeparamref name="T"/> all values of all subkeys of the specified key that are of type
+        ///  <typeparamref name="T"/>.
         /// </summary>
+        /// <remarks>
+        ///  <para>
+        ///   For example, if you have a key HKCU\Bla\Foo1 with values Name1="bar" and Name2="baz",
+        ///   and HKCU\Bla\Foo2 with values "Name1"=1 (DWORD) and "" (default)="c:\users",
+        ///   <see cref="RetrieveAllRegistrySubkeyValues{T}(RegistryHive, string)"/> for "Bla" would return
+        ///   a three-element enumerable containing the strings "bar", "baz", and "c:\users".
+        ///  </para>
+        /// </remarks>
         /// <param name="hive">The root key to use.</param>
         /// <param name="subkeyName">Subkey name or subpath.</param>
         /// <returns>Array of values. Returns null on failure.</returns>
         public static IEnumerable<T> RetrieveAllRegistrySubkeyValues<T>(RegistryHive hive, string subkeyName)
         {
-            List<T> values = new();
             var registrySubkey = OpenSubkey(GetHive(hive), subkeyName);
 
-            if (registrySubkey is not null)
+            if (registrySubkey is null)
             {
-                using (registrySubkey)
+                return Enumerable.Empty<T>();
+            }
+
+            List<T> values = new();
+
+            using (registrySubkey)
+            {
+                foreach (var subSubkey in GetSubkeys(registrySubkey))
                 {
-                    foreach (var subSubkey in GetSubkeys(registrySubkey))
+                    using (subSubkey)
                     {
-                        using (subSubkey)
+                        string[] registryValueNames = null;
+                        Exception exception = RegistryExceptionWrapper(() => registryValueNames = subSubkey.GetValueNames());
+                        if (exception is not null)
                         {
-                            string[] registryValueNames = null;
-                            Exception exception = RegistryExceptionWrapper(() => registryValueNames = subSubkey.GetValueNames());
-                            if (exception is not null)
-                            {
-                                Debug.WriteLine("Unable to get value names for key '{0}'.  Exception follows: \n{1}", subkeyName, exception);
-                                continue;
-                            }
+                            Debug.WriteLine("Unable to get value names for key '{0}'.  Exception follows: \n{1}", subkeyName, exception);
+                            continue;
+                        }
 
-                            foreach (string registryValueName in registryValueNames)
-                            {
-                                object rawValue = RetrieveRegistryValue<object>(subSubkey, registryValueName);
+                        foreach (string registryValueName in registryValueNames)
+                        {
+                            object rawValue = RetrieveRegistryValue<object>(subSubkey, registryValueName);
 
-                                if (rawValue is not null)
-                                {
-                                    T value = Types.ConvertType<T>(rawValue);
-                                    values.Add(value);
-                                }
+                            if (rawValue is not null)
+                            {
+                                T value = Types.ConvertType<T>(rawValue);
+                                values.Add(value);
                             }
                         }
                     }
@@ -197,8 +206,8 @@ namespace XTask.Utility
         }
 
         /// <summary>
-        /// Sets or deletes the desired registry value using the designated registry value kind.
-        /// Will create the specified subkey if it does not exist.
+        ///  Sets or deletes the desired registry value using the designated registry value kind.
+        ///  Will create the specified subkey if it does not exist.
         /// </summary>
         /// <remarks>
         /// This will use the following value types:

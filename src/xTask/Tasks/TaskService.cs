@@ -37,20 +37,11 @@ namespace XTask.Tasks
             registry.RegisterDefaultTask(() => new UnknownTask(registry, _generalHelpString));
         }
 
-        protected virtual SimpleTaskRegistry GetTaskRegistry()
-        {
-            return _taskRegistry.Value;
-        }
+        protected virtual SimpleTaskRegistry GetTaskRegistry() => _taskRegistry.Value;
 
-        public ITaskRegistry TaskRegistry
-        {
-            get { return GetTaskRegistry(); }
-        }
+        public ITaskRegistry TaskRegistry => GetTaskRegistry();
 
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-        }
+        public void Dispose() => Dispose(disposing: true);
 
         protected virtual void Dispose(bool disposing)
         {

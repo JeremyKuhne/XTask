@@ -98,7 +98,7 @@ namespace XTask.Tests.Utility
             Types.ConvertType<Numbers>(Numbers.Three).Should().Be(Numbers.Three);
             Types.ConvertType<OtherNumbers>(Numbers.Three).Should().Be(OtherNumbers.Three);
             Types.ConvertType<OtherNumbers>(4).Should().Be(OtherNumbers.One, "four isn't defined");
-            Types.ConvertType<NoValues>(1).Should().Be((NoValues)0, "nothing defined in enum, fallback to default");
+            Types.ConvertType<NoValues>(1).Should().Be(0, "nothing defined in enum, fallback to default");
         }
 
         private class FooBar

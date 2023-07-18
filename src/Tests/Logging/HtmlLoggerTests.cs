@@ -23,7 +23,7 @@ namespace XTask.Tests.Logging
 
             public string ToClipboardString()
             {
-                return HtmlLogger.FormatForClipboard(ToString());
+                return FormatForClipboard(ToString());
             }
         }
 
