@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using XTask.SampleApplication;
 
 // General Information about an assembly is controlled through the following 
@@ -27,7 +28,7 @@ using XTask.SampleApplication;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("f79ce5cb-4989-4a12-a276-5e12e3be93d1")]
 
-
+[assembly: SupportedOSPlatform("windows10.0.17763")]
 
 [assembly: AssemblyVersion(AssemblyInfo.AssemblyVersionString)]
 [assembly: AssemblyFileVersion(AssemblyInfo.AssemblyFileVersionString)]

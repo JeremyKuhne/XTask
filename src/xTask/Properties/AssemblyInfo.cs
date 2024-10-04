@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using XTask.Utility;
 
 // General Information about an assembly is controlled through the following 
@@ -31,6 +32,8 @@ using XTask.Utility;
 
 [assembly: AssemblyVersion(AssemblyInfo.AssemblyVersionString)]
 [assembly: AssemblyFileVersion(AssemblyInfo.AssemblyFileVersionString)]
+
+[assembly: SupportedOSPlatform("windows10.0.17763")]
 
 internal static class AssemblyInfo
 {

@@ -77,7 +77,7 @@ public class ClientSettingsView : IClientSettingsView
         IConfiguration configuration = GetConfiguration(ConfigurationUserLevel.None);
 
         // Only create this type if we don't match
-        string codeBase = typeof(ClientSettingsView).Assembly.CodeBase;
+        string codeBase = typeof(ClientSettingsView).Assembly.Location;
         if (!Uri.TryCreate(codeBase, UriKind.Absolute, out Uri codeBaseUri) || !codeBaseUri.IsFile) { return null; }
 
         string assemblyConfig = $"{codeBaseUri.LocalPath}.config";
